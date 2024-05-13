@@ -2,7 +2,7 @@ class BaseProcessor:
     """
     This class and its children are used to perform specific tasks to process data.
     """
-    def process(self, sample: dict, *args, **kwargs) -> dict:
+    def process(self, *args, **kwargs) -> dict:
         """
         Process sample.
         :param sample:      Sample.
