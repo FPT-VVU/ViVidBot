@@ -5,12 +5,14 @@ import time
 from yt_dlp.utils import download_range_func
 from vividbot.data.processor.base import BaseProcessor
 
+
 class YoutubeDownloader(BaseProcessor):
     """
     This class and its children are used to download youtube videos.
     """
     def __init__(self, ):
-        self.opts= { 'format': 'best[ext=mp4]', 
+        self.opts= {'format': 'best[ext=mp4]', 
+                    "quiet": True,
                    'force_keyframes_at_cuts': True, }
 
     def download(self, url_id: str, start: str, end: str, path: str):

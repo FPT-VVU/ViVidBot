@@ -76,8 +76,8 @@ from processor.translator import GGTranslator
 
 trans = GGTranslator()
 # new_data.map(trans.process, fn_kwargs={"key_translate": ["vast_cap", "audio_cap"]}, batched=True, batch_size=100)
-
-
-for i in new_data:
-    print(trans.process(i["vast_cap"]))
-
+def map_func(batch):
+    result_translate = trans.process(batch["vast_cap"], src="en", dest="vi")
+    batch["vast_cap"] = result_translate
+    return batch
+data.map(lambda x: map_func(x), batched=True, batch_size=100, num_proc=16, cache_file_name = "dataset_temp", load_from_cache_file=True)

@@ -3,6 +3,9 @@ import random
 import json
 from vividbot.data.processor.base import BaseProcessor
 
+#set seed
+random.seed(42)
+
 class QuestionSelection(BaseProcessor):
     """
     This class and its children are used to generate prompts.
