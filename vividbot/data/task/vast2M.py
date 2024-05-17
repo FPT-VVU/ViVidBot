@@ -1,9 +1,7 @@
 import os
 import sys
 import argparse
-import random
-import time
-import shutil
+import json
 
 
 sys.path.append(os.getcwd())
@@ -11,12 +9,14 @@ sys.path.append(os.getcwd())
 import warnings
 warnings.filterwarnings("ignore")
 
-from datasets import load_dataset, load_from_disk, concatenate_datasets
+from yt_dlp.utils import DownloadError
+from datasets import disable_progress_bar
 
 from vividbot.data.processor.translator import GGTranslator
 from vividbot.data.processor.question_selection import QuestionSelection
 from vividbot.data.processor.download import YoutubeDownloader
 from vividbot.data.processor.upload_hf import Uploader
+from vividbot.data.processor.executor import Executor
 
 from huggingface_hub import HfApi, HfFolder, HfFileSystem
 
@@ -37,6 +37,13 @@ def parse_args() -> argparse.Namespace:
         type=str,
         required=True,
         help="file path to load data. Note: just support json file",
+    )
+
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        required=True,
+        help="Path to save data.",
     )
 
     parser.add_argument(
@@ -61,22 +68,10 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
-        "--output-dir",
+        "--repo-id",
         type=str,
-        required=True,
-        help="Path to save data.",
-    )
-    # parser.add_argument(
-    #     "--channel-names",
-    #     type=str,
-    #     default=None,
-    #     help="A channel name or path to file containing channel names.",
-    # )
-    parser.add_argument(
-        "--overwrite",
-        action=argparse.BooleanOptionalAction,
-        default=False,
-        help="Overwrite existing files.",
+        default=None,
+        help="repo id for upload to hungingface",
     )
     parser.add_argument(
         "--num-shards",
@@ -84,30 +79,19 @@ def parse_args() -> argparse.Namespace:
         type=int,
         help="number of shard for generate data",
     )
-    # parser.add_argument(
-    #     "--upload-to-hub",
-    #     action=argparse.BooleanOptionalAction,
-    #     default=False,
-    #     help="Upload to hub after processing.",
-    # )
-    # parser.add_argument(
-    #     "--clean-input",
-    #     action=argparse.BooleanOptionalAction,
-    #     default=False,
-    #     help="Remove all downloaded input files after processing.",
-    # )
-    # parser.add_argument(
-    #     "--clean-output",
-    #     action=argparse.BooleanOptionalAction,
-    #     default=False,
-    #     help="Remove all output files except for metadata after processing.",
-    # )
-    # parser.add_argument(
-    #     "--version",
-    #     type=int,
-    #     default=1,
-    #     help="Version of the dataset.",
-    # )
+    parser.add_argument(
+        "--upload-to-hub",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Upload to hub after processing.",
+    )
+    parser.add_argument(
+        "--clean-output",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Remove all output files except for metadata after processing.",
+    )
+
     parser.add_argument(
         "--cache-dir",
         type=str,
@@ -119,8 +103,10 @@ def parse_args() -> argparse.Namespace:
 question_list = QuestionSelection("vividbot/data/stuff/questions.txt")
 translator = GGTranslator()
 uploader = Uploader()
+downloader = YoutubeDownloader()
+error_list = []
 
-def map_func(batch):
+def generate(batch: dict):
     result_translate = translator.process(batch["vast_cap"], src="en", dest="vi") 
     result_question = question_list.process(len(batch["vast_cap"]))
     new_result = {"id" : batch["clip_id"],
@@ -128,75 +114,50 @@ def map_func(batch):
                     "conversation": [[{"from": "human", "value" : question}, {"from" : "gpt", "value": answer}] 
                                     for question, answer in zip(result_question, result_translate)]}
     return new_result
+def download(batch: dict, path: str, upload_to_hub: bool, repo_id: str, clean_output: bool):
+    error_list = {"url_error": []}
+    for url_id, span in zip(batch["clip_id"], batch["clip_span"]):
+        try:
+            downloader.process(url_id, span[0], span[1], path)
+            if upload_to_hub:
+                uploader.upload_file(file_path=f"{path}/{url_id}.mp4", 
+                                    repo_id=repo_id, 
+                                    path_in_repo=f"video/{url_id}.mp4", 
+                                    repo_type="dataset",
+                                    overwrite=False)
+            if clean_output:
+                os.remove(f"{path}/{url_id}.mp4")
+        except DownloadError:
+            error_list["url_error"].append(url_id)
+    return error_list
+def change_format(batch, **kwargs):
+    pass
+
+def remove_sample(batch, **kwargs):
+    pass
 
 def main(args: argparse.Namespace):
-    
-    # load dataset
-    if not os.path.exists(args.file_path):
-        print("Can not find the file, Can you please check it again?")
-        return
-    
-
-    if not os.path.exists(f"{args.cache_dir}/temp") or not os.path.exists(f"{args.cache_dir}/result"):
-        os.mkdir(f"{args.cache_dir}/result")
-        os.mkdir(f"{args.cache_dir}/temp")
-
-    if args.num_shards > 0 and len(os.listdir(f"{args.cache_dir}/temp")) == 0 and len(os.listdir(f"{args.cache_dir}/result")) == 0:
-        try:
-            dataset = load_dataset("json", data_files=args.file_path, cache_dir=args.cache_dir)["train"]
-        except:
-            print("Please provide json file")
-            return
-        if args.select > 0:
-            dataset = dataset.select(range(args.select))
-
-        for shard_idx in range(args.num_shards):
-            shard = dataset.shard(num_shards=args.num_shards, index=shard_idx, contiguous=True)
-            shard.save_to_disk(f"{args.cache_dir}/temp/shard_{shard_idx}")
-    if args.num_shards < 0:
-        try:
-            dataset = load_dataset("json", data_files=args.file_path, cache_dir=args.cache_dir)["train"]
-        except:
-            print("Please provide json file")
-            return
-        if args.select > 0:
-            dataset = dataset.select(range(args.select))
-
-    if args.task == "download":
-        downloader = YoutubeDownloader()
-        dataset.map(downloader.process, 
-                    fn_kwargs={"key_url": "clip_id", "key_span": "clip_span", "path": args.output_dir},
-                    batched=True, batch_size=args.batch_size, num_proc=args.num_proc, 
-                    load_from_cache_file= not args.overwrite,
-                    desc="Download data from youtube")
+    executor = Executor(file_path=args.file_path,
+                        cache_dir=args.cache_dir,
+                        output_dir=args.output_dir,
+                        select=args.select,
+                        num_shards=args.num_shards)
     if args.task == "generate":
-        # read number folder in a folder
-        if len(os.listdir(f"{args.cache_dir}/result")) <= args.num_shards:
-            for shard_idx in os.listdir(args.cache_dir + "/temp"):
-                shard = load_from_disk(f"{args.cache_dir}/temp/{shard_idx}")
-                # try:
-                shard = shard.map(map_func, 
-                                        batched=True, batch_size=args.batch_size, num_proc=args.num_proc, 
-                                        remove_columns=list(dataset.features.keys()),
-                                        load_from_cache_file=True,
-                                        desc=f"Generate data to a new format and translate them from English to Vietnamese at shard {shard_idx}")
-                shard.save_to_disk(f"{args.cache_dir}/result/{shard_idx}")
-                # remove shard from memory
-                shutil.rmtree(f"{args.cache_dir}/temp/{shard_idx}")
-                # except: 
-                #     print(f"shard {shard_idx} has errors, please check it")
-        
-        if len(os.listdir(f"{args.cache_dir}/temp")) == 0 and len(os.listdir(f"{args.cache_dir}/result")) == args.num_shards:    
-            if not os.path.exists(args.output_dir):
-                os.mkdir(args.output_dir)
-            # to json with encoding utf-8
-            ds = concatenate_datasets([
-                                        load_from_disk(f"{args.cache_dir}/result/{shard_idx}")
-                                        for shard_idx in os.listdir(args.cache_dir + "/result")
-                                    ])
-            shutil.rmtree(f"{args.cache_dir}/temp")
-            shutil.rmtree(f"{args.cache_dir}/result")
-            ds.to_json(args.output_dir + "/vast2M_vi.json", orient="records", lines=True, force_ascii=False)
-
+        executor.process(map_fn=generate,
+                         task=args.task,
+                         batch_size=args.batch_size, 
+                         num_proc=args.num_proc,
+                         name_out="test.json",
+                         save=True,
+                         remove_columns=['clip_id', 'clip_span', 'url', 'vision_cap', 'audio_cap', 'subtitle', 'vast_cap'])
+    if args.task == "download":
+        executor.process(map_fn=download,
+                         task=args.task,
+                         batch_size=args.batch_size,
+                         num_proc=args.num_proc,
+                         save=True,
+                         remove_columns=['clip_id', 'clip_span', 'url', 'vision_cap', 'audio_cap', 'subtitle', 'vast_cap'],
+                         name_out="error.json",
+                         fn_kwargs={"path": args.output_dir, "repo_id": args.repo_id, "upload_to_hub": args.upload_to_hub, "clean_output": args.clean_output})
 if __name__ == '__main__':
     main(parse_args())

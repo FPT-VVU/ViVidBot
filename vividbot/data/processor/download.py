@@ -12,10 +12,12 @@ class YoutubeDownloader(BaseProcessor):
     """
     def __init__(self, ):
         self.opts= {'format': 'best[ext=mp4]', 
-                    "quiet": True,
+                    'quiet': True,
+                    'fixup': 'never',
+                    'no_warnings': True,
                    'force_keyframes_at_cuts': True, }
 
-    def download(self, url_id: str, start: str, end: str, path: str):
+    def process(self, url_id: str, start: str, end: str, path: str):
         if not os.path.exists(path):
             os.makedirs(path)
     
@@ -31,16 +33,5 @@ class YoutubeDownloader(BaseProcessor):
 
         with yt_dlp.YoutubeDL(self.opts) as ydl:
             ydl.download(url_yt)
-    def process(self, sample: dict, key_url: str, key_span: str, path: str, *args, **kwargs) -> dict:
-        """
-        Process sample.
-        :param sample:      Sample.
-        :param args:        Additional arguments.
-        :param kwargs:      Additional keyword arguments.
-        :return:            Processed sample.
-        """
-        for url_id, span in zip(sample[key_url], sample[key_span]):
-            path = path + "/" + url_id
-            self.download(url_id, span[0], span[1], path)
-        
+
 
