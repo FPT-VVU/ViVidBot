@@ -207,7 +207,7 @@ def download(args: argparse.Namespace, executor: Executor):
                                     path_in_repo=f"video/{name}.zip",
                                     repo_type="dataset",
                                     overwrite=args.overwrite)
-        uploader.upload_file(file_path=f"{args.output_dir}/error.json",
+        uploader.upload_file(file_path=f"{args.output_dir}/error/error_{name}.json",
                             repo_id=args.repo_id,
                             path_in_repo=f"error/error_{name}.json",
                             repo_type="dataset",
