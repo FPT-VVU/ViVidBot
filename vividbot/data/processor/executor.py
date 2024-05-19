@@ -37,6 +37,20 @@ class Executor(BaseProcessor):
         if self.select > 0:
             dataset = dataset.select(range(self.select))
         return dataset
+    
+    def rename_column(self, file_path: str, list_old_name: list, list_new_name: list, name_file: str):
+        dataset =  self.load_dataset(file_path)
+        assert len(list_old_name) == len(list_new_name), "list_old_name and list_new_name must have the same length"
+        for old_name, new_name in zip(list_old_name, list_new_name):
+            dataset = dataset.rename_column(old_name, new_name)
+        dataset.to_json(self.output_dir + "/" + name_file, orient="records", lines=True, force_ascii=False)
+        print(f"Save to {self.output_dir}/{name_file}")
+
+    def remove_sample(self, file_path: str, error_list: list, name_file: str):
+        dataset =  self.load_dataset(file_path)
+        dataset = dataset.filter(lambda x: x["id"] not in error_list)
+        dataset.to_json(self.output_dir + "/" + name_file, orient="records", lines=True, force_ascii=False)
+        print(f"Save to {self.output_dir}/{name_file}")
 
     def save(self, name_file: str, save: bool) -> None:
         if len(os.listdir(f"{self.cache_dir}/temp")) == 0 and len(os.listdir(f"{self.cache_dir}/result")) == self.num_shards:  
@@ -59,6 +73,11 @@ class Executor(BaseProcessor):
             for shard_idx in range(self.num_shards):
                 shard = self.dataset.shard(num_shards=self.num_shards, index=shard_idx, contiguous=True)
                 shard.save_to_disk(f"{self.cache_dir}/temp/shard_{shard_idx}")
+    def divide_shard_json(self, file_path: str, output_dir: str) -> None:
+        dataset = self.load_dataset(file_path)
+        for shard_idx in range(self.num_shards):
+            shard = dataset.shard(num_shards=self.num_shards, index=shard_idx, contiguous=True)
+            shard.to_json(f"{output_dir}/shard_{shard_idx}.json", orient="records", lines=True, force_ascii=False)
 
     def process(self, map_fn: Callable, task: str, batch_size: int = 1, 
                 num_proc: int = 1, name_out: str = "result.json", 
