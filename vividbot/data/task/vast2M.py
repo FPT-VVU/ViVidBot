@@ -147,7 +147,7 @@ translator = GGTranslator()
 uploader = Uploader()
 downloader = YoutubeDownloader()
 
-def generate(batch: dict):
+def _generate(batch: dict):
     result_translate = translator.process(batch["vast_cap"], src="en", dest="vi") 
     result_question = question_list.process(len(batch["vast_cap"]))
     new_result = {"id" : batch["clip_id"],
@@ -155,116 +155,167 @@ def generate(batch: dict):
                     "conversations": [[{"from": "human", "value" : question}, {"from" : "gpt", "value": answer}] 
                                     for question, answer in zip(result_question, result_translate)]}
     return new_result
-def download(batch: dict, path: str, upload_to_hub: bool, repo_id: str, clean_output: bool):
+def _download(batch: dict, path: str):
     error_list = {"url_error": []}
     for url_id, span in zip(batch["clip_id"], batch["clip_span"]):
         try:
             downloader.process(url_id, span[0], span[1], path)
-            if upload_to_hub:
-                uploader.upload_file(file_path=f"{path}/{url_id}.mp4", 
-                                    repo_id=repo_id, 
-                                    path_in_repo=f"video/{url_id}.mp4", 
-                                    repo_type="dataset",
-                                    overwrite=False)
-            if clean_output:
-                os.remove(f"{path}/{url_id}.mp4")
         except DownloadError:
             error_list["url_error"].append(url_id)
     return error_list    
 
-def remove_sample(batch, **kwargs):
-    pass
+def generate(args: argparse.Namespace, executor: Executor):
+    name_file_out = os.path.basename(executor.file_path).split('.')[0] if args.name_out is None else args.name_out
+    executor.process(map_fn=_generate,
+                    task=args.task,
+                    batch_size=args.batch_size, 
+                    num_proc=args.num_proc,
+                    name_out=name_file_out,
+                    save=True,
+                    remove_columns=['clip_id', 'clip_span', 'url', 'vision_cap', 'audio_cap', 'subtitle', 'vast_cap'])
+    if args.upload_to_hub:
+        uploader.upload_file(file_path=f"{args.output_dir}/{name_file_out}",
+                            repo_id=args.repo_id,
+                            path_in_repo=f"{name_file_out}",
+                            repo_type="dataset",
+                            overwrite=args.overwrite)
+    if args.clean_output:
+        os.remove(f"{args.output_dir}/{name_file_out}")
+    
+    if args.clean_input:
+        os.remove(args.file_path)
+    
+    return
+
+def download(args: argparse.Namespace, executor: Executor):
+    name = os.path.basename(executor.file_path).split('.')[0]
+    path_out_chunks = f"{args.output_dir}/{name}"
+    if uploader.check_file_exist(repo_type="dataset" ,repo_id=args.repo_id, path_in_repo=f"video/{name}.zip") and not args.overwrite:
+        return
+    executor.process(map_fn=_download,
+                        task=args.task,
+                        batch_size=args.batch_size,
+                        num_proc=args.num_proc,
+                        save=True,
+                        remove_columns=['clip_id', 'clip_span', 'url', 'vision_cap', 'audio_cap', 'subtitle', 'vast_cap'],
+                        name_out=f"error/error_{name}.json",
+                        fn_kwargs={"path": path_out_chunks})
+    
+    if args.upload_to_hub:
+        uploader.zip_and_upload_dir(dir_path=path_out_chunks,
+                                    repo_id=args.repo_id,
+                                    path_in_repo=f"video/{name}.zip",
+                                    repo_type="dataset",
+                                    overwrite=args.overwrite)
+        uploader.upload_file(file_path=f"{args.output_dir}/error.json",
+                            repo_id=args.repo_id,
+                            path_in_repo=f"error/error_{name}.json",
+                            repo_type="dataset",
+                            overwrite=args.overwrite)
+    if args.clean_output:
+            os.remove(path_out_chunks)
+            os.remove(f"{args.output_dir}/error.json")
+    return
+
+def rename_column(args: argparse.Namespace, executor: Executor):
+    name_file_out = os.path.basename(executor.file_path).split('.')[0] if args.name_out is None else args.name_out
+    list_old_name = args.list_old_name.split(",")
+    list_new_name = args.list_new_name.split(",")
+    executor.rename_column(list_old_name=list_old_name,
+                            list_new_name=list_new_name,
+                            name_file=name_file_out)
+    if args.upload_to_hub:
+        uploader.upload_file(file_path=f"{args.output_dir}/{name_file_out}",
+                            repo_id=args.repo_id,
+                            path_in_repo=f"{name_file_out}",
+                            repo_type="dataset",
+                            overwrite=args.overwrite)
+    if args.clean_input:
+        os.remove(args.file_path)
+        
+    return
+
+
+def remove_sample(args: argparse.Namespace, executor: Executor):
+    name_file_out = os.path.basename(executor.file_path).split('.')[0] if args.name_out is None else args.name_out
+    if args.error_file_path.split("/")[-1].split(".")[-1] == "json":
+        error_list = load_dataset("json", data_files=args.error_file_path)["train"]
+    else:
+        error_list = load_dataset("json", data_files=f"{args.error_file_path}/*.json")["train"]
+    
+    error_list = error_list["url_error"]
+    executor.remove_sample(error_list=error_list, name_file=name_file_out)
+    if args.upload_to_hub:
+        uploader.upload_file(file_path=f"{args.output_dir}/{name_file_out}",
+                            repo_id=args.repo_id,
+                            path_in_repo=f"{name_file_out}",
+                            repo_type="dataset",
+                            overwrite=args.overwrite)
+    if args.clean_input:
+        os.remove(args.file_path)
+    
+    return
+
+def divide_dataset(args: argparse.Namespace, executor: Executor):
+    name_file_out = os.path.basename(executor.file_path).split('.')[0] if args.name_out is None else args.name_out
+    executor.divide_dataset(num_shards=args.num_shards,
+                            name_file=name_file_out)
+    if args.upload_to_hub:
+        uploader.upload_file(file_path=f"{args.output_dir}/{name_file_out}",
+                            repo_id=args.repo_id,
+                            path_in_repo=f"{name_file_out}",
+                            repo_type="dataset",
+                            overwrite=args.overwrite)
+    if args.clean_input:
+        os.remove(args.file_path)
+    
+    return
 
 def main(args: argparse.Namespace):
     support_tasks = ["download", "generate", "rename column", "remove sample", "divide dataset"]
     if args.task not in support_tasks:
         print(f"task {args.task} not support")
         return
+    
     if not os.path.exists(args.cache_dir):
         os.mkdir(args.cache_dir)
-    
-    executor = Executor(file_path=args.file_path,
-                        cache_dir=args.cache_dir,
-                        output_dir=args.output_dir,
-                        select=args.select,
-                        num_shards=args.num_shards)
-    
-    if args.task == "generate":
-        executor.process(map_fn=generate,
-                         task=args.task,
-                         batch_size=args.batch_size, 
-                         num_proc=args.num_proc,
-                         name_out=args.name_out,
-                         save=True,
-                         remove_columns=['clip_id', 'clip_span', 'url', 'vision_cap', 'audio_cap', 'subtitle', 'vast_cap'])
-        if args.upload_to_hub:
-            uploader.upload_file(file_path=f"{args.output_dir}/{args.name_out}",
-                                repo_id=args.repo_id,
-                                path_in_repo=f"{args.name_out}",
-                                repo_type="dataset",
-                                overwrite=args.overwrite)
-        if args.clean_output:
-            os.remove(f"{args.output_dir}/{args.name_out}")
-        
-        if args.clean_input:
-            os.remove(args.file_path)
-        
-        return
 
-    if args.task == "download":
-        executor.process(map_fn=download,
-                         task=args.task,
-                         batch_size=args.batch_size,
-                         num_proc=args.num_proc,
-                         save=True,
-                         remove_columns=['clip_id', 'clip_span', 'url', 'vision_cap', 'audio_cap', 'subtitle', 'vast_cap'],
-                         name_out="error.json",
-                         fn_kwargs={"path": args.output_dir, "repo_id": args.repo_id, "upload_to_hub": args.upload_to_hub, "clean_output": args.clean_output})
-        return
-    
-    if args.task == "rename column":
-        list_old_name = args.list_old_name.split(",")
-        list_new_name = args.list_new_name.split(",")
-        executor.rename_column(file_path=args.file_path,
-                               list_old_name=list_old_name,
-                               list_new_name=list_new_name,
-                               name_file=args.name_out)
-        if args.upload_to_hub:
-            uploader.upload_file(file_path=f"{args.output_dir}/{args.name_out}",
-                                repo_id=args.repo_id,
-                                path_in_repo=f"{args.name_out}",
-                                repo_type="dataset",
-                                overwrite=args.overwrite)
-        if args.clean_input:
-            os.remove(args.file_path)
-            
-        return
+    if not os.path.exists(args.output_dir):
+        os.mkdir(args.output_dir)
 
-    if args.task == "remove sample":
-        # check error_path is json file or folder containing json files
-        if args.error_file_path.split("/")[-1].split(".")[-1] == "json":
-            error_list = load_dataset("json", data_files=args.error_file_path)["train"]
-        else:
-            error_list = load_dataset("json", data_files=f"{args.error_file_path}/*.json")["train"]
-        
-        error_list = error_list["url_error"]
-        executor.remove_sample(file_path=args.file_path, error_list=error_list, name_file=args.name_out)
-        if args.upload_to_hub:
-            uploader.upload_file(file_path=f"{args.output_dir}/{args.name_out}",
-                                repo_id=args.repo_id,
-                                path_in_repo=f"{args.name_out}",
-                                repo_type="dataset",
-                                overwrite=args.overwrite)
-        if args.clean_input:
-            os.remove(args.file_path)
-        
-        return
-
-    if args.task == "divide dataset":
-        executor.divide_shard(file_path = args.file_path, output_dir = args.output_dir)
-        if args.clean_input:
-            os.remove(args.file_path)
-        return
+    if os.path.isdir(args.file_path):
+        for json_file in sorted(os.listdir(args.file_path)):
+            executor = Executor(file_path=f"{args.file_path}/{json_file}",
+                    cache_dir=args.cache_dir,
+                    output_dir=args.output_dir,
+                    select=args.select,
+                    num_shards=args.num_shards)
+            if args.task == "generate":
+                generate(args=args, executor=executor)
+            if args.task == "download":
+                download(args=args, executor=executor)
+            if args.task == "rename column":
+                rename_column(args=args, executor=executor)
+            if args.task == "remove sample":
+                remove_sample(args=args, executor=executor)
+            if args.task == "divide dataset":
+                divide_dataset(args=args, executor=executor)
+    else:
+        executor = Executor(file_path=args.file_path,
+                            cache_dir=args.cache_dir,
+                            output_dir=args.output_dir,
+                            select=args.select,
+                            num_shards=args.num_shards)
+        if args.task == "generate":
+            generate(args=args, executor=executor)
+        if args.task == "download":
+            download(args=args, executor=executor)
+        if args.task == "rename column":
+            rename_column(args=args, executor=executor)
+        if args.task == "remove sample":
+            remove_sample(args=args, executor=executor)
+        if args.task == "divide dataset":
+            divide_dataset(args=args, executor=executor)
 
 
 if __name__ == '__main__':

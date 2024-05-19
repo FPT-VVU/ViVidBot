@@ -37,7 +37,14 @@ class Uploader(BaseProcessor):
             )
             os.remove(dir_path + ".zip")
 
-
+    def check_file_exist(self, repo_type: str, repo_id: str, path_in_repo: str) -> bool:
+        """
+        Check if file exist in the hub.
+        :param repo_id:         Repository id.
+        :param path_in_repo:    Path to file in repository.
+        :return:                Whether file exist or not.
+        """
+        return self.fs.exists(f"{repo_type}s/{repo_id}/{path_in_repo}")
     def upload_file(
         self, file_path: str,
         repo_id: str,

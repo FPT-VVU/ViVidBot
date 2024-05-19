@@ -11,13 +11,12 @@
 #                                     --num-proc 16 
 
 python vividbot/data/task/vast2M.py --task "download" \
-                                    --file-path "/home/duytran/Downloads/vividbot_data/Vast2M.json" \
-                                    --select 1000 \
+                                    --file-path "/home/duytran/Downloads/output_ds/chunk_200" \
                                     --batch-size 100 \
                                     --repo-id "Vividbot/vast2m_vi" \
                                     --upload-to-hub \
                                     --num-shards 10 \
-                                    --output-dir "/home/duytran/Downloads/output" \
+                                    --output-dir "/home/duytran/Downloads/output_video" \
                                     --cache-dir "/home/duytran/Downloads/cache_dir" \
                                     --num-proc 16
 
@@ -35,3 +34,8 @@ python vividbot/data/task/vast2M.py --task "download" \
 #                                     --repo-id "Vividbot/vast27_en" \
 #                                     --output-dir "/home/duytran/Downloads/output_ds" \
 #                                     --clean-input
+
+# python vividbot/data/task/vast2M.py --task "divide dataset" \
+#                                     --file-path "/home/duytran/Downloads/vividbot_data/Vast2M.json" \
+#                                     --output-dir "/home/duytran/Downloads/output_ds/chunk" \
+#                                     --num-shards 500
