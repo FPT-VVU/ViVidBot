@@ -284,7 +284,7 @@ def main(args: argparse.Namespace):
         os.mkdir(args.output_dir)
 
     if os.path.isdir(args.file_path):
-        for json_file in sorted(os.listdir(args.file_path)):
+        for json_file in sorted(os.listdir(args.file_path), key=lambda x: int(x.split(".")[0].split("_")[1])):
             executor = Executor(file_path=f"{args.file_path}/{json_file}",
                     cache_dir=args.cache_dir,
                     output_dir=args.output_dir,
