@@ -6,9 +6,10 @@ pip install requirements.txt
 # VAST2M Vi
 ## Download from youtube
 1. Go to this link to download folder chunk: https://drive.google.com/drive/folders/1RjCk2hf52xTKX2zBjwyEbVvhBJ4EjSRN?usp=drive_link
-2. Install ffmpeg if you do not have installed before
+2. Install ffmpeg and login to hugging face account
 ```python
 sudo apt install ffmpeg
+huggingface-cli login --token your token --add-to-git-credential True
 ```
 3. Edit file in path: vividbot/data/scripts as bellow
 ```python
