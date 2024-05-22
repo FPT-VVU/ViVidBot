@@ -10,15 +10,15 @@
 #                                     --cache-dir "/home/duytran/Downloads/cache_dir" \
 #                                     --num-proc 16 
 
-python vividbot/data/task/vast2M.py --task "download" \
-                                    --file-path "/home/duytran/Downloads/output_ds/chunk_200" \
+python3 vividbot/data/task/vast2M.py --task "download" \
+                                    --file-path "/home/dminhvu/workspace/fpt-vvu/chunkz" \
                                     --batch-size 100 \
                                     --repo-id "Vividbot/vast2m_vi" \
                                     --upload-to-hub \
                                     --num-shards 10 \
-                                    --output-dir "/home/duytran/Downloads/output_video" \
-                                    --cache-dir "/home/duytran/Downloads/cache_dir" \
-                                    --num-proc 16
+                                    --output-dir "/home/dminhvu/Downloads/vividbot/out" \
+                                    --cache-dir "/home/dminhvu/Downloads/vividbot/cache" \
+                                    --num-proc 12
 
 # python vividbot/data/task/vast2M.py --task "rename column" \
 #                                     --file-path "/home/duytran/Downloads/output_ds/vast2M_vi.json" \

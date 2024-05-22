@@ -3,6 +3,7 @@ from huggingface_hub import HfApi, HfFolder, HfFileSystem
 from vividbot.data.processor.base import BaseProcessor
 from vividbot.data.utils.file import zip_dir
 
+
 class Uploader(BaseProcessor):
     TOKEN = HfFolder.get_token()
 
@@ -12,9 +13,10 @@ class Uploader(BaseProcessor):
         """
         self.api = HfApi()
         self.fs = HfFileSystem()
-    
+
     def zip_and_upload_dir(
-        self, dir_path: str,
+        self,
+        dir_path: str,
         repo_id: str,
         path_in_repo: str,
         repo_type: str = "dataset",
@@ -45,8 +47,10 @@ class Uploader(BaseProcessor):
         :return:                Whether file exist or not.
         """
         return self.fs.exists(f"{repo_type}s/{repo_id}/{path_in_repo}")
+
     def upload_file(
-        self, file_path: str,
+        self,
+        file_path: str,
         repo_id: str,
         path_in_repo: str,
         repo_type: str = "dataset",

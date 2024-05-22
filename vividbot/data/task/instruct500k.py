@@ -7,8 +7,9 @@ import shutil
 
 
 sys.path.append(os.getcwd())
-# turn of warning 
+# turn of warning
 import warnings
+
 warnings.filterwarnings("ignore")
 
 from datasets import load_dataset, load_from_disk, concatenate_datasets
@@ -19,6 +20,7 @@ from vividbot.data.processor.download import YoutubeDownloader
 from vividbot.data.processor.upload_hf import Uploader
 
 from huggingface_hub import HfApi, HfFolder, HfFileSystem
+
 
 def parse_args() -> argparse.Namespace:
     """
@@ -116,9 +118,11 @@ def parse_args() -> argparse.Namespace:
     )
     return parser.parse_args()
 
+
 question_list = QuestionSelection("vividbot/data/stuff/questions.txt")
 translator = GGTranslator()
 uploader = Uploader()
+
 
 def map_func(batch):
     result_question = question_list.process(len(batch["conversations"]))
@@ -127,21 +131,29 @@ def map_func(batch):
         item[1]["value"] = translator.process(item[1]["value"], src="en", dest="vi")
     return batch
 
+
 def main(args: argparse.Namespace):
-    
+
     # load dataset
     if not os.path.exists(args.file_path):
         print("Can not find the file, Can you please check it again?")
         return
-    
 
-    if not os.path.exists(f"{args.cache_dir}/temp") or not os.path.exists(f"{args.cache_dir}/result"):
+    if not os.path.exists(f"{args.cache_dir}/temp") or not os.path.exists(
+        f"{args.cache_dir}/result"
+    ):
         os.mkdir(f"{args.cache_dir}/result")
         os.mkdir(f"{args.cache_dir}/temp")
 
-    if args.num_shards > 0 and len(os.listdir(f"{args.cache_dir}/temp")) == 0 and len(os.listdir(f"{args.cache_dir}/result")) == 0:
+    if (
+        args.num_shards > 0
+        and len(os.listdir(f"{args.cache_dir}/temp")) == 0
+        and len(os.listdir(f"{args.cache_dir}/result")) == 0
+    ):
         try:
-            dataset = load_dataset("json", data_files=args.file_path, cache_dir=args.cache_dir)["train"]
+            dataset = load_dataset(
+                "json", data_files=args.file_path, cache_dir=args.cache_dir
+            )["train"]
         except:
             print("Please provide json file")
             return
@@ -149,11 +161,15 @@ def main(args: argparse.Namespace):
             dataset = dataset.select(range(args.select))
 
         for shard_idx in range(args.num_shards):
-            shard = dataset.shard(num_shards=args.num_shards, index=shard_idx, contiguous=True)
+            shard = dataset.shard(
+                num_shards=args.num_shards, index=shard_idx, contiguous=True
+            )
             shard.save_to_disk(f"{args.cache_dir}/temp/shard_{shard_idx}")
     if args.num_shards < 0:
         try:
-            dataset = load_dataset("json", data_files=args.file_path, cache_dir=args.cache_dir)["train"]
+            dataset = load_dataset(
+                "json", data_files=args.file_path, cache_dir=args.cache_dir
+            )["train"]
         except:
             print("Please provide json file")
             return
@@ -162,36 +178,59 @@ def main(args: argparse.Namespace):
 
     if args.task == "download":
         downloader = YoutubeDownloader()
-        dataset.map(downloader.process, 
-                    fn_kwargs={"key_url": "clip_id", "key_span": "clip_span", "path": args.output_dir},
-                    batched=True, batch_size=args.batch_size, num_proc=args.num_proc, 
-                    load_from_cache_file= not args.overwrite,
-                    desc="Download data from youtube")
+        dataset.map(
+            downloader.process,
+            fn_kwargs={
+                "key_url": "clip_id",
+                "key_span": "clip_span",
+                "path": args.output_dir,
+            },
+            batched=True,
+            batch_size=args.batch_size,
+            num_proc=args.num_proc,
+            load_from_cache_file=not args.overwrite,
+            desc="Download data from youtube",
+        )
     if args.task == "generate":
         # read number folder in a folder
         if len(os.listdir(f"{args.cache_dir}/result")) <= args.num_shards:
             for shard_idx in os.listdir(args.cache_dir + "/temp"):
                 shard = load_from_disk(f"{args.cache_dir}/temp/{shard_idx}")
                 # try:
-                shard = shard.map(map_func, 
-                                        batched=True, batch_size=args.batch_size, num_proc=args.num_proc, 
-                                        load_from_cache_file=True,
-                                        desc=f"Generate data to a new format and translate them from English to Vietnamese at shard {shard_idx}")
+                shard = shard.map(
+                    map_func,
+                    batched=True,
+                    batch_size=args.batch_size,
+                    num_proc=args.num_proc,
+                    load_from_cache_file=True,
+                    desc=f"Generate data to a new format and translate them from English to Vietnamese at shard {shard_idx}",
+                )
                 shard.save_to_disk(f"{args.cache_dir}/result/{shard_idx}")
                 # remove shard from memory
                 shutil.rmtree(f"{args.cache_dir}/temp/{shard_idx}")
-        
-        if len(os.listdir(f"{args.cache_dir}/temp")) == 0 and len(os.listdir(f"{args.cache_dir}/result")) == args.num_shards:    
+
+        if (
+            len(os.listdir(f"{args.cache_dir}/temp")) == 0
+            and len(os.listdir(f"{args.cache_dir}/result")) == args.num_shards
+        ):
             if not os.path.exists(args.output_dir):
                 os.mkdir(args.output_dir)
             # to json with encoding utf-8
-            ds = concatenate_datasets([
-                                        load_from_disk(f"{args.cache_dir}/result/{shard_idx}")
-                                        for shard_idx in os.listdir(args.cache_dir + "/result")
-                                    ])
+            ds = concatenate_datasets(
+                [
+                    load_from_disk(f"{args.cache_dir}/result/{shard_idx}")
+                    for shard_idx in os.listdir(args.cache_dir + "/result")
+                ]
+            )
             shutil.rmtree(f"{args.cache_dir}/temp")
             shutil.rmtree(f"{args.cache_dir}/result")
-            ds.to_json(args.output_dir + "/instruct500k_vi.json", orient="records", lines=True, force_ascii=False)
+            ds.to_json(
+                args.output_dir + "/instruct500k_vi.json",
+                orient="records",
+                lines=True,
+                force_ascii=False,
+            )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main(parse_args())

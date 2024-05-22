@@ -1,4 +1,3 @@
-# Copyright 2023 Thinh T. Duong
 import os
 import datasets
 from huggingface_hub import HfFileSystem
@@ -42,11 +41,15 @@ class Vast2M_Vi(datasets.GeneratorBasedBuilder):
     BUILDER_CONFIGS = Vast2M_ViConfig()
 
     def _info(self) -> datasets.DatasetInfo:
-        features = datasets.Features({
-            "id": datasets.Value("string"),
-            "video": datasets.Value("binary"),
-            "conversations": datasets.Value("dict",),
-        })
+        features = datasets.Features(
+            {
+                "id": datasets.Value("string"),
+                "video": datasets.Value("binary"),
+                "conversations": datasets.Value(
+                    "dict",
+                ),
+            }
+        )
 
         return datasets.DatasetInfo(
             description=_DESCRIPTION,
@@ -92,7 +95,8 @@ class Vast2M_Vi(datasets.GeneratorBasedBuilder):
         ]
 
     def _generate_examples(
-        self, split: datasets.Dataset,
+        self,
+        split: datasets.Dataset,
         dl_manager: datasets.DownloadManager,
     ) -> tuple[int, dict]:
         """
@@ -104,7 +108,9 @@ class Vast2M_Vi(datasets.GeneratorBasedBuilder):
         :return:                        Example.
         """
         for i, sample in enumerate(split):
-            video_path = os.path.join(dl_manager.download(_URLS["video"]), sample["video"])
+            video_path = os.path.join(
+                dl_manager.download(_URLS["video"]), sample["video"]
+            )
 
             yield i, {
                 "id": sample["id"],
