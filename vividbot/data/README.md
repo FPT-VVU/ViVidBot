@@ -9,7 +9,7 @@ pip install requirements.txt
 2. Install ffmpeg and login to hugging face account
 ```python
 sudo apt install ffmpeg
-huggingface-cli login --token your token --add-to-git-credential True
+huggingface-cli login --token your token --add-to-git-credential
 ```
 3. Edit file in path: vividbot/data/scripts as bellow
 ```python
@@ -25,6 +25,6 @@ python vividbot/data/task/vast2M.py --task "download" \
 ```
 4. Run
 ```python
-bash vividbot/data/scripts/vast2m.sh
+bash vividbot/script/vast2m.sh
 ```
 5. Check status in the sheet: https://docs.google.com/spreadsheets/d/1xIwos2TttQYi-iVgxru15Ydc0L65ou3OC9ev5CzsusE/edit#gid=0
