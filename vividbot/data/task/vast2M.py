@@ -47,7 +47,7 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
-        "-name-out",
+        "--name-out",
         type=str,
         default=None,
         help="Name of output after processing.",
@@ -266,7 +266,7 @@ def download(args: argparse.Namespace, executor: Executor):
 
 def rename_column(args: argparse.Namespace, executor: Executor):
     name_file_out = (
-        os.path.basename(executor.file_path).split(".")[0]
+        os.path.basename(executor.file_path)
         if args.name_out is None
         else args.name_out
     )
@@ -293,7 +293,7 @@ def rename_column(args: argparse.Namespace, executor: Executor):
 
 def remove_sample(args: argparse.Namespace, executor: Executor):
     name_file_out = (
-        os.path.basename(executor.file_path).split(".")[0]
+        os.path.basename(executor.file_path)
         if args.name_out is None
         else args.name_out
     )
