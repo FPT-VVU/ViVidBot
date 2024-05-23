@@ -125,14 +125,14 @@ class Executor(BaseProcessor):
                 )
                 shard.save_to_disk(f"{self.cache_dir}/temp/shard_{shard_idx}")
 
-    def divide_shard_json(self, output_dir: str) -> None:
+    def divide_shard_json(self) -> None:
         dataset = self.load_dataset()
         for shard_idx in range(self.num_shards):
             shard = dataset.shard(
                 num_shards=self.num_shards, index=shard_idx, contiguous=True
             )
             shard.to_json(
-                f"{output_dir}/shard_{shard_idx}.json",
+                f"{self.output_dir}/shard_{shard_idx}.json",
                 orient="records",
                 lines=True,
                 force_ascii=False,

@@ -2,16 +2,16 @@ import os
 import sys
 import argparse
 import json
+from datasets import load_dataset
 
+path_chunk_en = "/home/duytran/Downloads/output_ds/vast_2m_chunk_en"
+vi_dataset_pạth = "/home/duytran/Downloads/output_ds/vast2M_vi.json"
+output_dir = "/home/duytran/Downloads/output_ds/vast_2m_chunk_vi"
 
-sys.path.append(os.getcwd())
-from vividbot.data.processor.upload_hf import Uploader
-
-uploader = Uploader()
-uploader.upload_file(
-    file_path="/home/duytran/Downloads/output_video/error/error_shard_1.json",
-    repo_id="Vividbot/vast2m_vi",
-    path_in_repo=f"error/error_shard_1.json",
-    repo_type="dataset",
-    overwrite=True,
-)
+vi_data = load_dataset("json", data_files=vi_dataset_pạth)
+chunk_list_file = os.listdir(path_chunk_en)
+for file in chunk_list_file:
+    name_file = file.split(".")[0]
+    chunk_data_en = load_dataset("json", data_files=f"{path_chunk_en}/{file}")
+    chunk_data_vi = vi_data["train"].filter(lambda x: x["id"] in chunk_data_en["train"]["clip_id"], num_proc=16)
+    chunk_data_vi.to_json(f"{output_dir}/{name_file}.json")

@@ -49,7 +49,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "-name-out",
         type=str,
-        default="vast2m-vi.json",
+        default=None,
         help="Name of output after processing.",
     )
 
@@ -326,7 +326,7 @@ def divide_dataset(args: argparse.Namespace, executor: Executor):
         if args.name_out is None
         else args.name_out
     )
-    executor.divide_dataset(num_shards=args.num_shards, name_file=name_file_out)
+    executor.divide_shard_json()
     if args.upload_to_hub:
         uploader.upload_file(
             file_path=f"{args.output_dir}/{name_file_out}",
