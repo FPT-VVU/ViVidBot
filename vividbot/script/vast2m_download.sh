@@ -1,5 +1,5 @@
 python3 vividbot/data/task/vast2M.py --task "download" \
-                                    --file-path "/root/workspace/ViVidBot/chunks" \
+                                    --file-path "/root/workspace/chunks" \
                                     --batch-size 100 \
                                     --repo-id "Vividbot/vast2m_vi" \
                                     --upload-to-hub \
