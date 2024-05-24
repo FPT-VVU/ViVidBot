@@ -24,7 +24,7 @@ class YoutubeDownloader(BaseProcessor):
 
     def process(self, url_id: str, start: str, end: str, path: str):
         if not os.path.exists(path):
-            os.makedirs(path)
+            os.makedirs(path, exist_ok=True)
 
         url_yt = "https://www.youtube.com/watch?v=" + url_id
 
