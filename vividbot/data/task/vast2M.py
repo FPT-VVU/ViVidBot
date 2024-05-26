@@ -199,7 +199,7 @@ def generate(args: argparse.Namespace, executor: Executor):
     )
     if args.upload_to_hub:
         uploader.upload_file(
-            file_path=f"{args.output_dir}/{name_file_out}",
+            file_path=f"{args.output_dir}/{name_file_out + ".json"}",
             repo_id=args.repo_id,
             path_in_repo=f"{name_file_out}",
             repo_type="dataset",
@@ -239,7 +239,7 @@ def download(args: argparse.Namespace, executor: Executor):
             "subtitle",
             "vast_cap",
         ],
-        name_out=f"error/error_{name}.json",
+        name_out=f"error/error_{name}",
         fn_kwargs={"path": path_out_chunks},
     )
 
@@ -279,7 +279,7 @@ def rename_column(args: argparse.Namespace, executor: Executor):
     )
     if args.upload_to_hub:
         uploader.upload_file(
-            file_path=f"{args.output_dir}/{name_file_out}",
+            file_path=f"{args.output_dir}/{name_file_out + ".json"}",
             repo_id=args.repo_id,
             path_in_repo=f"{name_file_out}",
             repo_type="dataset",
@@ -308,7 +308,7 @@ def remove_sample(args: argparse.Namespace, executor: Executor):
     executor.remove_sample(error_list=error_list, name_file=name_file_out)
     if args.upload_to_hub:
         uploader.upload_file(
-            file_path=f"{args.output_dir}/{name_file_out}",
+            file_path=f"{args.output_dir}/{name_file_out + ".json"}",
             repo_id=args.repo_id,
             path_in_repo=f"{name_file_out}",
             repo_type="dataset",
@@ -329,7 +329,7 @@ def divide_dataset(args: argparse.Namespace, executor: Executor):
     executor.divide_shard_json()
     if args.upload_to_hub:
         uploader.upload_file(
-            file_path=f"{args.output_dir}/{name_file_out}",
+            file_path=f"{args.output_dir}/{name_file_out + ".json"}",
             repo_id=args.repo_id,
             path_in_repo=f"{name_file_out}",
             repo_type="dataset",

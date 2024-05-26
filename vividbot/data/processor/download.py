@@ -20,6 +20,7 @@ class YoutubeDownloader(BaseProcessor):
             "fixup": "never",
             "no_warnings": True,
             "force_keyframes_at_cuts": True,
+            "downloader": "aria2c"
         }
 
     def process(self, url_id: str, start: str, end: str, path: str):
