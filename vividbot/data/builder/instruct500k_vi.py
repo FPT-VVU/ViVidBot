@@ -8,32 +8,35 @@ fs = HfFileSystem()
 
 
 _CITATION = """
-
 """
 _DESCRIPTION = """
-
 """
 _HOMEPAGE = "https://github.com/FPT-VVU/ViVidBot"
-_REPO_URL = "https://huggingface.co/datasets/Vividbot/instruct500k_vi"
+_REPO_ID = "datasets/Vividbot/instruct500k_vi"
+_REPO_URL = f"https://huggingface.co/{_REPO_ID}/resolve/main"
 _URLS = {
     "meta": f"{_REPO_URL}/instruct500k_vi.json",
-    "image": f"{_REPO_URL}/images" + "{shard}.zip",
+    "image": f"{_REPO_URL}/images/" + "{shard}.zip",
 }
 
-_CONFIGS = [
-    os.path.basename(file_name).split(".")[0]
-    for file_name in fs.listdir(_REPO_URL + "/images", detail=False)
-    if file_name.endswith(".zip")
-]
+_CONFIGS = ["all"]
+if fs.exists(_REPO_ID + "/images"):
+    _CONFIGS.extend([
+        os.path.basename(file_name).split(".")[0]
+        for file_name in fs.listdir(_REPO_ID + "/images", detail=False)
+        if file_name.endswith(".zip")
+    ])
 
 class Instruct500k_ViConfig(datasets.BuilderConfig):
-    """BuilderConfig for Vast2M_Vi."""
+    """BuilderConfig for Instruct500k_ViConfig."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, name, **kwargs):
         """
+        :param name:    Name of subset.
         :param kwargs:  Arguments.
         """
         super().__init__(
+            name=name,
             version=datasets.Version("1.0.0"),
             description=_DESCRIPTION,
             **kwargs,
@@ -41,18 +44,15 @@ class Instruct500k_ViConfig(datasets.BuilderConfig):
 
 
 class Instruck500k_Vi(datasets.GeneratorBasedBuilder):
-    """Vast2M Vi dataset."""
-
-    BUILDER_CONFIGS = Instruct500k_ViConfig()
+    """Instruct500k Vi dataset."""
+    BUILDER_CONFIGS = [Instruct500k_ViConfig(name) for name in _CONFIGS]
 
     def _info(self) -> datasets.DatasetInfo:
         features = datasets.Features(
             {
                 "id": datasets.Value("string"),
                 "image": datasets.Value("binary"),
-                "conversations": datasets.Value(
-                    "dict",
-                ),
+                "conversations": [{'from': datasets.Value("string"), 'value': datasets.Value("string")}],
             }
         )
 
@@ -71,6 +71,7 @@ class Instruck500k_Vi(datasets.GeneratorBasedBuilder):
         :param dl_manager:  Download manager.
         :return:            Splits.
         """
+        config_names = _CONFIGS[1:] if self.config.name == "all" else [self.config.name]
 
         metadata_paths = dl_manager.download(_URLS["meta"])
         dataset = datasets.load_dataset(
@@ -91,21 +92,22 @@ class Instruck500k_Vi(datasets.GeneratorBasedBuilder):
         }
 
         image_dirs = dl_manager.download_and_extract(
-            [_URLS["image"].format(shard=shard) for shard in _CONFIGS]
+            [_URLS["image"].format(shard=shard) for shard in config_names]
         )
         image_dict = {
-            shard: visual_dir
-            for shard, visual_dir in zip(_CONFIGS, image_dirs)
+            shard: image_dir
+            for shard, image_dir in zip(config_names, image_dirs)
         }
 
         return [
             datasets.SplitGenerator(
+                name=name,
                 gen_kwargs={
                     "split": split,
                     "image_dict": image_dict,
                 },
             )
-            for split in split_dict.items()
+            for name, split in split_dict.items()
         ]
 
     def _generate_examples(
@@ -116,20 +118,18 @@ class Instruck500k_Vi(datasets.GeneratorBasedBuilder):
         """
         Generate examples.
         :param split:                   Split.
-        :param visual_dict:             Paths to directory containing visual files.
-        :param audio_dict:              Paths to directory containing audio files.
-        :param transcript_dict:         Paths to directory containing transcripts.
+        :param image_dict:              Paths to directory containing image files.
         :return:                        Example.
         """
         for i, sample in enumerate(split):
-            shard = sample["image"].split("/")[-1].split(".")[0]
+            shard = sample["image"].split("/")[0]
             image_path = os.path.join(
-                image_dict[shard], sample["image"]
+                image_dict[shard], shard, sample["image"].split("/")[1]
             )
 
             yield i, {
                 "id": sample["id"],
-                "video": self.__get_binary_data(image_path),
+                "image": self.__get_binary_data(image_path),
                 "conversations": sample["conversations"],
             }
 
