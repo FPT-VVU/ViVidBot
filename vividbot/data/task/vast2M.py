@@ -176,7 +176,7 @@ def _download(batch: dict, path: str):
 
 def generate(args: argparse.Namespace, executor: Executor):
     name_file_out = (
-        os.path.basename(executor.file_path).split(".")[0]
+        os.path.basename(executor.file_path)
         if args.name_out is None
         else args.name_out
     )
@@ -199,7 +199,7 @@ def generate(args: argparse.Namespace, executor: Executor):
     )
     if args.upload_to_hub:
         uploader.upload_file(
-            file_path=f"{args.output_dir}/{name_file_out + ".json"}",
+            file_path=f"{args.output_dir}/{name_file_out}",
             repo_id=args.repo_id,
             path_in_repo=f"{name_file_out}",
             repo_type="dataset",
@@ -279,7 +279,7 @@ def rename_column(args: argparse.Namespace, executor: Executor):
     )
     if args.upload_to_hub:
         uploader.upload_file(
-            file_path=f"{args.output_dir}/{name_file_out + ".json"}",
+            file_path=f"{args.output_dir}/{name_file_out}",
             repo_id=args.repo_id,
             path_in_repo=f"{name_file_out}",
             repo_type="dataset",
@@ -308,7 +308,7 @@ def remove_sample(args: argparse.Namespace, executor: Executor):
     executor.remove_sample(error_list=error_list, name_file=name_file_out)
     if args.upload_to_hub:
         uploader.upload_file(
-            file_path=f"{args.output_dir}/{name_file_out + ".json"}",
+            file_path=f"{args.output_dir}/{name_file_out}",
             repo_id=args.repo_id,
             path_in_repo=f"{name_file_out}",
             repo_type="dataset",
@@ -329,7 +329,7 @@ def divide_dataset(args: argparse.Namespace, executor: Executor):
     executor.divide_shard_json()
     if args.upload_to_hub:
         uploader.upload_file(
-            file_path=f"{args.output_dir}/{name_file_out + ".json"}",
+            file_path=f"{args.output_dir}/{name_file_out}",
             repo_id=args.repo_id,
             path_in_repo=f"{name_file_out}",
             repo_type="dataset",

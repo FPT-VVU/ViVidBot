@@ -146,7 +146,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-question_list = QuestionSelection("vividbot/data/stuff/questions.txt")
+question_list = QuestionSelection("vividbot/data/stuff/questions_img.txt", tags="<image>")
 translator = GGTranslator()
 uploader = Uploader()
 
@@ -159,7 +159,7 @@ def _translate(batch):
     return batch
 def translate(args: argparse.Namespace, executor: Executor):
     name_file_out = (
-        os.path.basename(executor.file_path).split(".")[0]
+        os.path.basename(executor.file_path)
         if args.name_out is None
         else args.name_out
     )
@@ -173,7 +173,7 @@ def translate(args: argparse.Namespace, executor: Executor):
     )
     if args.upload_to_hub:
         uploader.upload_file(
-            file_path=f"{args.output_dir}/{name_file_out + ".json"}",
+            file_path=f"{args.output_dir}/{name_file_out}",
             repo_id=args.repo_id,
             path_in_repo=f"{name_file_out}",
             repo_type="dataset",
@@ -202,7 +202,7 @@ def rename_column(args: argparse.Namespace, executor: Executor):
     )
     if args.upload_to_hub:
         uploader.upload_file(
-            file_path=f"{args.output_dir}/{name_file_out + ".json"}",
+            file_path=f"{args.output_dir}/{name_file_out}",
             repo_id=args.repo_id,
             path_in_repo=f"{name_file_out}",
             repo_type="dataset",
@@ -230,7 +230,7 @@ def remove_sample(args: argparse.Namespace, executor: Executor):
     executor.remove_sample(error_list=error_list, name_file=name_file_out)
     if args.upload_to_hub:
         uploader.upload_file(
-            file_path=f"{args.output_dir}/{name_file_out + ".json"}",
+            file_path=f"{args.output_dir}/{name_file_out}",
             repo_id=args.repo_id,
             path_in_repo=f"{name_file_out}",
             repo_type="dataset",
@@ -243,14 +243,14 @@ def remove_sample(args: argparse.Namespace, executor: Executor):
 
 def divide_dataset(args: argparse.Namespace, executor: Executor):
     name_file_out = (
-        os.path.basename(executor.file_path).split(".")[0]
+        os.path.basename(executor.file_path)
         if args.name_out is None
         else args.name_out
     )
     executor.divide_shard_json()
     if args.upload_to_hub:
         uploader.upload_file(
-            file_path=f"{args.output_dir}/{name_file_out + ".json"}",
+            file_path=f"{args.output_dir}/{name_file_out}",
             repo_id=args.repo_id,
             path_in_repo=f"{name_file_out}",
             repo_type="dataset",
@@ -260,6 +260,8 @@ def divide_dataset(args: argparse.Namespace, executor: Executor):
         os.remove(args.file_path)
 
     return
+
+
 
 def main(args: argparse.Namespace):
     support_tasks = [
@@ -283,7 +285,6 @@ def main(args: argparse.Namespace):
             os.mkdir(args.output_dir)
         except Exception as e:
             print(e)
-
     if os.path.isdir(args.file_path):
         for json_file in sorted(
             os.listdir(args.file_path), key=lambda x: int(x.split(".")[0].split("_")[1])
@@ -319,6 +320,7 @@ def main(args: argparse.Namespace):
             remove_sample(args=args, executor=executor)
         if args.task == "divide dataset":
             divide_dataset(args=args, executor=executor)
+    
     
 if __name__ == "__main__":
     main(parse_args())

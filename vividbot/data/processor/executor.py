@@ -73,23 +73,23 @@ class Executor(BaseProcessor):
         for old_name, new_name in zip(list_old_name, list_new_name):
             dataset = dataset.rename_column(old_name, new_name)
         dataset.to_json(
-            self.output_dir + "/" + name_file + ".json",
+            self.output_dir + "/" + name_file,
             orient="records",
             lines=True,
             force_ascii=False,
         )
-        print(f"Save to {self.output_dir}/{name_file + ".json"}")
+        print(f"Save to {self.output_dir}/{name_file}")
 
     def remove_sample(self, error_list: list, name_file: str):
         dataset = self.load_dataset()
         dataset = dataset.filter(lambda x: x["id"] not in error_list)
         dataset.to_json(
-            self.output_dir + "/" + name_file + ".json",
+            self.output_dir + "/" + name_file,
             orient="records",
             lines=True,
             force_ascii=False,
         )
-        print(f"Save to {self.output_dir}/{name_file + ".json"}")
+        print(f"Save to {self.output_dir}/{name_file}")
 
     def save(self, name_file: str, save: bool) -> None:
         if (
@@ -107,7 +107,7 @@ class Executor(BaseProcessor):
                 shutil.rmtree(f"{self.cache_dir}/temp")
                 shutil.rmtree(f"{self.cache_dir}/result")
                 ds.to_json(
-                    self.output_dir + "/" + name_file + ".json",
+                    self.output_dir + "/" + name_file,
                     orient="records",
                     lines=True,
                     force_ascii=False,
