@@ -1,7 +1,7 @@
 model_name_or_path: vinai/PhoGPT-4B-Chat
-video_data_path: /content/shard_0_new.json
+video_data_path: shard_0_new.json
 video_folder: /content/video/shard_0
-output_dir: /content/model/output
+output_dir: model/output
 # experiment name
 project_name: valley
 run_name: valley_stage1
