@@ -122,7 +122,7 @@ class HybridDataset(Dataset):
                         '/'+video_file_source
                 else:
                     video_folder = self.multimodal_cfg['video_folder'] + \
-                        '/'+'webvid'
+                        '/'
                 video = load_video(video_folder+'/' + video_file)
                 # print(video.shape)
                 video = video.permute(1, 0, 2, 3)
