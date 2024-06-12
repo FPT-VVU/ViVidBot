@@ -13,7 +13,9 @@ from valley.util.config import *
 from valley.util.data_util import preprocess, preprocess_multimodal_multiimage, load_video
 import copy
 import random
-
+from huggingface_hub import HfFileSystem
+import zipfile
+import shutil
 class HybridDataset(Dataset):
     """Dataset for supervised fine-tuning."""
 
@@ -54,6 +56,7 @@ class HybridDataset(Dataset):
         random.shuffle(self.list_data_dict)
         self.multimodal_cfg = multimodal_cfg
         self.header_mode = multimodal_cfg['conv_mode']
+        self.fs = HfFileSystem()
 
 
     def __len__(self):
@@ -123,6 +126,17 @@ class HybridDataset(Dataset):
                 else:
                     video_folder = self.multimodal_cfg['video_folder'] + \
                         '/'
+                video_path = video_folder+'/' + video_file
+            
+                if len(os.listdir(video_folder)) >= 10:
+                    # delete all folder in video_folder
+                    for dir in os.listdir(video_folder):
+                        shutil.rmtree(video_folder+"/"+dir)
+                if not os.path.exist(video_path):
+                    hf_path = "datasets/Vividbot/vast2m_vi" + video_path.split("/")[-2] + ".zip"
+                    zip_folder = self.fs.open(hf_path)
+                    with zipfile.ZipFile(zip_folder, 'r') as zip_ref:
+                        zip_ref.extractall(video_path.split("/")[-2])
                 video = load_video(video_folder+'/' + video_file)
                 # print(video.shape)
                 video = video.permute(1, 0, 2, 3)
