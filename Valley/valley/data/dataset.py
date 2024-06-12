@@ -137,7 +137,7 @@ class HybridDataset(Dataset):
                     zip_folder = self.fs.open(hf_path)
                     with zipfile.ZipFile(zip_folder, 'r') as zip_ref:
                         zip_ref.extractall(video_path.split("/")[-2])
-                video = load_video(video_folder+'/' + video_file)
+                video = load_video(video_path)
                 # print(video.shape)
                 video = video.permute(1, 0, 2, 3)
                 # FIXME: 14 is hardcoded patch size
