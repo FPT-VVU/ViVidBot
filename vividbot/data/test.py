@@ -7,7 +7,7 @@ sys.path.append(os.getcwd())
 from vividbot.data.processor.upload_hf import Uploader
 
 uploader = Uploader()
-path = "/home/duytran/Downloads/output_ds/vast_2m_final.json"
+path = "/home/duytran/Downloads/output_ds/vast_2m_final_all.json"
 
 # uploader.upload_dir(dir_path=path, 
 #                     repo_id="Vividbot/vast2m_vi", 
@@ -16,7 +16,7 @@ path = "/home/duytran/Downloads/output_ds/vast_2m_final.json"
 
 uploader.upload_file(file_path=path,
                      repo_id= "Vividbot/vast2m_vi",
-                     path_in_repo= "vast2m_vi.json",
+                     path_in_repo= "vast2m_vi_all.json",
                      repo_type= "dataset",
                      overwrite= True)
 

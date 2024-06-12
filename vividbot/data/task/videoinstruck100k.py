@@ -232,7 +232,7 @@ def download(args: argparse.Namespace, executor: Executor):
             "video",
             "conversations",
         ],
-        name_out=f"error/error_{name}",
+        name_out=f"error/error_{name}.json",
         fn_kwargs={"path": path_out_chunks},
     )
 
