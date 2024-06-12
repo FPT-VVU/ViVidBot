@@ -176,7 +176,7 @@ def _download(batch: dict, path: str):
 
 def generate(args: argparse.Namespace, executor: Executor):
     name_file_out = (
-        os.path.basename(executor.file_path).split(".")[0]
+        os.path.basename(executor.file_path)
         if args.name_out is None
         else args.name_out
     )
@@ -239,7 +239,7 @@ def download(args: argparse.Namespace, executor: Executor):
             "subtitle",
             "vast_cap",
         ],
-        name_out=f"error/error_{name}.json",
+        name_out=f"error/error_{name}",
         fn_kwargs={"path": path_out_chunks},
     )
 

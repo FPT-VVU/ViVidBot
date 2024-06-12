@@ -137,6 +137,7 @@ class Executor(BaseProcessor):
                 lines=True,
                 force_ascii=False,
             )
+            print(f"save to {self.output_dir}/shard_{shard_idx}.json")
 
     def process(
         self,
@@ -144,7 +145,7 @@ class Executor(BaseProcessor):
         task: str,
         batch_size: int = 1,
         num_proc: int = 1,
-        name_out: str = "result.json",
+        name_out: str = "result",
         save: bool = True,
         remove_columns: list = None,
         fn_kwargs: dict = None,

@@ -1,0 +1,211 @@
+{
+    "os": "Linux-5.4.0-172-generic-x86_64-with-glibc2.35",
+    "python": "3.10.13",
+    "heartbeatAt": "2024-06-02T10:06:48.972721",
+    "startedAt": "2024-06-02T10:06:48.115733",
+    "docker": null,
+    "cuda": null,
+    "args": [
+        "--conf",
+        "valley/configs/experiment/valley_stage1.yaml"
+    ],
+    "state": "running",
+    "program": "/home/ViVidBot/Valley/valley/train/train.py",
+    "codePathLocal": "valley/train/train.py",
+    "codePath": "valley/train/train.py",
+    "git": {
+        "remote": "https://github.com/RupertLuo/Valley.git",
+        "commit": "ffd7c452270932d76e5159b923243a49f0af2c78"
+    },
+    "email": null,
+    "root": "/home/ViVidBot/Valley",
+    "host": "a1b16d6d3c68",
+    "username": "root",
+    "executable": "/opt/conda/bin/python",
+    "cpu_count": 16,
+    "cpu_count_logical": 32,
+    "cpu_freq": {
+        "current": 2.5217812499999996,
+        "min": 2200.0,
+        "max": 3400.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 2.192,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.196,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.199,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.193,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.194,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.189,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.196,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.194,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.359,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.618,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 3.778,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.253,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.645,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.827,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.934,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.693,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.197,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.198,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.199,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.199,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.198,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.196,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.189,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.199,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.471,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 3.793,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.825,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.74,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.47,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.626,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 2.751,
+            "min": 2200.0,
+            "max": 3400.0
+        },
+        {
+            "current": 3.786,
+            "min": 2200.0,
+            "max": 3400.0
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 437.0,
+            "used": 22.27090072631836
+        }
+    },
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce RTX 4090",
+            "memory_total": 25757220864
+        }
+    ],
+    "memory": {
+        "total": 31.318260192871094
+    }
+}
