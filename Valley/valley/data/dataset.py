@@ -132,10 +132,11 @@ class HybridDataset(Dataset):
                     # delete all folder in video_folder
                     for dir in os.listdir(video_folder):
                         shutil.rmtree(video_folder+"/"+dir)
-                if not os.path.exist(video_path):
-                    hf_path = "datasets/Vividbot/vast2m_vi" + video_path.split("/")[-2] + ".zip"
-                    zip_folder = self.fs.open(hf_path)
-                    with zipfile.ZipFile(zip_folder, 'r') as zip_ref:
+                if not os.path.exists(video_path):
+                    # hf_path = "datasets/Vividbot/vast2m_vi/video/" + video_path.split("/")[-2] + ".zip"
+                    # zip_folder = self.fs.open(hf_path)
+                    hf_hub_download(repo_id="Vividbot/vast2m_vi", filename="video/"+ video_path.split("/")[-2] + ".zip", repo_type="dataset", local_dir=video_folder)
+                    with zipfile.ZipFile(video_folder + "video/" + video_path.split("/")[-2] + ".zip", 'r') as zip_ref:
                         zip_ref.extractall(video_path.split("/")[-2])
                 video = load_video(video_path)
                 # print(video.shape)
