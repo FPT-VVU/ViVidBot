@@ -99,6 +99,8 @@ def train(args):
     parser = transformers.HfArgumentParser((ModelArguments, DataArguments, TrainingArguments))
     model_args, data_args, training_args = parser.parse_yaml_file(args.conf,allow_extra_keys=True)
     training_args.learning_rate = float(training_args.learning_rate)
+    training_args.use_legacy_prediction_loop = True
+    
     os.environ['WANDB_PROJECT'] = data_args.project_name
 
     model = ValleyLlamaForCausalLM.from_pretrained(
@@ -197,7 +199,7 @@ def train(args):
         callback_class =  TrainerCallback
 
     
-    trainer = SequentialTrainer(model=model,
+    trainer = Trainer(model=model,
                     tokenizer=tokenizer,
                     args=training_args,
                     callbacks=[callback_class],
