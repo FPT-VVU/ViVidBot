@@ -24,6 +24,7 @@ class SequentialTrainer(Trainer):
         super().__init__(*args, **kwargs)
     
     def _get_train_sampler(self) -> Optional[torch.utils.data.Sampler]:
+        print('get train')
         return SequentialSampler(self.train_dataset)
 
 os.environ['NCCL_DEBUG']=''

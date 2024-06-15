@@ -489,5 +489,6 @@ class ValleyTrainer(Seq2SeqTrainer):
                 writer.write(f"{line}\n")
                 
     def _get_train_sampler(self) -> Optional[torch.utils.data.Sampler]:
+        print('get train sampler')
         return SequentialSampler(self.train_dataset)
     
