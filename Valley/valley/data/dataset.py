@@ -16,6 +16,7 @@ import random
 from huggingface_hub import HfFileSystem
 import zipfile
 import shutil
+from huggingface_hub import hf_hub_download
 class HybridDataset(Dataset):
     """Dataset for supervised fine-tuning."""
 
@@ -128,6 +129,7 @@ class HybridDataset(Dataset):
                         '/'
                 video_path = video_folder+'/' + video_file
             
+                
                 if len(os.listdir(video_folder)) >= 10:
                     # delete all folder in video_folder
                     for dir in os.listdir(video_folder):
