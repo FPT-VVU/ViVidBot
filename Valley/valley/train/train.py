@@ -6,8 +6,7 @@ import pathlib
 from peft import get_peft_model, LoraConfig, TaskType
 import torch
 import transformers
-from transformers import TrainerCallback
-from valley.train.sequentialTrainner import Trainer
+from transformers import Trainer, TrainerCallback
 from valley.train.trainner import LLMCallback
 from valley.model.valley_model import ValleyLlamaForCausalLM
 from valley.util.data_util import smart_tokenizer_and_embedding_resize, safe_save_model_for_hf_trainer
@@ -19,7 +18,7 @@ from typing import Optional
 import os
 from valley.utils import print_trainable_params
 from torch.utils.data import SequentialSampler
-
+DATA_SAMPLERS = [SequentialSampler]
 class SequentialTrainer(Trainer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -198,7 +197,7 @@ def train(args):
         callback_class =  TrainerCallback
 
     
-    trainer = Trainer(model=model,
+    trainer = SequentialTrainer(model=model,
                     tokenizer=tokenizer,
                     args=training_args,
                     callbacks=[callback_class],
