@@ -38,7 +38,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Un
 
 # Integrations must be imported before ML frameworks:
 # isort: off
-from .integrations import (
+from transformers.integrations import (
     get_reporting_integration_callbacks,
     hp_params,
 )
