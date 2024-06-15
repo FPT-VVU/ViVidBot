@@ -17,8 +17,14 @@ from dataclasses import dataclass, field
 from typing import Optional
 import os
 from valley.utils import print_trainable_params
+from torch.utils.data import SequentialSampler
 
-
+class SequentialTrainer(Trainer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+    
+    def _get_train_sampler(self) -> Optional[torch.utils.data.Sampler]:
+        return SequentialSampler(self.train_dataset)
 
 os.environ['NCCL_DEBUG']=''
 @dataclass
@@ -191,7 +197,7 @@ def train(args):
         callback_class =  TrainerCallback
 
     
-    trainer = Trainer(model=model,
+    trainer = SequentialTrainer(model=model,
                     tokenizer=tokenizer,
                     args=training_args,
                     callbacks=[callback_class],
