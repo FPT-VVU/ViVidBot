@@ -6,7 +6,8 @@ import pathlib
 from peft import get_peft_model, LoraConfig, TaskType
 import torch
 import transformers
-from transformers import Trainer, TrainerCallback
+from transformers import TrainerCallback
+from sequentialTrainner import Trainer
 from valley.train.trainner import LLMCallback
 from valley.model.valley_model import ValleyLlamaForCausalLM
 from valley.util.data_util import smart_tokenizer_and_embedding_resize, safe_save_model_for_hf_trainer
@@ -99,7 +100,6 @@ def train(args):
     parser = transformers.HfArgumentParser((ModelArguments, DataArguments, TrainingArguments))
     model_args, data_args, training_args = parser.parse_yaml_file(args.conf,allow_extra_keys=True)
     training_args.learning_rate = float(training_args.learning_rate)
-    training_args.use_legacy_prediction_loop = True
     
     os.environ['WANDB_PROJECT'] = data_args.project_name
 
