@@ -26,6 +26,9 @@ from valley.util.data_util import  KeywordsStoppingCriteria
 from transformers.data.data_collator import DataCollator
 import evaluate
 logger = get_logger("Trainer")
+from torch.utils.data import SequentialSampler
+
+
 
 class LLMCallback(TrainerCallback):
     "A callback that output infomation and do some operators"
@@ -484,3 +487,7 @@ class ValleyTrainer(Seq2SeqTrainer):
         with open(output_file, "a") as writer:
             for line in json_str_arr:
                 writer.write(f"{line}\n")
+                
+    def _get_train_sampler(self) -> Optional[torch.utils.data.Sampler]:
+        return SequentialSampler(self.train_dataset)
+    
