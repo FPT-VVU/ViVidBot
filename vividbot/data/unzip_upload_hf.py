@@ -2,7 +2,7 @@ from huggingface_hub import hf_hub_download
 import os
 import sys
 import shutil
-
+import tqdm
 sys.path.append(os.getcwd())
 from vividbot.data.processor.upload_hf import Uploader
 
@@ -14,7 +14,9 @@ end = 499
 
 path_out = "/home/duytran/Downloads/output_video"
 
-for i in range(start, end + 1):
+for i in tqdm.tqdm(range(start, end + 1)):
+    if not os.path.exists(path_out+"/video"):
+        os.mkdir(path_out+"/video")
     if len(os.listdir(path_out+"/video")) == 10:
         # remove all files
         shutil.rmtree(path_out+"/video")
@@ -31,7 +33,7 @@ for i in range(start, end + 1):
             os.system(unzip_command)
         uploader.upload_dir(dir_path=path_out+f"/video/{file_name.split('.')[0]}", 
                         repo_id=repo_id, 
-                        path_in_repo="video2", 
+                        path_in_repo=f"video2/{file_name.split('.')[0]}", 
                         repo_type="dataset", overwrite=True)
         print("Have uploaded", file_name)
 
