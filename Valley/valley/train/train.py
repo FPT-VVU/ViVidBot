@@ -87,6 +87,7 @@ class TrainingArguments(transformers.Seq2SeqTrainingArguments):
     deepspeed: str = field(default=None)
     output_dir: str = field(default='./checkpoints')
     lora:str = field(default=False)
+    dataloader_num_workers:int = field(default=8)
 
 def train(args):
     
