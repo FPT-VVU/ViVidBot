@@ -10,7 +10,7 @@ import transformers
 from typing import Dict, Sequence
 from dataclasses import dataclass
 from valley.util.config import *
-from valley.util.data_util import preprocess, preprocess_multimodal_multiimage, load_video
+from valley.util.data_util import preprocess, preprocess_multimodal_multiimage, load_video, load_video_hf
 import copy
 import random
 from huggingface_hub import HfFileSystem
@@ -57,7 +57,6 @@ class HybridDataset(Dataset):
         random.shuffle(self.list_data_dict)
         self.multimodal_cfg = multimodal_cfg
         self.header_mode = multimodal_cfg['conv_mode']
-        self.fs = HfFileSystem()
 
 
     def __len__(self):
@@ -127,20 +126,11 @@ class HybridDataset(Dataset):
                 else:
                     video_folder = self.multimodal_cfg['video_folder'] + \
                         '/'
-                video_path = video_folder+'/' + video_file
-            
-                
-                if len(os.listdir(video_folder)) >= 10:
-                    # delete all folder in video_folder
-                    for dir in os.listdir(video_folder):
-                        shutil.rmtree(video_folder+"/"+dir)
-                if not os.path.exists(video_path):
-                    # hf_path = "datasets/Vividbot/vast2m_vi/video/" + video_path.split("/")[-2] + ".zip"
-                    # zip_folder = self.fs.open(hf_path)
-                    hf_hub_download(repo_id="Vividbot/vast2m_vi", filename="video/"+ video_path.split("/")[-2] + ".zip", repo_type="dataset", local_dir=video_folder)
-                    with zipfile.ZipFile(video_folder + "video/" + video_path.split("/")[-2] + ".zip", 'r') as zip_ref:
-                        zip_ref.extractall(video_path.split("/")[-2])
-                video = load_video(video_path)
+                video_path = video_folder+ '/' + video_file
+                if os.path.exists(video_path):
+                    video = load_video(video_path)
+                else:
+                    video = load_video_hf(repo_id="Vividbot/vast2m_vi", hf_video_path=video_file)
                 # print(video.shape)
                 video = video.permute(1, 0, 2, 3)
                 # FIXME: 14 is hardcoded patch size
