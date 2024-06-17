@@ -1,0 +1,13 @@
+transformers 
+accelerate 
+deepspeed 
+einops 
+peft 
+datasets 
+evaluate 
+decord 
+scikit-image 
+prettytable 
+opencv-python-headless 
+wandb
+av

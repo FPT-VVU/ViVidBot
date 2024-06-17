@@ -354,7 +354,8 @@ def load_video_hf(repo_id,
     video = zip_ref.read(hf_video_path)
 
     if frame_mode == 'fixed':
-        video_reader, _ = extract_frames(video, fixed_frame_number)  # 8, height,width,3
+        video = extract_frames(video, fixed_frame_number)  # 8, height,width,3
+        video = torch.from_numpy(video)
         video = video.permute(3, 0, 1, 2)  # 3 x 8 x height x width
     elif frame_mode == 'fps':
             raise ValueError('Input folder is not support this frame mode')
