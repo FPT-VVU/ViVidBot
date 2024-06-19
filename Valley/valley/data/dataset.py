@@ -10,7 +10,7 @@ import transformers
 from typing import Dict, Sequence
 from dataclasses import dataclass
 from valley.util.config import *
-from valley.util.data_util import preprocess, preprocess_multimodal_multiimage, load_video, load_video_hf
+from valley.util.data_util import preprocess, preprocess_multimodal_multiimage, load_video, load_video_hf, load_image_hf
 import copy
 import random
 from huggingface_hub import HfFileSystem
@@ -91,7 +91,12 @@ class HybridDataset(Dataset):
                     image_folder = self.multimodal_cfg['image_folder']
                     if 'train2014' in image_folder:
                         image_file = 'COCO_train2014_'+image_file
-                    image = Image.open(os.path.join(image_folder, image_file))
+                    img_path = os.path.join(image_folder, image_file)
+                    if os.path.exists(img_path):
+                        image = Image.open(os.path.join(image_folder, image_file))
+                    else:
+                        image = load_image_hf(repo_id="Vividbot/instruct500k_vi", hf_image_path=image_file)
+
                     if self.multimodal_cfg['image_aspect_ratio'] == 'keep':
                         max_hw, min_hw = max(image.size), min(image.size)
                         aspect_ratio = max_hw / min_hw

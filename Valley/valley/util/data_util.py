@@ -374,3 +374,11 @@ def load_video_hf(repo_id,
     video = trans(video)
     return video
     
+def load_image_hf(repo_id, hf_image_path):
+    fs = HfFileSystem()
+    zip_path = f"datasets/{repo_id}/image/{hf_image_path.split('/')[0]}.zip"
+    zip_folder = fs.open(zip_path)
+    zip_ref = zipfile.ZipFile(zip_folder, 'r')
+    image = zip_ref.read(hf_image_path)
+    image = Image.open(io.BytesIO(image))
+    return image
