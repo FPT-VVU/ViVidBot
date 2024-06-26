@@ -167,9 +167,13 @@ def download_videos():
                                     "download_ranges": download_range_func(
                                         None, [(start, end)]
                                     ),
+                                    "fixup": "never",
+                                    "no_warnings": True,
+                                    "force_keyframes_at_cuts": True,
+                                    "downloader": "aria2c"
                                 }
                             ) as ydl2:
-                                resp = ydl2.download(
+                                ydl2.download(
                                     f"https://www.youtube.com/watch?v={video_id}",
                                 )
                         except DownloadError:
