@@ -1,4 +1,5 @@
 __pycache__
 .env
 
-videos/
+vivid_instruct_65k/data/metadata/
+vivid_instruct_65k/data/videos/
