@@ -3,7 +3,7 @@ import os
 import time
 from tqdm import tqdm
 from yt_dlp import YoutubeDL
-from yt_dlp.utils import download_range_func
+from yt_dlp.utils import download_range_func, DownloadError
 import google.generativeai as genai
 from dotenv import load_dotenv
 import datetime
@@ -154,29 +154,88 @@ def download_videos():
                     if not os.path.exists(
                         f"{BASE_DATA_PATH}/videos/shard_{shard_count}/{video_id}.{clip_count}.mp4"
                     ):
-                        print(
-                            f"Downloading clip {clip_count} of video {video_id} starting at {start} and ending at {end}..."
-                        )
-
-                        with YoutubeDL(
-                            params={
-                                "format": "best[ext=mp4]",
-                                "quiet": True,
-                                "outtmpl": f"{BASE_DATA_PATH}/videos/shard_{shard_count}/{video_id}.{clip_count}.mp4",
-                                "download_ranges": download_range_func(
-                                    None, [(start, end)]
-                                ),
-                            }
-                        ) as ydl2:
-                            ydl2.download(
-                                f"https://www.youtube.com/watch?v={video_id}",
+                        try:
+                            print(
+                                f"Downloading clip {clip_count} of video {video_id} starting at {start} and ending at {end}..."
                             )
+
+                            with YoutubeDL(
+                                params={
+                                    "format": "best[ext=mp4]",
+                                    "quiet": True,
+                                    "outtmpl": f"{BASE_DATA_PATH}/videos/shard_{shard_count}/{video_id}.{clip_count}.mp4",
+                                    "download_ranges": download_range_func(
+                                        None, [(start, end)]
+                                    ),
+                                }
+                            ) as ydl2:
+                                resp = ydl2.download(
+                                    f"https://www.youtube.com/watch?v={video_id}",
+                                )
+                        except DownloadError:
+                            with open(f"{BASE_DATA_PATH}/error_ids.txt", "a") as f:
+                                f.write(video_id + "\n")
 
                     start = end
                     random_durations_index += 1
                     clip_count += 1
                     total_clip_count += 1
+                    
+                    if random_durations_index >= len(RANDOM_DURATIONS):
+                        break
+    
+    try:
+        uploader = Uploader()
+        uploader.zip_and_upload_dir(
+            f"{BASE_DATA_PATH}/videos/shard_{shard_count}",
+            "Vividbot/vividbot_video",
+            f"videos/shard_{shard_count}.zip",
+            overwrite=True,
+        )
+        notifier.send(
+            body={
+                "embeds": [
+                    {
+                        "title": f"✅ ViVid Instruct 65k: Uploaded shard {shard_count}!",
+                        "description": f"Uploaded shard {shard_count} with {total_clip_count} clips at https://huggingface.co/datasets/Vividbot/vividbot_video.",
+                        "color": 2278494,
+                        "timestamp": datetime.datetime.now(
+                            timezone.utc
+                        ).isoformat(),
+                    }
+                ]
+            }
+        )
+        uploader.upload_file(
+            file_path=f"{BASE_DATA_PATH}/error_ids.txt",
+            repo_id="Vividbot/vividbot_video",
+            path_in_repo="error_ids.txt",
+            repo_type="dataset",
+            overwrite=True,
+        )
+    except Exception as e:
+        notifier.send(
+            body={
+                "embeds": [
+                    {
+                        "title": f"❌ ViVid Instruct 65k: Failed to upload shard {shard_count}!",
+                        "description": f"Failed to upload shard {shard_count} with {total_clip_count} clips at https://huggingface.co/datasets/Vividbot/vividbot_video.",
+                        "color": 16711680,
+                        "timestamp": datetime.datetime.now(
+                            timezone.utc
+                        ).isoformat(),
+                        "fields": [
+                            {
+                                "name": "Error",
+                                "value": str(e),
+                            }
+                        ],
+                    }
+                ]
+            }
+        )
 
+        raise e
 
 def generate_finetuning_data():
     print("Generating finetuning data...")
