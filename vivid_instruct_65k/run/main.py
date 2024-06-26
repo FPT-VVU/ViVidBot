@@ -1,14 +1,32 @@
 import json
 import os
 import time
+from tqdm import tqdm
 from yt_dlp import YoutubeDL
 from yt_dlp.utils import download_range_func
 import google.generativeai as genai
 from dotenv import load_dotenv
+import datetime
+from datetime import timezone
+import sys
+
+
+sys.path.append(os.getcwd())
+print(os.getcwd())
+# module_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../vivid_instruct_65k'))
+# if module_path not in sys.path:
+#     sys.path.append(module_path)
+
+from discord.discord import DiscordNotif
+from processor.upload_hf import Uploader
 
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 genai.configure(api_key=GOOGLE_API_KEY)
+
+notifier = DiscordNotif(
+    "https://discord.com/api/webhooks/1255505460040040508/n-QCTqNgp3RrsNc1hBRnXH4dfOejeH8iPTd8lqGevbSb_wAovD4xxv5ZVkVJBfVLF8vN"
+)
 
 BASE_DATA_PATH = "data"
 
@@ -27,14 +45,16 @@ DESCRIBE_VIDEO_PROMPT = "Describe only the visual content of the video without u
 GENERATE_QA_PROMPT = """Generate 5 different pairs of questions and answers based on the description of the video. The questions should be relevant to the video content and the answers should be correct. Also, diversify the types of questions and answers as much as possible.
 Remember to use Vietnamese language to generate the questions and answers.
 Some examples of questions:
-- What is the video about? What is the action at the second n?
+- What is the video about? What is the action at the second n-th?
 - What is the color of the object in the video?
 - What is the person in the video doing?
 - What is the object in the video?
 - What is the person in the video wearing?
 - What is the person in the video holding?
 - What is the person in the video saying?
-And more questions like that.
+- How does the person in the video look?
+- Where is the object in the video? What is the position of the object in the video?
+And more questions that can be asked about the video content.
 Question length and complexity should be varied.
 Return the questions and answers in the following format:
 [
@@ -49,23 +69,77 @@ Return the questions and answers in the following format:
 ]
 """
 
-SHARD_COUNT = -1
-TOTAL_CLIP_COUNT = 0
+
+
 
 def download_videos():
+    shard_count = -1
+    total_clip_count = 0
     random_durations_index = 0
 
-    for category in YOUTUBE_SEARCH_RESULTS.keys():
-        for video_id in YOUTUBE_SEARCH_RESULTS[category]:
+    for category in tqdm(YOUTUBE_SEARCH_RESULTS.keys()):
+        print(f"Downloading videos for category {category}...")
+        for video_id in tqdm(YOUTUBE_SEARCH_RESULTS[category]):
             if random_durations_index >= len(RANDOM_DURATIONS):
                 break
-            # increase SHARD_COUNT every 5000 clips
-            if TOTAL_CLIP_COUNT % 5000 == 0:
-                SHARD_COUNT += 1
-                os.makedirs(f"{BASE_DATA_PATH}/videos/shard_{SHARD_COUNT}", exist_ok=True)
-                
+            
+            # increase shard_count every 5000 clips
+            if total_clip_count % 5000 == 0:
+                if shard_count >= 0:
+                    try:
+                        uploader = Uploader()
+                        uploader.zip_and_upload_dir(
+                            f"{BASE_DATA_PATH}/videos/shard_{shard_count}",
+                            "Vividbot/vividbot_video",
+                            f"videos/shard_{shard_count}.zip",
+                            overwrite=True,
+                        )
+                        notifier.send(
+                            body={
+                                "embeds": [
+                                    {
+                                        "title": f"✅ ViVid Instruct 65k: Uploaded shard {shard_count}!",
+                                        "description": f"Uploaded shard {shard_count} with {total_clip_count} clips at https://huggingface.co/datasets/Vividbot/vividbot_video.",
+                                        "color": 2278494,
+                                        "timestamp": datetime.datetime.now(
+                                            timezone.utc
+                                        ).isoformat(),
+                                    }
+                                ]
+                            }
+                        )
+                    except Exception as e:
+                        notifier.send(
+                            body={
+                                "embeds": [
+                                    {
+                                        "title": f"❌ ViVid Instruct 65k: Failed to upload shard {shard_count}!",
+                                        "description": f"Failed to upload shard {shard_count} with {total_clip_count} clips at https://huggingface.co/datasets/Vividbot/vividbot_video.",
+                                        "color": 16711680,
+                                        "timestamp": datetime.datetime.now(
+                                            timezone.utc
+                                        ).isoformat(),
+                                        "fields": [
+                                            {
+                                                "name": "Error",
+                                                "value": str(e),
+                                            }
+                                        ],
+                                    }
+                                ]
+                            }
+                        )
+
+                        raise e
+
+                shard_count += 1
+                os.makedirs(
+                    f"{BASE_DATA_PATH}/videos/shard_{shard_count}",
+                    exist_ok=True,
+                )
+
             with YoutubeDL(params={"format": "best[ext=mp4]", "quiet": True}) as ydl:
-                # ydl.download(f"https://www.youtube.com/watch?v={video_id}")
+                print(f"Downloading video {video_id}...")
 
                 video_info = ydl.extract_info(
                     f"https://www.youtube.com/watch?v={video_id}", download=False
@@ -78,13 +152,17 @@ def download_videos():
                     end = start + RANDOM_DURATIONS[random_durations_index]
 
                     if not os.path.exists(
-                        f"{BASE_DATA_PATH}/videos/shard_{SHARD_COUNT}/{video_id}.{clip_count}.mp4"
+                        f"{BASE_DATA_PATH}/videos/shard_{shard_count}/{video_id}.{clip_count}.mp4"
                     ):
+                        print(
+                            f"Downloading clip {clip_count} of video {video_id} starting at {start} and ending at {end}..."
+                        )
+
                         with YoutubeDL(
                             params={
                                 "format": "best[ext=mp4]",
                                 "quiet": True,
-                                "outtmpl": f"{BASE_DATA_PATH}/videos/{video_id}.{clip_count}.%(ext)s",
+                                "outtmpl": f"{BASE_DATA_PATH}/videos/shard_{shard_count}/{video_id}.{clip_count}.mp4",
                                 "download_ranges": download_range_func(
                                     None, [(start, end)]
                                 ),
@@ -93,63 +171,144 @@ def download_videos():
                             ydl2.download(
                                 f"https://www.youtube.com/watch?v={video_id}",
                             )
-                            
-                            start = end
-                            random_durations_index += 1
-                            clip_count += 1
-                            TOTAL_CLIP_COUNT += 1
+
+                    start = end
+                    random_durations_index += 1
+                    clip_count += 1
+                    total_clip_count += 1
 
 
 def generate_finetuning_data():
-    videos = os.listdir(f"{BASE_DATA_PATH}/videos")
-    data_dict = {}
+    print("Generating finetuning data...")
+    shards = os.listdir(f"{BASE_DATA_PATH}/videos")
+    
+    for shard in tqdm(shards):
+        videos = os.listdir(f"{BASE_DATA_PATH}/videos/{shard}")
+        for video in tqdm(videos):
+            print(f"Uploading video {video} to Gemini...")
+            video_path = f"{BASE_DATA_PATH}/videos/{shard}/{video}"
+            video_file = genai.upload_file(path=video_path)
 
-    for video in videos:
-        video_path = f"{BASE_DATA_PATH}/videos/{video}"
-        video_file = genai.upload_file(path=video_path)
+            print(f'Generating finetuning data for video "{video}"...', end="")
+            while video_file.state.name == "PROCESSING":
+                print(".", end="")
+                time.sleep(10)
+                video_file = genai.get_file(video_file.name)
 
-        print(f'Generating finetuning data for video "{video}"...', end="")
-        while video_file.state.name == "PROCESSING":
-            print(".", end="")
-            time.sleep(10)
-            video_file = genai.get_file(video_file.name)
+            if video_file.state.name == "FAILED":
+                print(ValueError(video_file.state.name))
+                with open(f"{BASE_DATA_PATH}/error_ids.txt", "a") as f:
+                    f.write(video[:-4] + "\n")
+            elif video_file.state.name == "ACTIVE":
+                try:
+                    describer = genai.GenerativeModel(
+                        "models/gemini-1.5-flash",
+                        generation_config={
+                            "temperature": 0.1,
+                        },
+                    )
+                    describer_response = describer.generate_content(
+                        [video_file, DESCRIBE_VIDEO_PROMPT],
+                    )
 
-        if video_file.state.name == "FAILED":
-            print(ValueError(video_file.state.name))
-        elif video_file.state.name == "ACTIVE":
-            describer = genai.GenerativeModel(
-                "models/gemini-1.5-flash",
-                generation_config={
-                    "temperature": 0.1,
-                },
+                    qa_generator = genai.GenerativeModel(
+                        "gemini-1.5-flash",
+                        generation_config={
+                            "response_mime_type": "application/json",
+                            "temperature": 1,
+                        },
+                    )
+                    full_prompt = f"""{GENERATE_QA_PROMPT}
+
+VIDEO CONTENT: {describer_response.text.strip()}"""
+
+                    qa_generator_response = qa_generator.generate_content(full_prompt)
+                    qa_pairs = json.loads(qa_generator_response.text)
+                    conversations = []
+
+                    for qa in qa_pairs:
+                        conversations.append({"from": "gpt", "value": qa["question"]})
+                        conversations.append({"from": "human", "value": qa["answer"]})
+
+                    data = {
+                        "id": video[:-4],
+                        "video": f"{shard}/{video}",
+                        "description": describer_response.text.strip(),
+                        "conversations": conversations,
+                    }
+
+                    with open(f"{BASE_DATA_PATH}/metadata/{shard}.json", "a") as f:
+                        f.write(
+                            json.dumps(
+                                data,
+                                ensure_ascii=False,
+                            )
+                            + "\n"
+                        )
+
+                    print(f"Generated finetuning data for video {video}.")
+                except Exception as e:
+                    print(str(e))
+                    with open(f"{BASE_DATA_PATH}/error_ids.txt", "a") as f:
+                        f.write(video[:-4] + "\n")
+
+        try:
+            print(f"Uploading metadata for shard {shard} to Hugging Face...")
+
+            uploader = Uploader()
+            uploader.upload_file(
+                file_path=f"{BASE_DATA_PATH}/metadata/{shard}.json",
+                repo_id="Vividbot/vividbot_video",
+                path_in_repo=f"metadata/{shard}.json",
+                repo_type="dataset",
+                overwrite=True,
             )
-            describer_response = describer.generate_content(
-                [video_file, DESCRIBE_VIDEO_PROMPT],
+
+            notifier.send(
+                body={
+                    "embeds": [
+                        {
+                            "title": f"✅ ViVid Instruct 65k: Uploaded metadata for shard {shard}!",
+                            "description": f"Uploaded metadata for shard {shard} at https://huggingface.co/datasets/Vividbot/vividbot_video.",
+                            "color": 2278494,
+                            "timestamp": datetime.datetime.now(
+                                timezone.utc
+                            ).isoformat(),
+                        }
+                    ]
+                }
+            )
+        except Exception as e:
+            print(str(e))
+            notifier.send(
+                body={
+                    "embeds": [
+                        {
+                            "title": f"❌ ViVid Instruct 65k: Failed to upload metadata for shard {shard}!",
+                            "description": f"Failed to upload metadata for shard {shard} at https://huggingface.co/datasets/Vividbot/vividbot_video.",
+                            "color": 16711680,
+                            "timestamp": datetime.datetime.now(
+                                timezone.utc
+                            ).isoformat(),
+                            "fields": [
+                                {
+                                    "name": "Error",
+                                    "value": str(e),
+                                }
+                            ],
+                        }
+                    ]
+                }
             )
 
-            print(describer_response.text)
+            raise e
 
-            qa_generator = genai.GenerativeModel(
-                "gemini-1.5-flash",
-                generation_config={
-                    "response_mime_type": "application/json",
-                    "temperature": 1,
-                },
-            )
-            full_prompt = f"""{GENERATE_QA_PROMPT}
-
-VIDEO CONTENT: {describer_response.text}"""
-
-            qa_generator_response = qa_generator.generate_content(full_prompt)
-
-            data_dict[video] = {
-                "description": describer_response.text,
-                "qa_pairs": json.loads(qa_generator_response.text),
-            }
 
 def prepare():
     os.makedirs(f"{BASE_DATA_PATH}/videos", exist_ok=True)
-    
+    os.makedirs(f"{BASE_DATA_PATH}/metadata", exist_ok=True)
+
+
 def main():
     prepare()
     download_videos()
