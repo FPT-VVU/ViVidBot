@@ -10,8 +10,12 @@ from valley.data import video_transform
 import decord
 import os
 import numpy as np
+import av 
+import io
 from pathlib import Path
 from PIL import Image
+from huggingface_hub import HfFileSystem
+import zipfile
 
 
 def collate_wrapper(batch):
@@ -301,3 +305,80 @@ def load_video(
             video_frames, return_tensors='pt')['pixel_values']
         video = video.permute(1, 0, 2, 3)
     return video
+
+def extract_frames(video_bytes, num_frames=8):
+    # Create a memory-mapped file from the bytes
+    container = av.open(io.BytesIO(video_bytes))
+    
+    # Find the video stream
+    visual_stream = next(iter(container.streams.video), None)
+    if not visual_stream:
+        return None
+
+    # Extract video properties
+    total_frames = visual_stream.frames
+
+    # Calculate the interval to capture the frames
+    interval = max(total_frames // num_frames, 1)
+
+    # Initialize arrays to store frames
+    frames_array = []
+    frame_indices = set(range(0, total_frames, interval))  # Indices of frames to capture
+    frame_counter = 0
+
+    # Extract frames
+    for packet in container.demux([visual_stream]):
+        for frame in packet.decode():
+            if frame_counter in frame_indices:
+                img_array = np.array(frame.to_image())
+                frames_array.append(img_array)
+                if len(frames_array) >= num_frames:
+                    break
+            frame_counter += 1
+        if len(frames_array) >= num_frames:
+            break
+    
+    return np.array(frames_array)
+def load_video_hf(repo_id,
+                  hf_video_path,     
+                  image_processer = None, 
+                  frame_mode='fixed', 
+                  fixed_frame_number=8, 
+                  fps_number=0.5, 
+                  frame_process_method='centercrop'):
+    # hf_path = "datasets/Vividbot/vast2m_vi/video/shard_0/video_mp4"
+    fs = HfFileSystem()
+    zip_path = f"datasets/{repo_id}/video/{hf_video_path.split('/')[0]}.zip"
+    zip_folder = fs.open(zip_path)
+    zip_ref = zipfile.ZipFile(zip_folder, 'r')
+    video = zip_ref.read(hf_video_path)
+
+    if frame_mode == 'fixed':
+        video = extract_frames(video, fixed_frame_number)  # 8, height,width,3
+        video = torch.from_numpy(video)
+        video = video.permute(3, 0, 1, 2)  # 3 x 8 x height x width
+    elif frame_mode == 'fps':
+            raise ValueError('Input folder is not support this frame mode')
+    else:
+        raise ValueError('Frame mode is only support "fps" or "fixed"')
+    input_mean = [0.48145466, 0.4578275, 0.40821073] # Consistent with clilp preprocessing
+    input_std = [0.26862954, 0.26130258, 0.27577711] #Consistent with clilp preprocessing
+    crop_size, scale_size = 224, 256
+    trans = transforms.Compose([
+        video_transform.TensorToNumpy(),
+        video_transform.Resize(scale_size),
+        video_transform.CenterCrop(crop_size),
+        video_transform.ClipToTensor(channel_nb=3),
+        video_transform.Normalize(mean=input_mean, std=input_std)
+    ])
+    video = trans(video)
+    return video
+    
+def load_image_hf(repo_id, hf_image_path):
+    fs = HfFileSystem()
+    zip_path = f"datasets/{repo_id}/images/{hf_image_path.split('/')[0]}.zip"
+    zip_folder = fs.open(zip_path)
+    zip_ref = zipfile.ZipFile(zip_folder, 'r')
+    image = zip_ref.read(hf_image_path)
+    image = Image.open(io.BytesIO(image))
+    return image

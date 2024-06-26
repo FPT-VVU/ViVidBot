@@ -10,12 +10,13 @@ import transformers
 from typing import Dict, Sequence
 from dataclasses import dataclass
 from valley.util.config import *
-from valley.util.data_util import preprocess, preprocess_multimodal_multiimage, load_video
+from valley.util.data_util import preprocess, preprocess_multimodal_multiimage, load_video, load_video_hf, load_image_hf
 import copy
 import random
 from huggingface_hub import HfFileSystem
 import zipfile
 import shutil
+from huggingface_hub import hf_hub_download
 class HybridDataset(Dataset):
     """Dataset for supervised fine-tuning."""
 
@@ -56,7 +57,6 @@ class HybridDataset(Dataset):
         random.shuffle(self.list_data_dict)
         self.multimodal_cfg = multimodal_cfg
         self.header_mode = multimodal_cfg['conv_mode']
-        self.fs = HfFileSystem()
 
 
     def __len__(self):
@@ -91,7 +91,12 @@ class HybridDataset(Dataset):
                     image_folder = self.multimodal_cfg['image_folder']
                     if 'train2014' in image_folder:
                         image_file = 'COCO_train2014_'+image_file
-                    image = Image.open(os.path.join(image_folder, image_file))
+                    img_path = os.path.join(image_folder, image_file)
+                    if os.path.exists(img_path):
+                        image = Image.open(os.path.join(image_folder, image_file))
+                    else:
+                        image = load_image_hf(repo_id="Vividbot/instruct500k_vi", hf_image_path=image_file)
+
                     if self.multimodal_cfg['image_aspect_ratio'] == 'keep':
                         max_hw, min_hw = max(image.size), min(image.size)
                         aspect_ratio = max_hw / min_hw
@@ -126,18 +131,11 @@ class HybridDataset(Dataset):
                 else:
                     video_folder = self.multimodal_cfg['video_folder'] + \
                         '/'
-                video_path = video_folder+'/' + video_file
-            
-                if len(os.listdir(video_folder)) >= 10:
-                    # delete all folder in video_folder
-                    for dir in os.listdir(video_folder):
-                        shutil.rmtree(video_folder+"/"+dir)
-                if not os.path.exist(video_path):
-                    hf_path = "datasets/Vividbot/vast2m_vi" + video_path.split("/")[-2] + ".zip"
-                    zip_folder = self.fs.open(hf_path)
-                    with zipfile.ZipFile(zip_folder, 'r') as zip_ref:
-                        zip_ref.extractall(video_path.split("/")[-2])
-                video = load_video(video_folder+'/' + video_file)
+                video_path = video_folder+ '/' + video_file
+                if os.path.exists(video_path):
+                    video = load_video(video_path)
+                else:
+                    video = load_video_hf(repo_id="Vividbot/vast2m_vi", hf_video_path=video_file)
                 # print(video.shape)
                 video = video.permute(1, 0, 2, 3)
                 # FIXME: 14 is hardcoded patch size

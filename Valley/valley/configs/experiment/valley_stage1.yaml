@@ -1,6 +1,8 @@
 model_name_or_path: vinai/PhoGPT-4B-Chat
-video_data_path: /home/ViVidBot/training/shard_0_new.json
-video_folder: /content/video/shard_0
+data_path: /content/instruct500k_vi_all.json
+image_folder: /content
+video_data_path: /content/vast2m_vi_all.json
+video_folder: /content
 output_dir: model/output
 # experiment name
 project_name: valley
