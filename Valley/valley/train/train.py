@@ -8,7 +8,7 @@ import torch
 import transformers
 from transformers import Trainer, TrainerCallback
 from valley.train.trainner import LLMCallback
-from valley.model.valley_model import ValleyLlamaForCausalLM
+from valley.model.valley_model import VividGPTForCausalLM
 from valley.util.data_util import smart_tokenizer_and_embedding_resize, safe_save_model_for_hf_trainer
 from valley.data.dataset import make_video_supervised_data_module
 from valley.util.config import *
@@ -96,7 +96,7 @@ def train(args):
     training_args.learning_rate = float(training_args.learning_rate)
     os.environ['WANDB_PROJECT'] = data_args.project_name
 
-    model = ValleyLlamaForCausalLM.from_pretrained(
+    model = VividGPTForCausalLM.from_pretrained(
         model_args.model_name_or_path,
         cache_dir=training_args.cache_dir,
     )
@@ -114,12 +114,12 @@ def train(args):
             tokenizer=tokenizer,
             model=model,
         )
-    if "llama" in model_args.model_name_or_path:
-        tokenizer.add_special_tokens({
-            "eos_token": DEFAULT_EOS_TOKEN,
-            "bos_token": DEFAULT_BOS_TOKEN,
-            "unk_token": DEFAULT_UNK_TOKEN,
-        })
+    # if "llama" in model_args.model_name_or_path:
+    #     tokenizer.add_special_tokens({
+    #         "eos_token": DEFAULT_EOS_TOKEN,
+    #         "bos_token": DEFAULT_BOS_TOKEN,
+    #         "unk_token": DEFAULT_UNK_TOKEN,
+    #     })
 
     tokenizer.add_tokens([DEFAULT_VIDEO_FRAME_TOKEN,
                           DEFAULT_VI_START_TOKEN,

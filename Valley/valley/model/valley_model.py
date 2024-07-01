@@ -6,7 +6,8 @@ import torch.nn.functional as F
 from torch.nn import CrossEntropyLoss
 
 from transformers import AutoConfig, AutoModelForCausalLM, \
-                         LlamaConfig, LlamaModel, LlamaForCausalLM, CLIPImageProcessor, CLIPVisionModel
+                        MptModel, MptConfig, MptForCausalLM, CLIPImageProcessor, CLIPVisionModel
+
 
 from transformers.modeling_outputs import BaseModelOutputWithPast, CausalLMOutputWithPast
 from valley.util.data_util import load_video
@@ -15,14 +16,14 @@ from tokenizers import AddedToken
 from valley.util.config import *
 
 
-class ValleyConfig(LlamaConfig):
-    model_type = "valley"
+class VividConfig(MptConfig):
+    model_type = "vivid"
 
-class ValleyLlamaModel(LlamaModel):
-    config_class = ValleyConfig
 
-    def __init__(self, config: LlamaConfig, mm_vision_tower=None, mm_hidden_size=None):
-        super(ValleyLlamaModel, self).__init__(config)
+class VividGPTModel(MptModel):
+    config_class = VividConfig
+    def __init__(self, config: MptConfig, mm_vision_tower=None, mm_hidden_size=None):
+        super(VividGPTModel, self).__init__(config)
 
         self.patch_pooling_method = "mean"
 
@@ -246,20 +247,19 @@ class ValleyLlamaModel(LlamaModel):
                 cur_image_idx += 1
             inputs_embeds = torch.stack(new_input_embeds, dim=0)
 
-        return super(ValleyLlamaModel, self).forward(
+        return super(VividGPTModel, self).forward(
             input_ids=None, attention_mask=attention_mask, past_key_values=past_key_values,
             inputs_embeds=inputs_embeds, use_cache=use_cache,
             output_attentions=output_attentions, output_hidden_states=output_hidden_states,
             return_dict=return_dict
         )
-
-
-class ValleyLlamaForCausalLM(LlamaForCausalLM):
-    config_class = ValleyConfig
+    
+class VividGPTForCausalLM(MptForCausalLM):
+    config_class = VividConfig
 
     def __init__(self, config):
-        super(LlamaForCausalLM, self).__init__(config)
-        self.model = ValleyLlamaModel(config)
+        super(MptForCausalLM, self).__init__(config)
+        self.model = VividGPTModel(config)
 
         self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
 
@@ -407,7 +407,7 @@ class ValleyLlamaForCausalLM(LlamaForCausalLM):
             while True:
                 cur_len = len(out)
                 out = out.strip()
-                for pattern in ['###', 'Assistant:', 'Response:', 'Valley:']:
+                for pattern in ['###', 'Assistant:', 'Response:', 'Vivid:']:
                     if out.startswith(pattern):
                         out = out[len(pattern):].strip()
                 if len(out) == cur_len:
@@ -438,5 +438,5 @@ class ValleyLlamaForCausalLM(LlamaForCausalLM):
         response = self.process_response(outputs)
         return response
     
-AutoConfig.register("valley", ValleyConfig)
-AutoModelForCausalLM.register(ValleyConfig, ValleyLlamaForCausalLM)
+AutoConfig.register("vivid", VividConfig)
+AutoModelForCausalLM.register(VividConfig, VividGPTForCausalLM)

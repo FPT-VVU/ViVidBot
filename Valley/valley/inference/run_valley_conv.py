@@ -76,7 +76,7 @@ def assistant_out(model,conv,tokenizer,input_ids,image_tensor):
     while True:
         cur_len = len(out)
         out = out.strip()
-        for pattern in ['###', 'Assistant:', 'Response:','LLaVA:']:
+        for pattern in ['###', 'Assistant:', 'Response:','Vivid:']:
             if out.startswith(pattern):
                 out = out[len(pattern):].strip()
         if len(out) == cur_len:

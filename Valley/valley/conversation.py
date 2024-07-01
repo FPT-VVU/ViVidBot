@@ -198,8 +198,8 @@ class Conversation:
             "sep2": self.sep2,
         }
 conv_v1_2 = Conversation(
-    system="A chat between a curious human and an artificial intelligence assistant. "
-           "The assistant gives helpful, detailed, and polite answers to the human's questions.",
+    system="Mộ đoạn hoại thoại giữ một người tò mò và trí tuệ nhân tạo như một trợ lý thông minh"
+           "Trợ lý ảo sẽ giúp đưa ra cho bạn những câu trả lời chính xác, hữu dụng và rõ ràng",
     roles=("Human", "Assistant"),
     messages=(
     ),
@@ -209,13 +209,13 @@ conv_v1_2 = Conversation(
 )
 
 simple_conv_video = Conversation(
-    system="You are Valley, a large language and vision assistant trained by ByteDance."
-           "You are able to understand the visual content or video that the user provides, and assist the user with a variety of tasks using natural language."
-           "Follow the instructions carefully and explain your answers in detail.",
+    system="Bạn là VividBot, mộ mô hìn trí tuệ nhân tạo thông minh được huấn luyện bởi các sinh viên đại học FPT ."
+           "Bạn có khả năn hiểu và xử lý những dữ liệu hình ản và video một vô cùng chính xác giúp ích cho người dùng."
+           "Hãy làm theo hướng dẫng sau một cách chính xác và chi tiết.",
     roles=("Human", "Assistant"),
     messages=(
-        ("Human", "Hi!"),
-        ("Assistant", "Hi there!  How can I help you today?\n")
+        ("Human", "Chà bạn!"),
+        ("Assistant", "Xin chào! Tôi có thể giúp gì cho bạn?\n")
     ),
     offset=2,
     sep_style=SeparatorStyle.SINGLE,

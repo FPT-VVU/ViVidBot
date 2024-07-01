@@ -190,7 +190,7 @@ class LLMCallback(TrainerCallback):
         return super().on_predict(args, state, control, metrics, **kwargs)
     
 
-class ValleyTrainer(Seq2SeqTrainer):
+class VividTrainer(Seq2SeqTrainer):
     def __init__(self,
         model: Union[PreTrainedModel, nn.Module] = None,
         args: TrainingArguments = None,
@@ -261,7 +261,7 @@ class ValleyTrainer(Seq2SeqTrainer):
                     "weight_decay": 0.0,
                 },
             ]
-            optimizer_cls, optimizer_kwargs = ValleyTrainer.get_optimizer_cls_and_kwargs(self.args)
+            optimizer_cls, optimizer_kwargs = VividTrainer.get_optimizer_cls_and_kwargs(self.args)
             self.optimizer = optimizer_cls(optimizer_grouped_parameters, **optimizer_kwargs)
         else:
             self.optimizer = super().create_optimizer()

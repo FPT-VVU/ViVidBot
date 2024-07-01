@@ -7,7 +7,7 @@ import argparse
 import torch
 from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig
-from valley import ValleyLlamaForCausalLM
+from valley.model.valley_model import VividGPTForCausalLM
 
 def make_delta(base_model_path, target_model_path, delta_path, hub_repo_id):
     print("Loading base model")
@@ -15,7 +15,7 @@ def make_delta(base_model_path, target_model_path, delta_path, hub_repo_id):
         base_model_path, torch_dtype=torch.float16, low_cpu_mem_usage=True)
 
     print("Loading target model")
-    target = ValleyLlamaForCausalLM.from_pretrained(target_model_path, torch_dtype=torch.float16, low_cpu_mem_usage=True)
+    target = VividGPTForCausalLM.from_pretrained(target_model_path, torch_dtype=torch.float16, low_cpu_mem_usage=True)
 
     print("Calculating delta")
     for name, param in tqdm(target.state_dict().items(), desc="Calculating delta"):
