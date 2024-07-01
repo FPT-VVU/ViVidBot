@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from torch.nn import CrossEntropyLoss
 
 from transformers import AutoConfig, AutoModelForCausalLM, \
-                        MptModel, MptConfig, MptForCausalLM, CLIPImageProcessor, CLIPVisionModel
+                         LlamaConfig, LlamaModel, LlamaForCausalLM, CLIPImageProcessor, CLIPVisionModel
 
 
 from transformers.modeling_outputs import BaseModelOutputWithPast, CausalLMOutputWithPast
@@ -16,13 +16,13 @@ from tokenizers import AddedToken
 from valley.util.config import *
 
 
-class VividConfig(MptConfig):
+class VividConfig(LlamaConfig):
     model_type = "vivid"
 
 
-class VividGPTModel(MptModel):
+class VividGPTModel(LlamaModel):
     config_class = VividConfig
-    def __init__(self, config: MptConfig, mm_vision_tower=None, mm_hidden_size=None):
+    def __init__(self, config: LlamaConfig, mm_vision_tower=None, mm_hidden_size=None):
         super(VividGPTModel, self).__init__(config)
 
         self.patch_pooling_method = "mean"
@@ -254,11 +254,11 @@ class VividGPTModel(MptModel):
             return_dict=return_dict
         )
     
-class VividGPTForCausalLM(MptForCausalLM):
+class VividGPTForCausalLM(LlamaForCausalLM):
     config_class = VividConfig
 
     def __init__(self, config):
-        super(MptForCausalLM, self).__init__(config)
+        super(LlamaForCausalLM, self).__init__(config)
         self.model = VividGPTModel(config)
 
         self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
@@ -303,6 +303,8 @@ class VividGPTForCausalLM(MptForCausalLM):
 
         hidden_states = outputs[0]
         logits = self.lm_head(hidden_states)
+        print("*"*100)
+        print(self.config.vocab_size)
 
         loss = None
         if labels is not None:
