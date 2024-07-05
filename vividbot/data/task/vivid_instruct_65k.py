@@ -84,6 +84,7 @@ def download():
     for row in tqdm(data["train"]):
         video_id = row["id"]
         if video_id in processed_ids:
+            print(f"Skipping video {video_id} as it has already been processed.")
             continue
 
         current_processed_ids.append(video_id)
