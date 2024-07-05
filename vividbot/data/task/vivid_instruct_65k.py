@@ -99,7 +99,7 @@ def download():
         # increase shard_count every 5000 clips
         if (
             os.path.exists(f"{BASE_DATA_PATH}/videos/shard_{shard_count}")
-            and len(os.listdir(f"{BASE_DATA_PATH}/videos/shard_{shard_count}")) >= 5000
+            and len(os.listdir(f"{BASE_DATA_PATH}/videos/shard_{shard_count}")) >= 500
         ):
             try:
                 uploader.zip_and_upload_dir(
