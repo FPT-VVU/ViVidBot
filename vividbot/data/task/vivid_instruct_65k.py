@@ -12,18 +12,18 @@ from datetime import timezone
 
 import google.generativeai as genai
 from datasets import load_dataset
-from discord.discord import DiscordNotifier
 from dotenv import load_dotenv
-from processor.upload_hf import Uploader
 from tqdm import tqdm
 from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError, download_range_func
 
+from vividbot.data.discord.discord import DiscordNotifier
 from vividbot.data.processor.download import YoutubeDownloader
+from vividbot.data.processor.upload_hf import Uploader
 
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-BASE_DATA_PATH = "/root/data"
+BASE_DATA_PATH = "/home/dminhvu/data"
 RANDOM_DURATIONS = json.load(open(f"{BASE_DATA_PATH}/random_durations.json"))
 DESCRIBE_VIDEO_PROMPT = "Describe only the visual content of the video without using its audio or transcript so that a person without vision can fully understand it. Remember to use Vietnamese language to describe the video."
 GENERATE_QA_PROMPT = """Generate 5 different pairs of questions and answers based on the description of the video. The questions should be relevant to the video content and the answers should be correct. Also, diversify the types of questions and answers as much as possible.
@@ -62,13 +62,12 @@ downloader = YoutubeDownloader()
 
 
 def download():
-    error_list = []
     shard_count = -1
     total_clip_count = 0
     random_durations_index = 0
     data = load_dataset(
         "json",
-        data_files=f"${BASE_DATA_PATH}/vivid_instruct_65k_unprocessed.jsonl",
+        data_files="vivid_instruct_65k_unprocessed.jsonl",
     )
 
     while os.path.exists(f"{BASE_DATA_PATH}/videos/shard_{shard_count}"):
@@ -148,7 +147,9 @@ def download():
 
                     if video_file.state.name == "FAILED":
                         print(ValueError(video_file.state.name))
-                        with open(f"{BASE_DATA_PATH}/error_ids.txt", "a") as f:
+                        with open(
+                            f"{BASE_DATA_PATH}/generation_error_ids.txt", "a"
+                        ) as f:
                             f.write(video[:-4] + "\n")
                     elif video_file.state.name == "ACTIVE":
                         try:
@@ -210,7 +211,9 @@ def download():
                             shutil.rmtree(video_path)
                         except Exception as e:
                             print(str(e))
-                            with open(f"{BASE_DATA_PATH}/error_ids.txt", "a") as f:
+                            with open(
+                                f"{BASE_DATA_PATH}/generation_error_ids.txt", "a"
+                            ) as f:
                                 f.write(video[:-4] + "\n")
 
                 try:
@@ -306,14 +309,38 @@ def download():
                     # downloader.process(url_id, start, end, path)
 
                 except DownloadError:
-                    error_list["url_error"].append(video_id)
+                    print(f"Failed to download clip {clip_count} of video {video_id}.")
+                    with open(f"{BASE_DATA_PATH}/download_error_ids.txt", "a") as f:
+                        f.write(video_id + "\n")
 
             start = end
             random_durations_index += 1
             clip_count += 1
+            total_clip_count += 1
 
             if random_durations_index >= len(RANDOM_DURATIONS):
                 break
+
+    # upload error ids
+    if os.path.exists(f"{BASE_DATA_PATH}/download_error_ids.txt"):
+        uploader = Uploader()
+        uploader.upload_file(
+            file_path=f"{BASE_DATA_PATH}/download_error_ids.txt",
+            repo_id="Vividbot/vividbot_video",
+            path_in_repo="download_error_ids.txt",
+            repo_type="dataset",
+            overwrite=True,
+        )
+
+    if os.path.exists(f"{BASE_DATA_PATH}/generation_error_ids.txt"):
+        uploader = Uploader()
+        uploader.upload_file(
+            file_path=f"{BASE_DATA_PATH}/generation_error_ids.txt",
+            repo_id="Vividbot/vividbot_video",
+            path_in_repo="generation_error_ids.txt",
+            repo_type="dataset",
+            overwrite=True,
+        )
 
     # upload the last shard
     if os.path.exists(f"{BASE_DATA_PATH}/videos/shard_{shard_count}"):
@@ -377,7 +404,7 @@ def download():
 
             if video_file.state.name == "FAILED":
                 print(ValueError(video_file.state.name))
-                with open(f"{BASE_DATA_PATH}/error_ids.txt", "a") as f:
+                with open(f"{BASE_DATA_PATH}/generation_error_ids.txt", "a") as f:
                     f.write(video[:-4] + "\n")
             elif video_file.state.name == "ACTIVE":
                 try:
@@ -430,11 +457,13 @@ VIDEO CONTENT: {describer_response.text.strip()}"""
                         )
 
                     print(f"Generated finetuning data for video {video}.")
-                    shutil.rmtree(video_path)
+                    os.remove(video_path)
                 except Exception as e:
                     print(str(e))
-                    with open(f"{BASE_DATA_PATH}/error_ids.txt", "a") as f:
+                    with open(f"{BASE_DATA_PATH}/generation_error_ids.txt", "a") as f:
                         f.write(video[:-4] + "\n")
+
+                    raise e
 
         try:
             print(
