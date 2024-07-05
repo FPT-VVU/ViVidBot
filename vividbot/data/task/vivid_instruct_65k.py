@@ -66,6 +66,12 @@ def download():
         "json",
         data_files="vivid_instruct_65k_unprocessed.jsonl",
     )
+    processed_ids = (
+        json.load(open(f"{BASE_DATA_PATH}/processed_ids.json"))
+        if os.path.exists(f"{BASE_DATA_PATH}/processed_ids.json")
+        else []
+    )
+    current_processed_ids = []
 
     uploader = Uploader()
     while uploader.check_file_exist(
@@ -77,6 +83,11 @@ def download():
 
     for row in tqdm(data["train"]):
         video_id = row["id"]
+        if video_id in processed_ids:
+            continue
+
+        current_processed_ids.append(video_id)
+
         video_duration = row["duration"]
 
         start = 0
@@ -85,7 +96,7 @@ def download():
         # increase shard_count every 5000 clips
         if (
             os.path.exists(f"{BASE_DATA_PATH}/videos/shard_{shard_count}")
-            and len(os.listdir(f"{BASE_DATA_PATH}/videos/shard_{shard_count}")) >= 10
+            and len(os.listdir(f"{BASE_DATA_PATH}/videos/shard_{shard_count}")) >= 5000
         ):
             try:
                 uploader.zip_and_upload_dir(
@@ -271,6 +282,9 @@ VIDEO CONTENT: {describer_response.text.strip()}"""
                 f"{BASE_DATA_PATH}/videos/shard_{shard_count}",
                 exist_ok=True,
             )
+
+            processed_ids.extend(current_processed_ids)
+            json.dump(processed_ids, open(f"{BASE_DATA_PATH}/processed_ids.json", "w"))
 
         if random_durations_index >= len(RANDOM_DURATIONS):
             break
