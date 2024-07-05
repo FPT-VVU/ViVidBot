@@ -29,15 +29,15 @@ DESCRIBE_VIDEO_PROMPT = "Describe only the visual content of the video without u
 GENERATE_QA_PROMPT = """Generate 5 different pairs of questions and answers based on the description of the video. The questions should be relevant to the video content and the answers should be correct. Also, diversify the types of questions and answers as much as possible.
 Remember to use Vietnamese language to generate the questions and answers.
 Some examples of questions:
-- What is the video about? What is the action at the second n-th?
+- What is the video about?
+- What are key points in the video?
 - What is the color of the object in the video?
 - What is the person in the video doing?
 - What is the object in the video?
-- What is the person in the video wearing?
 - What is the person in the video holding?
-- What is the person in the video saying?
 - How does the person in the video look?
-- Where is the object in the video? What is the position of the object in the video?
+- Where is the object in the video?
+- What is the position of the object in the video?
 And more questions that can be asked about the video content.
 Question length and complexity should be varied.
 Return the questions and answers in the following format:
@@ -84,7 +84,7 @@ def download():
         clip_count = 0
 
         # increase shard_count every 5000 clips
-        if total_clip_count % 5000 == 0:
+        if len(os.listdir(f"{BASE_DATA_PATH}/videos/shard_{shard_count}")) >= 10:
             if shard_count >= 0:
                 try:
                     uploader = Uploader()
@@ -182,10 +182,10 @@ def download():
 
                             for qa in qa_pairs:
                                 conversations.append(
-                                    {"from": "gpt", "value": qa["question"]}
+                                    {"from": "human", "value": qa["question"]}
                                 )
                                 conversations.append(
-                                    {"from": "human", "value": qa["answer"]}
+                                    {"from": "gpt", "value": qa["answer"]}
                                 )
 
                             data = {
@@ -434,8 +434,8 @@ VIDEO CONTENT: {describer_response.text.strip()}"""
                     conversations = []
 
                     for qa in qa_pairs:
-                        conversations.append({"from": "gpt", "value": qa["question"]})
-                        conversations.append({"from": "human", "value": qa["answer"]})
+                        conversations.append({"from": "human", "value": qa["question"]})
+                        conversations.append({"from": "gpt", "value": qa["answer"]})
 
                     data = {
                         "id": video[:-4],
