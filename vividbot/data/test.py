@@ -1,5 +1,6 @@
 import os
 import sys
+
 from datasets import load_dataset
 
 sys.path.append(os.getcwd())
@@ -9,16 +10,18 @@ from vividbot.data.processor.upload_hf import Uploader
 uploader = Uploader()
 path = "/home/duytran/Downloads/output/instruct500k_vi_all.json"
 
-# uploader.upload_dir(dir_path=path, 
-#                     repo_id="Vividbot/vast2m_vi", 
-#                     path_in_repo="metadata", 
+# uploader.upload_dir(dir_path=path,
+#                     repo_id="Vividbot/vast2m_vi",
+#                     path_in_repo="metadata",
 #                     repo_type="dataset", overwrite=True)
 
-uploader.upload_file(file_path=path,
-                     repo_id= "Vividbot/instruct500k_vi",
-                     path_in_repo= "instruct500k_vi_all.json",
-                     repo_type= "dataset",
-                     overwrite= True)
+uploader.upload_file(
+    file_path=path,
+    repo_id="Vividbot/instruct500k_vi",
+    path_in_repo="instruct500k_vi_all.json",
+    repo_type="dataset",
+    overwrite=True,
+)
 
 # for folder in os.listdir(path):
 #     uploader.zip_and_upload_dir(
@@ -45,14 +48,14 @@ uploader.upload_file(file_path=path,
 # error = []
 # for file_name in tqdm(os.listdir(input)):
 #     path = os.path.join(input, file_name)
-    
+
 #     file_name = os.path.basename(path).split(".")[0]
 #     print("-"*50, file_name, "-"*50)
 #     dataset = load_dataset("json", data_files=path)["train"]
-#     dataset = dataset.map(rename_path, 
+#     dataset = dataset.map(rename_path,
 #                         batched=True,
 #                         num_proc=8)
-    
+
 #     path_hf = "datasets/Vividbot/vast2m_vi/video/" + file_name + ".zip"
 #     zip_hf = fs.open(path_hf)
 #     with zipfile.ZipFile(zip_hf, 'r') as zip_ref:
@@ -101,7 +104,7 @@ uploader.upload_file(file_path=path,
 # def extract_frames(video_bytes, num_frames=8):
 #     # Create a memory-mapped file from the bytes
 #     container = av.open(io.BytesIO(video_bytes))
-    
+
 #     # Find the video stream
 #     visual_stream = next(iter(container.streams.video), None)
 #     if not visual_stream:
@@ -131,7 +134,7 @@ uploader.upload_file(file_path=path,
 #             frame_counter += 1
 #         if len(frames_array) >= num_frames:
 #             break
-    
+
 #     return np.array(frames_array)
 # import cv2
 # with zipfile.ZipFile(temp, 'r') as zip_ref:
@@ -147,6 +150,3 @@ uploader.upload_file(file_path=path,
 #         cv2.waitKey(0)
 #         # if cv2.waitKey(1) & 0xFF == ord('q'):
 #         #     break
-    
-
-        

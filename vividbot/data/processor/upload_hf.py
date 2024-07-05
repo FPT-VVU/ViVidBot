@@ -1,5 +1,7 @@
 import os
-from huggingface_hub import HfApi, HfFolder, HfFileSystem
+
+from huggingface_hub import HfApi, HfFileSystem, HfFolder
+
 from vividbot.data.processor.base import BaseProcessor
 from vividbot.data.utils.file import zip_dir
 
@@ -47,7 +49,7 @@ class Uploader(BaseProcessor):
         :return:                Whether file exist or not.
         """
         return self.fs.exists(f"{repo_type}s/{repo_id}/{path_in_repo}")
-    
+
     def upload_dir(
         self,
         dir_path: str,
@@ -70,7 +72,7 @@ class Uploader(BaseProcessor):
                 repo_id=repo_id,
                 token=self.TOKEN,
                 repo_type=repo_type,
-            )      
+            )
 
     def upload_file(
         self,

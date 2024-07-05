@@ -1,8 +1,7 @@
-import os
-import sys
 import argparse
 import json
-
+import os
+import sys
 
 sys.path.append(os.getcwd())
 # turn of warning
@@ -10,14 +9,14 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-from yt_dlp.utils import DownloadError
 from datasets import load_dataset
+from yt_dlp.utils import DownloadError
 
-from vividbot.data.processor.translator import GGTranslator
-from vividbot.data.processor.question_selection import QuestionSelection
 from vividbot.data.processor.download import YoutubeDownloader
-from vividbot.data.processor.upload_hf import Uploader
 from vividbot.data.processor.executor import Executor
+from vividbot.data.processor.question_selection import QuestionSelection
+from vividbot.data.processor.translator import GGTranslator
+from vividbot.data.processor.upload_hf import Uploader
 
 
 def parse_args() -> argparse.Namespace:
@@ -153,12 +152,15 @@ downloader = YoutubeDownloader()
 def _generate(batch: dict):
     question_translate = translator.process(batch["q"], src="en", dest="vi")
     answer_translate = translator.process(batch["a"], src="en", dest="vi")
-    batch['video_id'] = [item[2:] for item in batch['video_id']]
+    batch["video_id"] = [item[2:] for item in batch["video_id"]]
     new_result = {
         "id": batch["video_id"],
         "video": [item + ".mp4" for item in batch["video_id"]],
         "conversations": [
-            [{"from": "human", "value": question + "\n<video>"}, {"from": "gpt", "value": answer}]
+            [
+                {"from": "human", "value": question + "\n<video>"},
+                {"from": "gpt", "value": answer},
+            ]
             for question, answer in zip(question_translate, answer_translate)
         ],
     }
@@ -177,9 +179,7 @@ def _download(batch: dict, path: str):
 
 def generate(args: argparse.Namespace, executor: Executor):
     name_file_out = (
-        os.path.basename(executor.file_path)
-        if args.name_out is None
-        else args.name_out
+        os.path.basename(executor.file_path) if args.name_out is None else args.name_out
     )
     executor.process(
         map_fn=_generate,
@@ -259,9 +259,7 @@ def download(args: argparse.Namespace, executor: Executor):
 
 def rename_column(args: argparse.Namespace, executor: Executor):
     name_file_out = (
-        os.path.basename(executor.file_path)
-        if args.name_out is None
-        else args.name_out
+        os.path.basename(executor.file_path) if args.name_out is None else args.name_out
     )
     list_old_name = args.list_old_name.split(",")
     list_new_name = args.list_new_name.split(",")
@@ -286,9 +284,7 @@ def rename_column(args: argparse.Namespace, executor: Executor):
 
 def remove_sample(args: argparse.Namespace, executor: Executor):
     name_file_out = (
-        os.path.basename(executor.file_path)
-        if args.name_out is None
-        else args.name_out
+        os.path.basename(executor.file_path) if args.name_out is None else args.name_out
     )
     if args.error_file_path.split("/")[-1].split(".")[-1] == "json":
         error_list = load_dataset("json", data_files=args.error_file_path)["train"]

@@ -1,14 +1,15 @@
 import os
 import shutil
-import tqdm
 from typing import Callable
 
+import tqdm
 from datasets import (
-    load_dataset,
-    load_from_disk,
     concatenate_datasets,
     disable_progress_bar,
+    load_dataset,
+    load_from_disk,
 )
+
 from vividbot.data.processor.base import BaseProcessor
 from vividbot.data.processor.upload_hf import Uploader
 

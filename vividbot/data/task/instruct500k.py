@@ -1,10 +1,9 @@
-import os
-import sys
 import argparse
+import os
 import random
-import time
 import shutil
-
+import sys
+import time
 
 sys.path.append(os.getcwd())
 # turn of warning
@@ -14,12 +13,11 @@ warnings.filterwarnings("ignore")
 
 from datasets import load_dataset
 
-from vividbot.data.processor.translator import GGTranslator
-from vividbot.data.processor.question_selection import QuestionSelection
 from vividbot.data.processor.download import YoutubeDownloader
-from vividbot.data.processor.upload_hf import Uploader
 from vividbot.data.processor.executor import Executor
-
+from vividbot.data.processor.question_selection import QuestionSelection
+from vividbot.data.processor.translator import GGTranslator
+from vividbot.data.processor.upload_hf import Uploader
 
 
 def parse_args() -> argparse.Namespace:
@@ -146,7 +144,9 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-question_list = QuestionSelection("vividbot/data/stuff/questions_img.txt", tags="<image>")
+question_list = QuestionSelection(
+    "vividbot/data/stuff/questions_img.txt", tags="<image>"
+)
 translator = GGTranslator()
 uploader = Uploader()
 
@@ -157,11 +157,11 @@ def _translate(batch):
         item[0]["value"] = question
         item[1]["value"] = translator.process(item[1]["value"], src="en", dest="vi")
     return batch
+
+
 def translate(args: argparse.Namespace, executor: Executor):
     name_file_out = (
-        os.path.basename(executor.file_path)
-        if args.name_out is None
-        else args.name_out
+        os.path.basename(executor.file_path) if args.name_out is None else args.name_out
     )
     executor.process(
         map_fn=_translate,
@@ -187,11 +187,10 @@ def translate(args: argparse.Namespace, executor: Executor):
 
     return
 
+
 def rename_column(args: argparse.Namespace, executor: Executor):
     name_file_out = (
-        os.path.basename(executor.file_path)
-        if args.name_out is None
-        else args.name_out
+        os.path.basename(executor.file_path) if args.name_out is None else args.name_out
     )
     list_old_name = args.list_old_name.split(",")
     list_new_name = args.list_new_name.split(",")
@@ -213,11 +212,10 @@ def rename_column(args: argparse.Namespace, executor: Executor):
 
     return
 
+
 def remove_sample(args: argparse.Namespace, executor: Executor):
     name_file_out = (
-        os.path.basename(executor.file_path)
-        if args.name_out is None
-        else args.name_out
+        os.path.basename(executor.file_path) if args.name_out is None else args.name_out
     )
     if args.error_file_path.split("/")[-1].split(".")[-1] == "json":
         error_list = load_dataset("json", data_files=args.error_file_path)["train"]
@@ -241,11 +239,10 @@ def remove_sample(args: argparse.Namespace, executor: Executor):
 
     return
 
+
 def divide_dataset(args: argparse.Namespace, executor: Executor):
     name_file_out = (
-        os.path.basename(executor.file_path)
-        if args.name_out is None
-        else args.name_out
+        os.path.basename(executor.file_path) if args.name_out is None else args.name_out
     )
     executor.divide_shard_json()
     if args.upload_to_hub:
@@ -260,7 +257,6 @@ def divide_dataset(args: argparse.Namespace, executor: Executor):
         os.remove(args.file_path)
 
     return
-
 
 
 def main(args: argparse.Namespace):
@@ -320,7 +316,7 @@ def main(args: argparse.Namespace):
             remove_sample(args=args, executor=executor)
         if args.task == "divide dataset":
             divide_dataset(args=args, executor=executor)
-    
-    
+
+
 if __name__ == "__main__":
     main(parse_args())

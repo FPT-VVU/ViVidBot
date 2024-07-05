@@ -3,3 +3,5 @@ translators
 datasets
 tqdm
 yt-dlp
+google-generativeai
+python-dotenv

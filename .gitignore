@@ -3,3 +3,5 @@ __pycache__
 
 vivid_instruct_65k/data/metadata/
 vivid_instruct_65k/data/videos/
+
+.ipynb_checkpoints
