@@ -70,12 +70,6 @@ def download():
         data_files="vivid_instruct_65k_unprocessed.jsonl",
     )
 
-    while os.path.exists(f"{BASE_DATA_PATH}/videos/shard_{shard_count}"):
-        shard_count += 1
-        total_clip_count += len(
-            os.listdir(f"{BASE_DATA_PATH}/videos/shard_{shard_count}")
-        )
-
     for row in tqdm(data["train"]):
         video_id = row["id"]
         video_duration = row["duration"]
