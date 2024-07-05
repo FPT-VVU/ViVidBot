@@ -62,7 +62,7 @@ downloader = YoutubeDownloader()
 
 
 def download():
-    shard_count = -1
+    shard_count = 0
     total_clip_count = 0
     random_durations_index = 0
     data = load_dataset(
@@ -84,196 +84,194 @@ def download():
         clip_count = 0
 
         # increase shard_count every 5000 clips
-        if len(os.listdir(f"{BASE_DATA_PATH}/videos/shard_{shard_count}")) >= 10:
-            if shard_count >= 0:
-                try:
-                    uploader = Uploader()
-                    uploader.zip_and_upload_dir(
-                        f"{BASE_DATA_PATH}/videos/shard_{shard_count}",
-                        "Vividbot/vividbot_video",
-                        f"videos/shard_{shard_count}.zip",
-                        overwrite=True,
-                    )
+        if (
+            os.path.exists(f"{BASE_DATA_PATH}/videos/shard_{shard_count}")
+            and len(os.listdir(f"{BASE_DATA_PATH}/videos/shard_{shard_count}")) >= 10
+        ):
+            try:
+                uploader = Uploader()
+                uploader.zip_and_upload_dir(
+                    f"{BASE_DATA_PATH}/videos/shard_{shard_count}",
+                    "Vividbot/vividbot_video",
+                    f"videos/shard_{shard_count}.zip",
+                    overwrite=True,
+                )
 
-                    notifier.send(
-                        body={
-                            "embeds": [
-                                {
-                                    "title": f"✅ ViVid Instruct 65k: Uploaded shard {shard_count}!",
-                                    "description": f"Uploaded shard {shard_count} with {total_clip_count} clips at https://huggingface.co/datasets/Vividbot/vividbot_video.",
-                                    "color": 2278494,
-                                    "timestamp": datetime.datetime.now(
-                                        timezone.utc
-                                    ).isoformat(),
-                                }
-                            ]
+                notifier.send(
+                    body={
+                        "embeds": [
+                            {
+                                "title": f"✅ ViVid Instruct 65k: Uploaded shard {shard_count}!",
+                                "description": f"Uploaded shard {shard_count} with {total_clip_count} clips at https://huggingface.co/datasets/Vividbot/vividbot_video.",
+                                "color": 2278494,
+                                "timestamp": datetime.datetime.now(
+                                    timezone.utc
+                                ).isoformat(),
+                            }
+                        ]
+                    }
+                )
+
+            except Exception as e:
+                notifier.send(
+                    body={
+                        "embeds": [
+                            {
+                                "title": f"❌ ViVid Instruct 65k: Failed to upload shard {shard_count}!",
+                                "description": f"Failed to upload shard {shard_count} with {total_clip_count} clips at https://huggingface.co/datasets/Vividbot/vividbot_video.",
+                                "color": 16711680,
+                                "timestamp": datetime.datetime.now(
+                                    timezone.utc
+                                ).isoformat(),
+                                "fields": [
+                                    {
+                                        "name": "Error",
+                                        "value": str(e),
+                                    }
+                                ],
+                            }
+                        ]
+                    }
+                )
+                raise e
+
+            videos = os.listdir(f"{BASE_DATA_PATH}/videos/shard_{shard_count}")
+            for video in tqdm(videos):
+                print(f"Uploading video {video} to Gemini...")
+                video_path = f"{BASE_DATA_PATH}/videos/shard_{shard_count}/{video}"
+                video_file = genai.upload_file(path=video_path)
+
+                print(f'Generating finetuning data for video "{video}"...', end="")
+                while video_file.state.name == "PROCESSING":
+                    print(".", end="")
+                    time.sleep(10)
+                    video_file = genai.get_file(video_file.name)
+
+                if video_file.state.name == "FAILED":
+                    print(ValueError(video_file.state.name))
+                    with open(f"{BASE_DATA_PATH}/generation_error_ids.txt", "a") as f:
+                        f.write(video[:-4] + "\n")
+                elif video_file.state.name == "ACTIVE":
+                    try:
+                        describer = genai.GenerativeModel(
+                            "models/gemini-1.5-flash",
+                            generation_config={
+                                "temperature": 0.1,
+                            },
+                        )
+                        describer_response = describer.generate_content(
+                            [video_file, DESCRIBE_VIDEO_PROMPT],
+                        )
+
+                        qa_generator = genai.GenerativeModel(
+                            "gemini-1.5-flash",
+                            generation_config={
+                                "response_mime_type": "application/json",
+                                "temperature": 1,
+                            },
+                        )
+                        full_prompt = f"""{GENERATE_QA_PROMPT}
+
+VIDEO CONTENT: {describer_response.text.strip()}"""
+
+                        qa_generator_response = qa_generator.generate_content(
+                            full_prompt
+                        )
+                        qa_pairs = json.loads(qa_generator_response.text)
+                        conversations = []
+
+                        for qa in qa_pairs:
+                            conversations.append(
+                                {"from": "human", "value": qa["question"]}
+                            )
+                            conversations.append({"from": "gpt", "value": qa["answer"]})
+
+                        data = {
+                            "id": video[:-4],
+                            "video": f"shard_{shard_count}/{video}",
+                            "description": describer_response.text.strip(),
+                            "conversations": conversations,
                         }
-                    )
 
-                except Exception as e:
-                    notifier.send(
-                        body={
-                            "embeds": [
-                                {
-                                    "title": f"❌ ViVid Instruct 65k: Failed to upload shard {shard_count}!",
-                                    "description": f"Failed to upload shard {shard_count} with {total_clip_count} clips at https://huggingface.co/datasets/Vividbot/vividbot_video.",
-                                    "color": 16711680,
-                                    "timestamp": datetime.datetime.now(
-                                        timezone.utc
-                                    ).isoformat(),
-                                    "fields": [
-                                        {
-                                            "name": "Error",
-                                            "value": str(e),
-                                        }
-                                    ],
-                                }
-                            ]
-                        }
-                    )
-                    raise e
+                        with open(
+                            f"{BASE_DATA_PATH}/metadata/shard_{shard_count}.json",
+                            "a",
+                        ) as f:
+                            f.write(
+                                json.dumps(
+                                    data,
+                                    ensure_ascii=False,
+                                )
+                                + "\n"
+                            )
 
-                videos = os.listdir(f"{BASE_DATA_PATH}/videos/shard_{shard_count}")
-                for video in tqdm(videos):
-                    print(f"Uploading video {video} to Gemini...")
-                    video_path = f"{BASE_DATA_PATH}/videos/shard_{shard_count}/{video}"
-                    video_file = genai.upload_file(path=video_path)
-
-                    print(f'Generating finetuning data for video "{video}"...', end="")
-                    while video_file.state.name == "PROCESSING":
-                        print(".", end="")
-                        time.sleep(10)
-                        video_file = genai.get_file(video_file.name)
-
-                    if video_file.state.name == "FAILED":
-                        print(ValueError(video_file.state.name))
+                        print(f"Generated finetuning data for video {video}.")
+                        shutil.rmtree(video_path)
+                    except Exception as e:
+                        print(str(e))
                         with open(
                             f"{BASE_DATA_PATH}/generation_error_ids.txt", "a"
                         ) as f:
                             f.write(video[:-4] + "\n")
-                    elif video_file.state.name == "ACTIVE":
-                        try:
-                            describer = genai.GenerativeModel(
-                                "models/gemini-1.5-flash",
-                                generation_config={
-                                    "temperature": 0.1,
-                                },
-                            )
-                            describer_response = describer.generate_content(
-                                [video_file, DESCRIBE_VIDEO_PROMPT],
-                            )
 
-                            qa_generator = genai.GenerativeModel(
-                                "gemini-1.5-flash",
-                                generation_config={
-                                    "response_mime_type": "application/json",
-                                    "temperature": 1,
-                                },
-                            )
-                            full_prompt = f"""{GENERATE_QA_PROMPT}
+            try:
+                print(
+                    f"Uploading metadata for shard shard_{shard_count} to Hugging Face..."
+                )
 
-    VIDEO CONTENT: {describer_response.text.strip()}"""
+                uploader = Uploader()
+                uploader.upload_file(
+                    file_path=f"{BASE_DATA_PATH}/metadata/shard_{shard_count}.json",
+                    repo_id="Vividbot/vividbot_video",
+                    path_in_repo=f"metadata/shard_{shard_count}.json",
+                    repo_type="dataset",
+                    overwrite=True,
+                )
 
-                            qa_generator_response = qa_generator.generate_content(
-                                full_prompt
-                            )
-                            qa_pairs = json.loads(qa_generator_response.text)
-                            conversations = []
-
-                            for qa in qa_pairs:
-                                conversations.append(
-                                    {"from": "human", "value": qa["question"]}
-                                )
-                                conversations.append(
-                                    {"from": "gpt", "value": qa["answer"]}
-                                )
-
-                            data = {
-                                "id": video[:-4],
-                                "video": f"shard_{shard_count}/{video}",
-                                "description": describer_response.text.strip(),
-                                "conversations": conversations,
+                notifier.send(
+                    body={
+                        "embeds": [
+                            {
+                                "title": f"✅ ViVid Instruct 65k: Uploaded metadata for shard shard_{shard_count}!",
+                                "description": f"Uploaded metadata for shard shard_{shard_count} at https://huggingface.co/datasets/Vividbot/vividbot_video.",
+                                "color": 2278494,
+                                "timestamp": datetime.datetime.now(
+                                    timezone.utc
+                                ).isoformat(),
                             }
+                        ]
+                    }
+                )
+            except Exception as e:
+                print(str(e))
+                notifier.send(
+                    body={
+                        "embeds": [
+                            {
+                                "title": f"❌ ViVid Instruct 65k: Failed to upload metadata for shard shard_{shard_count}!",
+                                "description": f"Failed to upload metadata for shard shard_{shard_count} at https://huggingface.co/datasets/Vividbot/vividbot_video.",
+                                "color": 16711680,
+                                "timestamp": datetime.datetime.now(
+                                    timezone.utc
+                                ).isoformat(),
+                                "fields": [
+                                    {
+                                        "name": "Error",
+                                        "value": str(e),
+                                    }
+                                ],
+                            }
+                        ]
+                    }
+                )
 
-                            with open(
-                                f"{BASE_DATA_PATH}/metadata/shard_{shard_count}.json",
-                                "a",
-                            ) as f:
-                                f.write(
-                                    json.dumps(
-                                        data,
-                                        ensure_ascii=False,
-                                    )
-                                    + "\n"
-                                )
+                raise e
 
-                            print(f"Generated finetuning data for video {video}.")
-                            shutil.rmtree(video_path)
-                        except Exception as e:
-                            print(str(e))
-                            with open(
-                                f"{BASE_DATA_PATH}/generation_error_ids.txt", "a"
-                            ) as f:
-                                f.write(video[:-4] + "\n")
-
-                try:
-                    print(
-                        f"Uploading metadata for shard shard_{shard_count} to Hugging Face..."
-                    )
-
-                    uploader = Uploader()
-                    uploader.upload_file(
-                        file_path=f"{BASE_DATA_PATH}/metadata/shard_{shard_count}.json",
-                        repo_id="Vividbot/vividbot_video",
-                        path_in_repo=f"metadata/shard_{shard_count}.json",
-                        repo_type="dataset",
-                        overwrite=True,
-                    )
-
-                    notifier.send(
-                        body={
-                            "embeds": [
-                                {
-                                    "title": f"✅ ViVid Instruct 65k: Uploaded metadata for shard shard_{shard_count}!",
-                                    "description": f"Uploaded metadata for shard shard_{shard_count} at https://huggingface.co/datasets/Vividbot/vividbot_video.",
-                                    "color": 2278494,
-                                    "timestamp": datetime.datetime.now(
-                                        timezone.utc
-                                    ).isoformat(),
-                                }
-                            ]
-                        }
-                    )
-                except Exception as e:
-                    print(str(e))
-                    notifier.send(
-                        body={
-                            "embeds": [
-                                {
-                                    "title": f"❌ ViVid Instruct 65k: Failed to upload metadata for shard shard_{shard_count}!",
-                                    "description": f"Failed to upload metadata for shard shard_{shard_count} at https://huggingface.co/datasets/Vividbot/vividbot_video.",
-                                    "color": 16711680,
-                                    "timestamp": datetime.datetime.now(
-                                        timezone.utc
-                                    ).isoformat(),
-                                    "fields": [
-                                        {
-                                            "name": "Error",
-                                            "value": str(e),
-                                        }
-                                    ],
-                                }
-                            ]
-                        }
-                    )
-
-                    raise e
-
-            shard_count += 1
-            os.makedirs(
-                f"{BASE_DATA_PATH}/videos/shard_{shard_count}",
-                exist_ok=True,
-            )
+        shard_count += 1
+        os.makedirs(
+            f"{BASE_DATA_PATH}/videos/shard_{shard_count}",
+            exist_ok=True,
+        )
 
         if random_durations_index >= len(RANDOM_DURATIONS):
             break
