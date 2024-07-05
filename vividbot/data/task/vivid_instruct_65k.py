@@ -18,7 +18,6 @@ from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError, download_range_func
 
 from vividbot.data.discord.discord import DiscordNotifier
-from vividbot.data.processor.download import YoutubeDownloader
 from vividbot.data.processor.upload_hf import Uploader
 
 load_dotenv()
@@ -57,8 +56,6 @@ genai.configure(api_key=GOOGLE_API_KEY)
 notifier = DiscordNotifier(
     "https://discord.com/api/webhooks/1255505460040040508/n-QCTqNgp3RrsNc1hBRnXH4dfOejeH8iPTd8lqGevbSb_wAovD4xxv5ZVkVJBfVLF8vN"
 )
-uploader = Uploader()
-downloader = YoutubeDownloader()
 
 
 def download():
@@ -69,6 +66,14 @@ def download():
         "json",
         data_files="vivid_instruct_65k_unprocessed.jsonl",
     )
+
+    uploader = Uploader()
+    while uploader.check_file_exist(
+        repo_type="dataset",
+        repo_id="Vividbot/vividbot_video",
+        path_in_repo=f"metadata/shard_{shard_count}.json",
+    ):
+        shard_count += 1
 
     for row in tqdm(data["train"]):
         video_id = row["id"]
@@ -83,7 +88,6 @@ def download():
             and len(os.listdir(f"{BASE_DATA_PATH}/videos/shard_{shard_count}")) >= 10
         ):
             try:
-                uploader = Uploader()
                 uploader.zip_and_upload_dir(
                     f"{BASE_DATA_PATH}/videos/shard_{shard_count}",
                     "Vividbot/vividbot_video",
@@ -200,7 +204,6 @@ VIDEO CONTENT: {describer_response.text.strip()}"""
                             )
 
                         print(f"Generated finetuning data for video {video}.")
-                        shutil.rmtree(video_path)
                     except Exception as e:
                         print(str(e))
                         with open(
@@ -213,7 +216,6 @@ VIDEO CONTENT: {describer_response.text.strip()}"""
                     f"Uploading metadata for shard shard_{shard_count} to Hugging Face..."
                 )
 
-                uploader = Uploader()
                 uploader.upload_file(
                     file_path=f"{BASE_DATA_PATH}/metadata/shard_{shard_count}.json",
                     repo_id="Vividbot/vividbot_video",
@@ -261,11 +263,14 @@ VIDEO CONTENT: {describer_response.text.strip()}"""
 
                 raise e
 
-        shard_count += 1
-        os.makedirs(
-            f"{BASE_DATA_PATH}/videos/shard_{shard_count}",
-            exist_ok=True,
-        )
+            shutil.rmtree(f"{BASE_DATA_PATH}/videos/shard_{shard_count}")
+            os.remove(f"{BASE_DATA_PATH}/metadata/shard_{shard_count}.json")
+
+            shard_count += 1
+            os.makedirs(
+                f"{BASE_DATA_PATH}/videos/shard_{shard_count}",
+                exist_ok=True,
+            )
 
         if random_durations_index >= len(RANDOM_DURATIONS):
             break
@@ -315,7 +320,6 @@ VIDEO CONTENT: {describer_response.text.strip()}"""
 
     # upload error ids
     if os.path.exists(f"{BASE_DATA_PATH}/download_error_ids.txt"):
-        uploader = Uploader()
         uploader.upload_file(
             file_path=f"{BASE_DATA_PATH}/download_error_ids.txt",
             repo_id="Vividbot/vividbot_video",
@@ -325,7 +329,6 @@ VIDEO CONTENT: {describer_response.text.strip()}"""
         )
 
     if os.path.exists(f"{BASE_DATA_PATH}/generation_error_ids.txt"):
-        uploader = Uploader()
         uploader.upload_file(
             file_path=f"{BASE_DATA_PATH}/generation_error_ids.txt",
             repo_id="Vividbot/vividbot_video",
@@ -337,7 +340,6 @@ VIDEO CONTENT: {describer_response.text.strip()}"""
     # upload the last shard
     if os.path.exists(f"{BASE_DATA_PATH}/videos/shard_{shard_count}"):
         try:
-            uploader = Uploader()
             uploader.zip_and_upload_dir(
                 f"{BASE_DATA_PATH}/videos/shard_{shard_count}",
                 "Vividbot/vividbot_video",
@@ -449,20 +451,17 @@ VIDEO CONTENT: {describer_response.text.strip()}"""
                         )
 
                     print(f"Generated finetuning data for video {video}.")
-                    os.remove(video_path)
                 except Exception as e:
                     print(str(e))
                     with open(f"{BASE_DATA_PATH}/generation_error_ids.txt", "a") as f:
                         f.write(video[:-4] + "\n")
 
                     raise e
-
         try:
             print(
                 f"Uploading metadata for shard shard_{shard_count} to Hugging Face..."
             )
 
-            uploader = Uploader()
             uploader.upload_file(
                 file_path=f"{BASE_DATA_PATH}/metadata/shard_{shard_count}.json",
                 repo_id="Vividbot/vividbot_video",
