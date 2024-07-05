@@ -114,7 +114,7 @@ def download():
                         "embeds": [
                             {
                                 "title": f"✅ ViVid Instruct 65k: Uploaded shard {shard_count}!",
-                                "description": f"Uploaded shard {shard_count} with {len(os.listdir(f"{BASE_DATA_PATH}/videos/shard_{shard_count}"))} clips at https://huggingface.co/datasets/Vividbot/vividbot_video.",
+                                "description": f"Uploaded shard {shard_count} with {len(os.listdir(f'{BASE_DATA_PATH}/videos/shard_{shard_count}'))} clips at https://huggingface.co/datasets/Vividbot/vividbot_video.",
                                 "color": 2278494,
                                 "timestamp": datetime.datetime.now(
                                     timezone.utc
@@ -130,7 +130,7 @@ def download():
                         "embeds": [
                             {
                                 "title": f"❌ ViVid Instruct 65k: Failed to upload shard {shard_count}!",
-                                "description": f"Failed to upload shard {shard_count} with {len(os.listdir(f"{BASE_DATA_PATH}/videos/shard_{shard_count}"))} clips at https://huggingface.co/datasets/Vividbot/vividbot_video.",
+                                "description": f"Failed to upload shard {shard_count} with {len(os.listdir(f'{BASE_DATA_PATH}/videos/shard_{shard_count}'))} clips at https://huggingface.co/datasets/Vividbot/vividbot_video.",
                                 "color": 16711680,
                                 "timestamp": datetime.datetime.now(
                                     timezone.utc
@@ -374,7 +374,7 @@ VIDEO CONTENT: {describer_response.text.strip()}"""
                     "embeds": [
                         {
                             "title": f"✅ ViVid Instruct 65k: Uploaded shard {shard_count}!",
-                            "description": f"Uploaded shard {shard_count} with {len(os.listdir(f"{BASE_DATA_PATH}/videos/shard_{shard_count}"))} clips at https://huggingface.co/datasets/Vividbot/vividbot_video.",
+                            "description": f"Uploaded shard {shard_count} with {len(os.listdir(f'{BASE_DATA_PATH}/videos/shard_{shard_count}'))} clips at https://huggingface.co/datasets/Vividbot/vividbot_video.",
                             "color": 2278494,
                             "timestamp": datetime.datetime.now(
                                 timezone.utc
@@ -389,7 +389,7 @@ VIDEO CONTENT: {describer_response.text.strip()}"""
                     "embeds": [
                         {
                             "title": f"❌ ViVid Instruct 65k: Failed to upload shard {shard_count}!",
-                            "description": f"Failed to upload shard {shard_count} with {len(os.listdir(f"{BASE_DATA_PATH}/videos/shard_{shard_count}"))} clips at https://huggingface.co/datasets/Vividbot/vividbot_video.",
+                            "description": f"Failed to upload shard {shard_count} with {len(os.listdir(f'{BASE_DATA_PATH}/videos/shard_{shard_count}'))} clips at https://huggingface.co/datasets/Vividbot/vividbot_video.",
                             "color": 16711680,
                             "timestamp": datetime.datetime.now(
                                 timezone.utc
