@@ -23,8 +23,8 @@ from vividbot.data.processor.upload_hf import Uploader
 
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-BASE_DATA_PATH = "/home/dminhvu/data"
-RANDOM_DURATIONS = json.load(open(f"{BASE_DATA_PATH}/random_durations.json"))
+BASE_DATA_PATH = "/root/data"
+RANDOM_DURATIONS = json.load(open("/root/ViVidBot/random_durations.json"))
 DESCRIBE_VIDEO_PROMPT = "Describe only the visual content of the video without using its audio or transcript so that a person without vision can fully understand it. Remember to use Vietnamese language to describe the video."
 GENERATE_QA_PROMPT = """Generate 5 different pairs of questions and answers based on the description of the video. The questions should be relevant to the video content and the answers should be correct. Also, diversify the types of questions and answers as much as possible.
 Remember to use Vietnamese language to generate the questions and answers.
