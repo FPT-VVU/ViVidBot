@@ -60,7 +60,9 @@ class YoutubeDownloader(BaseProcessor):
         hours=end.tm_hour, minutes=end.tm_min, seconds=end.tm_sec
       ).total_seconds()
 
-    self.opts["download_ranges"] = download_range_func(ranges=[(start, end)])
+    self.opts["download_ranges"] = download_range_func(
+      chapters=None, ranges=[(start, end)]
+    )
     self.opts["outtmpl"] = (
       path
       + "/"
