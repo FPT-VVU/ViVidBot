@@ -153,7 +153,8 @@ def _process(batch: dict):
         try:
           video_file = genai.get_file(name=google_file_name)
         except Exception as e:
-          logger.error(f"Error getting video file {google_file_name}: {e}")
+          # logger.error(f"Error getting video file {google_file_name}: {e}")
+          pass
 
         if video_file is None or not video_file.state.name == "ACTIVE":
           video_file = genai.upload_file(
@@ -186,7 +187,9 @@ def _process(batch: dict):
           )
           describer_response = describer.generate_content(
             [video_file, DESCRIBE_VIDEO_PROMPT],
-            request_options={"timeout": 30, "retry": 2},
+            request_options={
+              "timeout": 60,
+            },
           )
 
           try:
