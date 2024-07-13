@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import sys
 from time import time
 
@@ -11,6 +12,7 @@ from datetime import timezone
 from pathlib import Path
 
 import google.generativeai as genai
+import numpy as np
 from datasets import load_dataset
 from dotenv import load_dotenv
 from yt_dlp.utils import DownloadError
@@ -47,13 +49,13 @@ uploader = Uploader()
 downloader = YoutubeDownloader()
 
 
-def send_upload_shard_success_message(shard_count, duration):
+def send_process_shard_success_message(shard_count, duration):
   notifier.send(
     body={
       "embeds": [
         {
-          "title": f"✅ ViVid Instruct 65k: Uploaded shard {shard_count}!",
-          "description": f"Uploaded shard {shard_count} \
+          "title": f"✅ ViVid Instruct 65k: Processed shard {shard_count}!",
+          "description": f"Processed shard {shard_count} \
 of {len(os.listdir(f'{BASE_DATA_PATH}/output/videos/shard_{shard_count}'))} clips \
 in {duration}(s). \
 Visit at https://huggingface.co/datasets/Vividbot/vividbot_video/tree/main/videos.",
@@ -65,86 +67,175 @@ Visit at https://huggingface.co/datasets/Vividbot/vividbot_video/tree/main/video
   )
 
 
-def send_upload_metadata_success_message(shard_count):
-  notifier.send(
-    body={
-      "embeds": [
-        {
-          "title": f"✅ ViVid Instruct 65k: Uploaded metadata for shard shard_{shard_count}!",
-          "description": f"Uploaded metadata for shard shard_{shard_count} at https://huggingface.co/datasets/Vividbot/vividbot_video.",
-          "color": 2278494,
-          "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
-        }
-      ]
-    }
-  )
-
-
-def _download(batch: dict):
+def _process(batch: dict):
   for start, end, video_id_with_chunk_id, shard_id in tqdm(
     zip(batch["start"], batch["end"], batch["id"], batch["shard_id"])
   ):
     video_id = video_id_with_chunk_id.split(".")[0]
-    if os.path.exists(
-      f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
-    ):
-      continue
 
     try:
-      downloader.process(
-        video_id=video_id,
-        video_id_with_chunk_id=video_id_with_chunk_id,
-        start=start,
-        end=end,
-        path=f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}",
-      )
+      if not os.path.exists(
+        f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+      ) and not uploader.check_file_exists(
+        repo_id="Vividbot/vividbot_video",
+        path_in_repo=f"videos/shard_{shard_id}.zip",
+        repo_type="dataset",
+      ):
+        downloader.process(
+          video_id=video_id,
+          video_id_with_chunk_id=video_id_with_chunk_id,
+          start=start,
+          end=end,
+          path=f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}",
+        )
+
     except DownloadError as e:
       with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
         data = {"id": video_id_with_chunk_id, "reason": str(e)}
         f.write(json.dumps(data) + "\n")
 
+    try:
+      if not uploader.check_file_exists(
+        repo_id="Vividbot/vividbot_video",
+        path_in_repo=f"metadata/shard_{shard_id}.jsonl",
+        repo_type="dataset",
+      ):
+        if not os.path.exists(
+          f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+        ):
+          print(f"Video {video_id_with_chunk_id} not found. Skipping...")
+          continue
 
-def download(shard: str):
+        video_file = genai.upload_file(
+          path=f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+        )
+
+        while video_file.state.name == "PROCESSING":
+          time.sleep(10)
+          video_file = genai.get_file(video_file.name)
+
+        if video_file.state.name == "FAILED":
+          with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
+            data = {"id": video_id_with_chunk_id, "reason": video_file.error}
+            f.write(json.dumps(data) + "\n")
+        elif video_file.state.name == "ACTIVE":
+          describer = genai.GenerativeModel(
+            "models/gemini-1.5-flash",
+            generation_config={
+              "temperature": 0.1,
+            },
+          )
+          describer_response = describer.generate_content(
+            [video_file, DESCRIBE_VIDEO_PROMPT],
+          )
+
+          qa_generator = genai.GenerativeModel(
+            "gemini-1.5-flash",
+            generation_config={
+              "response_mime_type": "application/json",
+              "temperature": 1,
+            },
+          )
+          full_prompt = f"""{GENERATE_QA_PROMPT}
+
+  VIDEO CONTENT: {describer_response.text.strip()}"""
+
+          qa_generator_response = qa_generator.generate_content(full_prompt)
+          qa_pairs = json.loads(qa_generator_response.text)
+          conversations = []
+
+          for qa in qa_pairs:
+            rand_num = np.random.random()
+            human_value = qa["question"]
+            gpt_value = qa["answer"]
+            if rand_num < 0.5:
+              human_value = human_value + "\n<video>"
+            else:
+              human_value = "<video>\n" + human_value
+            conversations.append({"from": "human", "value": human_value})
+            conversations.append({"from": "gpt", "value": gpt_value})
+
+          data = {
+            "id": video_id_with_chunk_id,
+            "video": f"shard_{shard_id}/{video_id_with_chunk_id}.mp4",
+            "description": describer_response.text.strip(),
+            "conversations": conversations,
+          }
+
+          with open(
+            f"{BASE_DATA_PATH}/output/metadata/shard_{shard_id}.jsonl",
+            "a",
+          ) as f:
+            f.write(
+              json.dumps(
+                data,
+                ensure_ascii=False,
+              )
+              + "\n"
+            )
+    except Exception as e:
+      with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
+        data = {"id": video_id_with_chunk_id, "reason": str(e)}
+        f.write(json.dumps(data) + "\n")
+
+
+def process(shard: str):
   """
   shard: str = "shard_0.json"
   """
   start_time = time()
 
   shard_id = int(shard.split(".")[0].split("_")[1])
-  if uploader.check_file_exists(
-    repo_id="Vividbot/vividbot_video",
-    path_in_repo=f"videos/shard_{shard_id}.zip",
-    repo_type="dataset",
-  ):
-    print(f"Shard {shard_id} already uploaded. Skipping...")
-    return
 
-  print(f"Downloading videos for shard {shard_id}...")
+  print(f"Processing videos for shard {shard_id}...")
 
   os.makedirs(f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}", exist_ok=True)
 
   dataset = load_dataset(
     "json", data_files=f"{BASE_DATA_PATH}/vivid_instruct_65k/{shard}"
   )["train"]
+
   dataset.map(
-    _download,
+    _process,
     batched=True,
     batch_size=200,
     num_proc=os.cpu_count(),
   )
 
-  uploader.zip_and_upload_dir(
-    dir_path=f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}",
+  if uploader.check_file_exists(
     repo_id="Vividbot/vividbot_video",
     path_in_repo=f"videos/shard_{shard_id}.zip",
     repo_type="dataset",
+  ):
+    print(f"Shard {shard_id} already uploaded. Skipping...")
+  else:
+    uploader.zip_and_upload_dir(
+      dir_path=f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}",
+      repo_id="Vividbot/vividbot_video",
+      path_in_repo=f"videos/shard_{shard_id}.zip",
+      repo_type="dataset",
+      overwrite=True,
+    )
+
+  uploader.upload_file(
+    file_path=f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl",
+    repo_id="Vividbot/vividbot_video",
+    path_in_repo=f"errors/shard_{shard_id}.jsonl",
+    repo_type="dataset",
     overwrite=True,
   )
-  if os.path.exists(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl"):
+
+  if uploader.check_file_exists(
+    repo_id="Vividbot/vividbot_video",
+    path_in_repo=f"metadata/shard_{shard_id}.jsonl",
+    repo_type="dataset",
+  ):
+    print(f"Metadata for shard {shard_id} already uploaded. Skipping...")
+  else:
     uploader.upload_file(
-      file_path=f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl",
+      file_path=f"{BASE_DATA_PATH}/output/metadata/shard_{shard_id}.jsonl",
       repo_id="Vividbot/vividbot_video",
-      path_in_repo=f"errors/shard_{shard_id}.jsonl",
+      path_in_repo=f"metadata/shard_{shard_id}.jsonl",
       repo_type="dataset",
       overwrite=True,
     )
@@ -152,11 +243,11 @@ def download(shard: str):
   end_time = time()
   duration = round(end_time - start_time, 2)
 
-  send_upload_shard_success_message(shard_id, duration)
+  send_process_shard_success_message(shard_id, duration)
 
-
-def generate():
-  pass
+  shutil.rmtree(f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}")
+  os.remove(f"{BASE_DATA_PATH}/output/metadata/shard_{shard_id}.jsonl")
+  os.remove(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl")
 
 
 def prepare():
@@ -167,93 +258,15 @@ def prepare():
 
 def main():
   prepare()
+
   for shard in tqdm(
     sorted(
       os.listdir(f"{BASE_DATA_PATH}/vivid_instruct_65k"),
       key=lambda x: int(x.split(".")[0].split("_")[1]),
     )
   ):
-    download(shard)
+    process(shard)
 
 
 if __name__ == "__main__":
   main()
-
-# for video in tqdm(videos):
-#   print(f"Uploading video {video} to Gemini...")
-#   video_path = f"{BASE_DATA_PATH}/videos/shard_{shard_count}/{video}"
-#   video_file = genai.upload_file(path=video_path)
-
-#   print(f'Generating finetuning data for video "{video}"...', end="")
-#   while video_file.state.name == "PROCESSING":
-#     print(".", end="")
-#     time.sleep(10)
-#     video_file = genai.get_file(video_file.name)
-
-#   if video_file.state.name == "FAILED":
-#     print(ValueError(video_file.state.name))
-#     with open(f"{BASE_DATA_PATH}/generation_error_ids.txt", "a") as f:
-#       f.write(video[:-4] + "\n")
-#   elif video_file.state.name == "ACTIVE":
-#     try:
-#       describer = genai.GenerativeModel(
-#         "models/gemini-1.5-flash",
-#         generation_config={
-#           "temperature": 0.1,
-#         },
-#       )
-#       describer_response = describer.generate_content(
-#         [video_file, DESCRIBE_VIDEO_PROMPT],
-#       )
-
-#       qa_generator = genai.GenerativeModel(
-#         "gemini-1.5-flash",
-#         generation_config={
-#           "response_mime_type": "application/json",
-#           "temperature": 1,
-#         },
-#       )
-#       full_prompt = f"""{GENERATE_QA_PROMPT}
-
-#   VIDEO CONTENT: {describer_response.text.strip()}"""
-
-#       qa_generator_response = qa_generator.generate_content(full_prompt)
-#       qa_pairs = json.loads(qa_generator_response.text)
-#       conversations = []
-
-#       for qa in qa_pairs:
-#         rand_num = np.random.random()
-#         human_value = qa["question"]
-#         if rand_num < 0.5:
-#           human_value += "\n<video>"
-#         else:
-#           human_value = "<video>\n" + human_value
-#         conversations.append({"from": "human", "value": human_value})
-#         conversations.append({"from": "gpt", "value": qa["answer"]})
-
-#       dataset = {
-#         "id": video[:-4],
-#         "video": f"shard_{shard_count}/{video}",
-#         "description": describer_response.text.strip(),
-#         "conversations": conversations,
-#       }
-
-#       with open(
-#         f"{BASE_DATA_PATH}/metadata/shard_{shard_count}.json",
-#         "a",
-#       ) as f:
-#         f.write(
-#           json.dumps(
-#             dataset,
-#             ensure_ascii=False,
-#           )
-#           + "\n"
-#         )
-
-#       print(f"Generated finetuning data for video {video}.")
-#     except Exception as e:
-#       print(str(e))
-#       with open(f"{BASE_DATA_PATH}/generation_error_ids.txt", "a") as f:
-#         f.write(video[:-4] + "\n")
-
-#       raise e
