@@ -156,7 +156,7 @@ def _process(batch: dict):
           logger.error(f"Error getting video file {google_file_name}: {e}")
 
         if video_file is None or not video_file.state.name == "ACTIVE":
-          if not video_file.state.name == "ACTIVE":
+          if video_file and not video_file.state.name == "ACTIVE":
             genai.delete_file(name=google_file_name)
           video_file = genai.upload_file(
             path=f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4",
@@ -164,11 +164,11 @@ def _process(batch: dict):
             display_name=video_id_with_chunk_id,
           )
 
-        while video_file.state.name == "PROCESSING":
+        while video_file and video_file.state.name == "PROCESSING":
           time.sleep(5)
           video_file = genai.get_file(video_file.name)
 
-        if video_file.state.name == "FAILED":
+        if video_file and video_file.state.name == "FAILED":
           logger.error(
             f"Error uploading video {video_id_with_chunk_id}: {video_file.error}"
           )
@@ -178,7 +178,7 @@ def _process(batch: dict):
               "reason": f"Error uploading video: {video_file.error}",
             }
             f.write(json.dumps(data) + "\n")
-        elif video_file.state.name == "ACTIVE":
+        elif video_file and video_file.state.name == "ACTIVE":
           describer = genai.GenerativeModel(
             "models/gemini-1.5-flash",
             generation_config={
