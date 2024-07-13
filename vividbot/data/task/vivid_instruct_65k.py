@@ -21,6 +21,8 @@ from vividbot.data.discord.discord import DiscordNotifier
 from vividbot.data.processor.download import YoutubeDownloader
 from vividbot.data.processor.executor import Executor
 from vividbot.data.processor.upload_hf import Uploader
+from groq import Groq
+
 
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
@@ -42,6 +44,9 @@ Return the questions and answers in the following format:
 """
 
 genai.configure(api_key=GOOGLE_API_KEY)
+groq_client = Groq(
+  api_key=os.getenv("GROQ_API_KEY"),
+)
 notifier = DiscordNotifier(
   "https://discord.com/api/webhooks/1255505460040040508/n-QCTqNgp3RrsNc1hBRnXH4dfOejeH8iPTd8lqGevbSb_wAovD4xxv5ZVkVJBfVLF8vN"
 )
@@ -130,11 +135,12 @@ def _process(batch: dict):
           video_file = genai.get_file(video_file.name)
 
         if video_file.state.name == "FAILED":
-          print(
-            f"Error generating metadata for video {video_id_with_chunk_id}: {video_file.error}"
-          )
+          print(f"Error uploading video {video_id_with_chunk_id}: {video_file.error}")
           with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
-            data = {"id": video_id_with_chunk_id, "reason": video_file.error}
+            data = {
+              "id": video_id_with_chunk_id,
+              "reason": f"Error uploading video: {video_file.error}",
+            }
             f.write(json.dumps(data) + "\n")
         elif video_file.state.name == "ACTIVE":
           describer = genai.GenerativeModel(
@@ -146,51 +152,104 @@ def _process(batch: dict):
           describer_response = describer.generate_content(
             [video_file, DESCRIBE_VIDEO_PROMPT],
           )
+          try:
+            full_prompt = f"""{GENERATE_QA_PROMPT}
 
-          qa_generator = genai.GenerativeModel(
-            "gemini-1.5-flash",
-            generation_config={
-              "response_mime_type": "application/json",
-              "temperature": 1,
-            },
-          )
-          full_prompt = f"""{GENERATE_QA_PROMPT}
+VIDEO CONTENT: {describer_response.text.strip()}"""
+            chat_completion = groq_client.chat.completions.create(
+              messages=[
+                {
+                  "role": "user",
+                  "content": full_prompt,
+                }
+              ],
+              model="llama3-70b-8192",
+              temperature=1,
+              response_format="json_object",
+              max_tokens=8192,
+              stream=False,
+            )
+            qa_pairs = json.loads(chat_completion.choices[0].message.content)
+            conversations = []
+
+            for qa in qa_pairs:
+              rand_num = np.random.random()
+              human_value = qa["question"]
+              gpt_value = qa["answer"]
+              if rand_num < 0.5:
+                human_value = human_value + "\n<video>"
+              else:
+                human_value = "<video>\n" + human_value
+              conversations.append({"from": "human", "value": human_value})
+              conversations.append({"from": "gpt", "value": gpt_value})
+
+            data = {
+              "id": video_id_with_chunk_id,
+              "video": f"shard_{shard_id}/{video_id_with_chunk_id}.mp4",
+              "description": describer_response.text.strip(),
+              "conversations": conversations,
+            }
+
+            with open(
+              f"{BASE_DATA_PATH}/output/metadata/shard_{shard_id}.jsonl",
+              "a",
+            ) as f:
+              f.write(
+                json.dumps(
+                  data,
+                  ensure_ascii=False,
+                )
+                + "\n"
+              )
+
+          except Exception as e:
+            print(
+              f"Couldn't generate QA pairs for video {video_id_with_chunk_id} using Groq: {str(e)}. Retrying with Gemini..."
+            )
+            qa_generator = genai.GenerativeModel(
+              "gemini-1.5-flash",
+              generation_config={
+                "response_mime_type": "application/json",
+                "temperature": 1,
+              },
+            )
+            full_prompt = f"""{GENERATE_QA_PROMPT}
 
   VIDEO CONTENT: {describer_response.text.strip()}"""
 
-          qa_generator_response = qa_generator.generate_content(full_prompt)
-          qa_pairs = json.loads(qa_generator_response.text)
-          conversations = []
+            qa_generator_response = qa_generator.generate_content(full_prompt)
+            qa_pairs = json.loads(qa_generator_response.text)
+            conversations = []
 
-          for qa in qa_pairs:
-            rand_num = np.random.random()
-            human_value = qa["question"]
-            gpt_value = qa["answer"]
-            if rand_num < 0.5:
-              human_value = human_value + "\n<video>"
-            else:
-              human_value = "<video>\n" + human_value
-            conversations.append({"from": "human", "value": human_value})
-            conversations.append({"from": "gpt", "value": gpt_value})
+            for qa in qa_pairs:
+              rand_num = np.random.random()
+              human_value = qa["question"]
+              gpt_value = qa["answer"]
+              if rand_num < 0.5:
+                human_value = human_value + "\n<video>"
+              else:
+                human_value = "<video>\n" + human_value
+              conversations.append({"from": "human", "value": human_value})
+              conversations.append({"from": "gpt", "value": gpt_value})
 
-          data = {
-            "id": video_id_with_chunk_id,
-            "video": f"shard_{shard_id}/{video_id_with_chunk_id}.mp4",
-            "description": describer_response.text.strip(),
-            "conversations": conversations,
-          }
+            data = {
+              "id": video_id_with_chunk_id,
+              "video": f"shard_{shard_id}/{video_id_with_chunk_id}.mp4",
+              "description": describer_response.text.strip(),
+              "conversations": conversations,
+            }
 
-          with open(
-            f"{BASE_DATA_PATH}/output/metadata/shard_{shard_id}.jsonl",
-            "a",
-          ) as f:
-            f.write(
-              json.dumps(
-                data,
-                ensure_ascii=False,
+            with open(
+              f"{BASE_DATA_PATH}/output/metadata/shard_{shard_id}.jsonl",
+              "a",
+            ) as f:
+              f.write(
+                json.dumps(
+                  data,
+                  ensure_ascii=False,
+                )
+                + "\n"
               )
-              + "\n"
-            )
     except Exception as e:
       print(f"Error generating metadata for video {video_id_with_chunk_id}: {e}")
       with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
