@@ -24,12 +24,6 @@ from vividbot.data.discord.discord import DiscordNotifier
 from vividbot.data.processor.download import YoutubeDownloader
 from vividbot.data.processor.upload_hf import Uploader
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(
-  level=logging.INFO,
-  format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
-
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 BASE_DATA_PATH = f"{Path.home()}/data"
@@ -51,6 +45,14 @@ All questions should be relevant to the video content and the answers should be 
 Return the questions and answers in the following JSON format (a list of pairs of questions and answers):
 [{"question": "Q1","answer": "A1"},{"question": "Q2","answer": "A2"}, # and so on...]
 """
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+  filename=f"{BASE_DATA_PATH}/output/logs/vivid_instruct_65k.log",
+  filemode="a",
+  level=logging.INFO,
+  format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 
 genai.configure(api_key=GOOGLE_API_KEY)
 groq_client = Groq(
