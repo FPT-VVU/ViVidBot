@@ -424,7 +424,7 @@ def prepare():
 
 def main():
   prepare()
-  last_successful_shard = 1
+  last_successful_shard = 2
   for shard in tqdm(
     sorted(
       os.listdir(f"{BASE_DATA_PATH}/vivid_instruct_65k"),
