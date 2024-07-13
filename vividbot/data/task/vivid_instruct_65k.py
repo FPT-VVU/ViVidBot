@@ -115,7 +115,6 @@ def _process(batch: dict):
           video_file = genai.get_file(name=google_file_name)
         except Exception as e:
           print(f"Error getting video file {google_file_name}: {e}")
-          raise e
 
         if video_file is None:
           video_file = genai.upload_file(
