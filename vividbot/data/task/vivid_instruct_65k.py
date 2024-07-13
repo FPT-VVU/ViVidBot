@@ -191,10 +191,9 @@ def _process(batch: dict):
 
           try:
             logger.info(
-              f"Generating QA pairs for video {video_id_with_chunk_id} with Together..."
+              f"Generating QA pairs for video {video_id_with_chunk_id} with Groq..."
             )
-            response = together_client.chat.completions.create(
-              model="meta-llama/Llama-3-70b-chat-hf",
+            chat_completion = groq_client.chat.completions.create(
               messages=[
                 {
                   "role": "system",
@@ -205,15 +204,16 @@ def _process(batch: dict):
                   "content": f"{describer_response.text.strip()}",
                 },
               ],
+              model="llama3-70b-8192",
               temperature=1,
               stream=False,
-              max_tokens=4096,
+              max_tokens=8192,
             )
             response_content = process_response_content(
-              response.choices[0].message.content
+              chat_completion.choices[0].message.content
             )
             logger.info(
-              f"Together response for video {video_id_with_chunk_id}: {response_content}"
+              f"Groq response for video {video_id_with_chunk_id}: {response_content}"
             )
             qa_pairs = json.loads(response_content)
             conversations = []
@@ -232,7 +232,7 @@ def _process(batch: dict):
             data = {
               "id": video_id_with_chunk_id,
               "video": f"shard_{shard_id}/{video_id_with_chunk_id}.mp4",
-              "generator": "together/meta-llama/Llama-3-70b-chat-hf",
+              "generator": "groq/llama3-70b-8192",
               "description": describer_response.text.strip(),
               "conversations": conversations,
             }
@@ -248,12 +248,14 @@ def _process(batch: dict):
                 )
                 + "\n"
               )
+
           except Exception as e:
             logger.error(
-              f"Couldn't generate QA pairs for video {video_id_with_chunk_id}: {str(e)}. Retrying with Groq..."
+              f"Couldn't generate QA pairs for video {video_id_with_chunk_id}: {str(e)}. Retrying with Together..."
             )
             try:
-              chat_completion = groq_client.chat.completions.create(
+              response = together_client.chat.completions.create(
+                model="meta-llama/Llama-3-70b-chat-hf",
                 messages=[
                   {
                     "role": "system",
@@ -264,16 +266,15 @@ def _process(batch: dict):
                     "content": f"{describer_response.text.strip()}",
                   },
                 ],
-                model="llama3-70b-8192",
                 temperature=1,
                 stream=False,
-                max_tokens=8192,
+                max_tokens=4096,
               )
               response_content = process_response_content(
-                chat_completion.choices[0].message.content
+                response.choices[0].message.content
               )
               logger.info(
-                f"Groq response for video {video_id_with_chunk_id}: {response_content}"
+                f"Together response for video {video_id_with_chunk_id}: {response_content}"
               )
               qa_pairs = json.loads(response_content)
               conversations = []
@@ -292,7 +293,7 @@ def _process(batch: dict):
               data = {
                 "id": video_id_with_chunk_id,
                 "video": f"shard_{shard_id}/{video_id_with_chunk_id}.mp4",
-                "generator": "groq/llama3-70b-8192",
+                "generator": "together/meta-llama/Llama-3-70b-chat-hf",
                 "description": describer_response.text.strip(),
                 "conversations": conversations,
               }
