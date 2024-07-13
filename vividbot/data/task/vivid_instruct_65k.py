@@ -153,10 +153,11 @@ def _process(batch: dict):
         try:
           video_file = genai.get_file(name=google_file_name)
         except Exception as e:
-          # logger.error(f"Error getting video file {google_file_name}: {e}")
-          pass
+          logger.error(f"Error getting video file {google_file_name}: {e}")
 
         if video_file is None or not video_file.state.name == "ACTIVE":
+          if not video_file.state.name == "ACTIVE":
+            genai.delete_file(name=google_file_name)
           video_file = genai.upload_file(
             path=f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4",
             name=google_file_name,
