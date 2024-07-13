@@ -26,7 +26,6 @@ from vividbot.data.processor.download import YoutubeDownloader
 from vividbot.data.processor.upload_hf import Uploader
 
 load_dotenv()
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 BASE_DATA_PATH = f"{Path.home()}/data"
 DESCRIBE_VIDEO_PROMPT = """Describe only the visual content of the video without using the audio or transcript so that a normal people can interpret what is happening in the video.
 Don't use the audio or transcript of the video to describe the video content. Use only the visual content.
@@ -43,6 +42,7 @@ Examples of questions (do not need to follow the order and these are just exampl
 - What is the person in the video holding and what are its characteristics?
 - How does the person in the video look?
 - What is the position of the object in the video?
+- ...
 And more questions that can be asked about the video content (what, where, when, why, how, etc.) with varying levels of complexity.
 All questions should be relevant to the video content and the answers should be FULLY informative and correct. The answer should be a complete sentence or a complete phrase.
 Only return the list of pair of questions and answers in the following JSON format:
@@ -58,7 +58,7 @@ logging.basicConfig(
   format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 
-genai.configure(api_key=GOOGLE_API_KEY)
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 groq_client = Groq(
   api_key=os.getenv("GROQ_API_KEY"),
   max_retries=0,
