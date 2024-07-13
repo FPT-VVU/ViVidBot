@@ -254,6 +254,7 @@ def prepare():
   os.makedirs(f"{BASE_DATA_PATH}/output", exist_ok=True)
   os.makedirs(f"{BASE_DATA_PATH}/output/videos", exist_ok=True)
   os.makedirs(f"{BASE_DATA_PATH}/output/errors", exist_ok=True)
+  os.makedirs(f"{BASE_DATA_PATH}/output/metadata", exist_ok=True)
 
 
 def main():
