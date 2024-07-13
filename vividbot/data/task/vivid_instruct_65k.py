@@ -158,6 +158,7 @@ def _process(batch: dict):
           describer_response = describer.generate_content(
             [video_file, DESCRIBE_VIDEO_PROMPT],
           )
+
           try:
             print(
               f"Generating QA pairs for video {video_id_with_chunk_id} with Groq..."
@@ -175,11 +176,9 @@ def _process(batch: dict):
               ],
               model="llama3-70b-8192",
               temperature=1,
-              response_format={"type": "json_object"},
-              max_tokens=8192,
               stream=False,
             )
-            qa_pairs = json.loads(chat_completion.choices[0].message.content)
+            qa_pairs = json.loads(chat_completion.choices[0].message.content.strip())
             conversations = []
 
             for qa in qa_pairs:
@@ -230,10 +229,9 @@ def _process(batch: dict):
                   },
                 ],
                 temperature=1,
-                max_tokens=8192,
                 stream=False,
               )
-              qa_pairs = json.loads(response.choices[0].message.content)
+              qa_pairs = json.loads(response.choices[0].message.content.strip())
               conversations = []
 
               for qa in qa_pairs:
@@ -271,7 +269,7 @@ def _process(batch: dict):
                 f"Couldn't generate QA pairs for video {video_id_with_chunk_id}: {str(e)}. Retrying with Gemini..."
               )
               qa_generator = genai.GenerativeModel(
-                "google/gemini-1.5-flash",
+                "gemini-1.5-flash",
                 generation_config={
                   "response_mime_type": "application/json",
                   "temperature": 1,
@@ -301,7 +299,7 @@ def _process(batch: dict):
                 "video": f"shard_{shard_id}/{video_id_with_chunk_id}.mp4",
                 "description": describer_response.text.strip(),
                 "conversations": conversations,
-                "generator": "gemini-1.5-flash",
+                "generator": "google/gemini-1.5-flash",
               }
 
               with open(
