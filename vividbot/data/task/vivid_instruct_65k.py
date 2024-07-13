@@ -1,33 +1,23 @@
 import os
-import shutil
 import sys
 
-import numpy as np
-
-from vividbot.data.processor.download import YoutubeDownloader
-from vividbot.data.processor.executor import Executor
-
 sys.path.append(os.getcwd())
-
-
 import datetime
-import json
-import time
 from datetime import timezone
+from pathlib import Path
 
 import google.generativeai as genai
-from datasets import load_dataset
 from dotenv import load_dotenv
-from tqdm import tqdm
-from yt_dlp import YoutubeDL
-from yt_dlp.utils import DownloadError, download_range_func
+from yt_dlp.utils import DownloadError
 
 from vividbot.data.discord.discord import DiscordNotifier
+from vividbot.data.processor.download import YoutubeDownloader
+from vividbot.data.processor.executor import Executor
 from vividbot.data.processor.upload_hf import Uploader
 
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-BASE_DATA_PATH = "/root/data"
+BASE_DATA_PATH = f"{Path.home()}/data"
 DESCRIBE_VIDEO_PROMPT = "Describe only the visual content of the video without using its audio or transcript so that a person without vision can fully understand it. Remember to use Vietnamese language to describe the video."
 GENERATE_QA_PROMPT = """Generate 5 different pairs of questions and answers based on the description of the video. The questions should be relevant to the video content and the answers should be correct. Also, diversify the types of questions and answers as much as possible.
 Remember to use Vietnamese language to generate the questions and answers.
@@ -130,7 +120,7 @@ def _download(batch: dict, path: str):
   for clip in batch.items():
     start = clip["start"]
     end = clip["end"]
-    clip_id = clip["clip_id"]
+    clip_id = clip["id"]
     video_id = clip_id.split(".")[0]
     try:
       downloader.process(clip_id=clip_id, start=start, end=end, path=path)
@@ -142,11 +132,16 @@ def _download(batch: dict, path: str):
 def prepare():
   os.makedirs(f"{BASE_DATA_PATH}/videos", exist_ok=True)
   os.makedirs(f"{BASE_DATA_PATH}/metadata", exist_ok=True)
+  os.makedirs(f"{BASE_DATA_PATH}/output/error", exist_ok=True)
+  os.makedirs(f"{BASE_DATA_PATH}/output/video", exist_ok=True)
+  os.makedirs(f"{BASE_DATA_PATH}/output/metadata", exist_ok=True)
+  os.makedirs(f"{BASE_DATA_PATH}/cache", exist_ok=True)
+  os.makedirs(f"{BASE_DATA_PATH}/cache/temp", exist_ok=True)
 
 
 def download(executor: Executor):
   name = os.path.basename(executor.file_path).split(".")[0]
-  path_out_chunks = f"${BASE_DATA_PATH}/output/{name}"
+  path_out_chunks = f"{BASE_DATA_PATH}/output/{name}"
 
   executor.process(
     map_fn=_download,
@@ -167,7 +162,7 @@ def download(executor: Executor):
     overwrite=True,
   )
   uploader.upload_file(
-    file_path=f"${BASE_DATA_PATH}/output/error/error_{name}.json",
+    file_path=f"{BASE_DATA_PATH}/output/error/error_{name}.json",
     repo_id="Vividbot/vividbot_video",
     path_in_repo=f"error/error_{name}.json",
     repo_type="dataset",
@@ -176,14 +171,15 @@ def download(executor: Executor):
 
 
 def main():
+  prepare()
+
   executor = Executor(
-    file_path=f"${BASE_DATA_PATH}/vivid_instruct_65k_result.jsonl",
-    cache_dir=f"${BASE_DATA_PATH}/cache",
+    file_path=f"{BASE_DATA_PATH}/vivid_instruct_65k_result.jsonl",
+    cache_dir=f"{BASE_DATA_PATH}/cache",
     output_dir=f"{BASE_DATA_PATH}/output",
     num_shards=500,
   )
 
-  prepare()
   download(executor)
 
 
