@@ -81,6 +81,7 @@ def _process(batch: dict):
         path_in_repo=f"videos/shard_{shard_id}.zip",
         repo_type="dataset",
       ):
+        print(f"Downloading video {video_id_with_chunk_id}...")
         downloader.process(
           video_id=video_id,
           video_id_with_chunk_id=video_id_with_chunk_id,
@@ -90,6 +91,7 @@ def _process(batch: dict):
         )
 
     except DownloadError as e:
+      print(f"Error downloading video {video_id_with_chunk_id}: {e}")
       with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
         data = {"id": video_id_with_chunk_id, "reason": str(e)}
         f.write(json.dumps(data) + "\n")
@@ -100,6 +102,7 @@ def _process(batch: dict):
         path_in_repo=f"metadata/shard_{shard_id}.jsonl",
         repo_type="dataset",
       ):
+        print(f"Generating metadata for video {video_id_with_chunk_id}...")
         if not os.path.exists(
           f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
         ):
@@ -115,6 +118,7 @@ def _process(batch: dict):
           video_file = genai.get_file(video_file.name)
 
         if video_file.state.name == "FAILED":
+          print(f"Error generating metadata for video {video_id_with_chunk_id}: {video_file.error}")
           with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
             data = {"id": video_id_with_chunk_id, "reason": video_file.error}
             f.write(json.dumps(data) + "\n")
@@ -174,6 +178,7 @@ def _process(batch: dict):
               + "\n"
             )
     except Exception as e:
+      print(f"Error generating metadata for video {video_id_with_chunk_id}: {e}")
       with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
         data = {"id": video_id_with_chunk_id, "reason": str(e)}
         f.write(json.dumps(data) + "\n")
