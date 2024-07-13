@@ -493,14 +493,20 @@ def process(shard: str):
 
   # remove video file from google cloud
   logger.info(f"Cleaning up shard {shard_id}...")
+
   dataset.map(
     _delete_video,
     batched=True,
     batch_size=200,
     num_proc=os.cpu_count(),
   )
-
-  shutil.rmtree(f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}", ignore_errors=True)
+  try:
+    shutil.rmtree(
+      f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}", ignore_errors=True
+    )
+  except Exception as e:
+    logger.error(f"Error cleaning up videos for shard {shard_id}: {e}")
+    pass
 
   end_time = time.time()
   duration = round(end_time - start_time, 2)
@@ -517,13 +523,16 @@ def prepare():
 
 def main():
   prepare()
-  last_successful_shard = 3
+  last_successful_shard = 4
   for shard in tqdm(
     sorted(
       os.listdir(f"{BASE_DATA_PATH}/vivid_instruct_65k"),
       key=lambda x: int(x.split(".")[0].split("_")[1]),
-    )[last_successful_shard + 1 :]
+    )
   ):
+    shard_id = int(shard.split(".")[0].split("_")[1])
+    if shard_id <= last_successful_shard:
+      continue
     process(shard)
 
 
