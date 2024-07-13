@@ -23,6 +23,7 @@ class YoutubeDownloader(BaseProcessor):
       "no_warnings": True,
       "force_keyframes_at_cuts": True,
       "downloader": "aria2c",
+      "geo_bypass_country": "VN",
     }
 
   def process(
