@@ -389,6 +389,7 @@ def process(shard: str):
   duration = round(end_time - start_time, 2)
 
   # remove video file from google cloud
+  print(f"Cleaning up shard {shard_id}...")
   for video in os.listdir(f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}"):
     video_id_with_chunk_id = video.replace(".mp4", "")
     video_id, chunk_id = video_id_with_chunk_id.split(".")
