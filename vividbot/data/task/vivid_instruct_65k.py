@@ -488,9 +488,6 @@ def process(shard: str):
       overwrite=True,
     )
 
-  end_time = time.time()
-  duration = round(end_time - start_time, 2)
-
   # remove video file from google cloud
   logger.info(f"Cleaning up shard {shard_id}...")
   dataset.map(
@@ -501,6 +498,9 @@ def process(shard: str):
   )
 
   shutil.rmtree(f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}", ignore_errors=True)
+
+  end_time = time.time()
+  duration = round(end_time - start_time, 2)
 
   send_process_shard_success_message(shard_id, duration)
 
