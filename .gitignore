@@ -1,7 +1,4 @@
 __pycache__
 .env
-
-vivid_instruct_65k/data/metadata/
-vivid_instruct_65k/data/videos/
-
+.venv
 .ipynb_checkpoints

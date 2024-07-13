@@ -1,9 +1,6 @@
 import argparse
 import os
-import random
-import shutil
 import sys
-import time
 
 sys.path.append(os.getcwd())
 # turn of warning
@@ -13,7 +10,6 @@ warnings.filterwarnings("ignore")
 
 from datasets import load_dataset
 
-from vividbot.data.processor.download import YoutubeDownloader
 from vividbot.data.processor.executor import Executor
 from vividbot.data.processor.question_selection import QuestionSelection
 from vividbot.data.processor.translator import GGTranslator
