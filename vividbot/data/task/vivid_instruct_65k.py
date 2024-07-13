@@ -321,6 +321,7 @@ def _process(batch: dict):
                   ],
                   stream=False,
                   max_tokens=8192,
+                  temperature=1,
                 )
                 logger.info(
                   f"Anthropic response for video {video_id_with_chunk_id}: {message.content.strip()}"
