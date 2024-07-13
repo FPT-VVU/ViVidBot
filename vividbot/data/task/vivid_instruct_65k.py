@@ -136,7 +136,6 @@ def prepare():
   os.makedirs(f"{BASE_DATA_PATH}/output/video", exist_ok=True)
   os.makedirs(f"{BASE_DATA_PATH}/output/metadata", exist_ok=True)
   os.makedirs(f"{BASE_DATA_PATH}/cache", exist_ok=True)
-  os.makedirs(f"{BASE_DATA_PATH}/cache/temp", exist_ok=True)
 
 
 def download(executor: Executor):
