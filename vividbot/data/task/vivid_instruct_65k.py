@@ -117,15 +117,20 @@ def send_upload_metadata_failure_message(shard_count, e):
 def _download(batch: dict, path: str):
   error_list = {"url_error": []}
 
-  for clip in batch.items():
-    start = clip["start"]
-    end = clip["end"]
-    clip_id = clip["id"]
-    video_id = clip_id.split(".")[0]
+  for start, end, video_id_with_chunk_id in zip(
+    batch["start"], batch["end"], batch["id"]
+  ):
+    video_id = video_id_with_chunk_id.split(".")[0]
     try:
-      downloader.process(clip_id=clip_id, start=start, end=end, path=path)
+      downloader.process(
+        video_id=video_id,
+        video_id_with_chunk_id=video_id_with_chunk_id,
+        start=start,
+        end=end,
+        path=path,
+      )
     except DownloadError:
-      error_list["url_error"].append(video_id)
+      error_list["url_error"].append(video_id_with_chunk_id)
   return error_list
 
 

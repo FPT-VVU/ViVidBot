@@ -27,8 +27,8 @@ class YoutubeDownloader(BaseProcessor):
 
   def process(
     self,
-    url_id: str | None,
-    clip_id: str | None,
+    video_id: str | None,
+    video_id_with_chunk_id: str | None,
     start: str | int = None,  # if int, it is the start time
     end: str | int = None,  # if int, it is the end time
     path: str = "",
@@ -36,11 +36,13 @@ class YoutubeDownloader(BaseProcessor):
     if not os.path.exists(path):
       os.makedirs(path, exist_ok=True)
 
-    url_yt = "https://www.youtube.com/watch?v=" + url_id
+    url_yt = "https://www.youtube.com/watch?v=" + video_id
 
     if start is None or end is None:
       self.opts["outtmpl"] = (
-        path + "/" + f"{url_id if clip_id is None else clip_id}.%(ext)s"
+        path
+        + "/"
+        + f"{video_id_with_chunk_id if video_id_with_chunk_id is not None else video_id}.%(ext)s"
       )
       with yt_dlp.YoutubeDL(self.opts) as ydl:
         ydl.download(url_yt)
@@ -58,9 +60,11 @@ class YoutubeDownloader(BaseProcessor):
         hours=end.tm_hour, minutes=end.tm_min, seconds=end.tm_sec
       ).total_seconds()
 
-    self.opts["download_ranges"] = download_range_func(None, [(start, end)])
+    self.opts["download_ranges"] = download_range_func(ranges=[(start, end)])
     self.opts["outtmpl"] = (
-      path + "/" + f"{url_id if clip_id is None else clip_id}.%(ext)s"
+      path
+      + "/"
+      + f"{video_id_with_chunk_id if video_id_with_chunk_id is not None else video_id}.%(ext)s"
     )
 
     with yt_dlp.YoutubeDL(self.opts) as ydl:

@@ -170,7 +170,7 @@ def _download(batch: dict, path: str):
     error_list = {"url_error": []}
     for url_id in batch["id"]:
         try:
-            downloader.process(url_id=url_id, path=path)
+            downloader.process(video_id=url_id, path=path)
         except DownloadError:
             error_list["url_error"].append(url_id)
     return error_list
