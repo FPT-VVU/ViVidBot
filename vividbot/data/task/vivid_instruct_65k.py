@@ -33,7 +33,7 @@ GENERATE_QA_PROMPT = """Generate 5 different pairs of questions and answers in J
 The questions should be relevant to the video content and the answers should be correct.
 Also, diversify the types of questions and answers as much as possible.
 Remember to use Vietnamese language to generate the questions and answers.
-Examples of questions:
+Examples of questions (do not need to follow the order and these are just examples):
 - What's the video about?
 - What are key points in the video?
 - What is the color of the object?
@@ -59,10 +59,12 @@ logging.basicConfig(
 genai.configure(api_key=GOOGLE_API_KEY)
 groq_client = Groq(
   api_key=os.getenv("GROQ_API_KEY"),
+  max_retries=0,
 )
 together_client = openai.OpenAI(
   base_url="https://api.together.xyz/v1",
   api_key=os.getenv("TOGETHER_API_KEY"),
+  max_retries=0,
 )
 anthropic_client = anthropic.Anthropic(
   api_key=os.getenv("ANTHROPIC_API_KEY"),
@@ -309,24 +311,22 @@ def _process(batch: dict):
               try:
                 message = anthropic_client.messages.create(
                   model="claude-3-haiku-20240307",
+                  system=GENERATE_QA_PROMPT,
                   messages=[
-                    {
-                      "role": "system",
-                      "content": GENERATE_QA_PROMPT,
-                    },
                     {
                       "role": "user",
                       "content": f"VIDEO CONTENT: {describer_response.text.strip()}",
                     },
                   ],
                   stream=False,
-                  max_tokens=8192,
+                  max_tokens=4096,
                   temperature=1,
                 )
+                response_content = message.content[0].text
                 logger.info(
-                  f"Anthropic response for video {video_id_with_chunk_id}: {message.content.strip()}"
+                  f"Anthropic response for video {video_id_with_chunk_id}: {response_content}"
                 )
-                qa_pairs = json.loads(message.content.strip())
+                qa_pairs = json.loads(response_content)
                 conversations = []
 
                 for qa in qa_pairs:
