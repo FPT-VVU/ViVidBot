@@ -114,8 +114,10 @@ def _process(batch: dict):
         try:
           video_file = genai.get_file(name=f"files/{shard_id}-{video_id}-{chunk_id}")
         except Exception as e:
-          print(f"Error getting video file {video_id_with_chunk_id}: {e}")
-          pass
+          print(
+            f"Error getting video file {video_id_with_chunk_id}: {e}, file name: {shard_id}-{video_id}-{chunk_id}"
+          )
+          raise e
 
         if video_file is None:
           video_file = genai.upload_file(
