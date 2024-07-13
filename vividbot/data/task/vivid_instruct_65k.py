@@ -33,7 +33,7 @@ GENERATE_QA_PROMPT = """Generate 5 different pairs of questions and answers in J
 The questions should be relevant to the video content and the answers should be correct.
 Also, diversify the types of questions and answers as much as possible.
 Remember to use Vietnamese language to generate the questions and answers.
-Examples of questions (do not need to follow the order and these are just examples):
+Examples of questions (do not need to follow the order and these are just examples, you must generate your own questions based on the video content):
 - What's the video about?
 - What are key points in the video?
 - What is the color of the object?
