@@ -13,6 +13,7 @@ from pathlib import Path
 
 import google.generativeai as genai
 import numpy as np
+import openai
 from datasets import load_dataset
 from dotenv import load_dotenv
 from groq import Groq
@@ -20,14 +21,15 @@ from yt_dlp.utils import DownloadError
 
 from vividbot.data.discord.discord import DiscordNotifier
 from vividbot.data.processor.download import YoutubeDownloader
-from vividbot.data.processor.executor import Executor
 from vividbot.data.processor.upload_hf import Uploader
 
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 BASE_DATA_PATH = f"{Path.home()}/data"
 DESCRIBE_VIDEO_PROMPT = "Describe only the visual content of the video without using its audio or transcript so that a person without vision can fully understand it. Remember to use Vietnamese language to describe the video."
-GENERATE_QA_PROMPT = """Generate 5 different pairs of questions and answers based on the description of the video. The questions should be relevant to the video content and the answers should be correct. Also, diversify the types of questions and answers as much as possible.
+GENERATE_QA_PROMPT = """Generate 5 different pairs of questions and answers based on the description of the video (in which the description is generated for person without vision can fully understand it).
+The questions should be relevant to the video content and the answers should be correct.
+Also, diversify the types of questions and answers as much as possible.
 Remember to use Vietnamese language to generate the questions and answers.
 Examples of questions:
 - What's the video about?
@@ -39,13 +41,17 @@ Examples of questions:
 - What is the position of the object in the video?
 And more questions that can be asked about the video content (what, where, when, why, how, etc.) with varying levels of complexity.
 All questions should be relevant to the video content and the answers should be accurate.
-Return the questions and answers in the following JSON schema:
-[{"question": "Q1","answer": "A1"},{"question": "Q2","answer": "A2"},...]
+Return the questions and answers in the following JSON format (a list of pairs of questions and answers):
+[{"question": "Q1","answer": "A1"},{"question": "Q2","answer": "A2"}, # and so on...]
 """
 
 genai.configure(api_key=GOOGLE_API_KEY)
 groq_client = Groq(
   api_key=os.getenv("GROQ_API_KEY"),
+)
+together_client = openai.OpenAI(
+  base_url="https://api.together.xyz/v1",
+  api_key=os.getenv("TOGETHER_API_KEY"),
 )
 notifier = DiscordNotifier(
   "https://discord.com/api/webhooks/1255505460040040508/n-QCTqNgp3RrsNc1hBRnXH4dfOejeH8iPTd8lqGevbSb_wAovD4xxv5ZVkVJBfVLF8vN"
@@ -153,6 +159,9 @@ def _process(batch: dict):
             [video_file, DESCRIBE_VIDEO_PROMPT],
           )
           try:
+            print(
+              f"Generating QA pairs for video {video_id_with_chunk_id} with Groq..."
+            )
             chat_completion = groq_client.chat.completions.create(
               messages=[
                 {
@@ -189,6 +198,7 @@ def _process(batch: dict):
               "video": f"shard_{shard_id}/{video_id_with_chunk_id}.mp4",
               "description": describer_response.text.strip(),
               "conversations": conversations,
+              "generator": "groq/llama3-70b-8192",
             }
 
             with open(
@@ -202,55 +212,109 @@ def _process(batch: dict):
                 )
                 + "\n"
               )
-
           except Exception as e:
             print(
-              f"Couldn't generate QA pairs for video {video_id_with_chunk_id} using Groq: {str(e)}. Retrying with Gemini..."
+              f"Couldn't generate QA pairs for video {video_id_with_chunk_id}: {str(e)}. Retrying with Together..."
             )
-            qa_generator = genai.GenerativeModel(
-              "gemini-1.5-flash",
-              generation_config={
-                "response_mime_type": "application/json",
-                "temperature": 1,
-              },
-            )
-            full_prompt = f"""{GENERATE_QA_PROMPT}
-
-  VIDEO CONTENT: {describer_response.text.strip()}"""
-
-            qa_generator_response = qa_generator.generate_content(full_prompt)
-            qa_pairs = json.loads(qa_generator_response.text)
-            conversations = []
-
-            for qa in qa_pairs:
-              rand_num = np.random.random()
-              human_value = qa["question"]
-              gpt_value = qa["answer"]
-              if rand_num < 0.5:
-                human_value = human_value + "\n<video>"
-              else:
-                human_value = "<video>\n" + human_value
-              conversations.append({"from": "human", "value": human_value})
-              conversations.append({"from": "gpt", "value": gpt_value})
-
-            data = {
-              "id": video_id_with_chunk_id,
-              "video": f"shard_{shard_id}/{video_id_with_chunk_id}.mp4",
-              "description": describer_response.text.strip(),
-              "conversations": conversations,
-            }
-
-            with open(
-              f"{BASE_DATA_PATH}/output/metadata/shard_{shard_id}.jsonl",
-              "a",
-            ) as f:
-              f.write(
-                json.dumps(
-                  data,
-                  ensure_ascii=False,
-                )
-                + "\n"
+            try:
+              response = together_client.chat.completions.create(
+                model="meta-llama/Llama-3-70b-chat-hf",
+                messages=[
+                  {
+                    "role": "system",
+                    "content": GENERATE_QA_PROMPT,
+                  },
+                  {
+                    "role": "user",
+                    "content": f"VIDEO CONTENT: {describer_response.text.strip()}",
+                  },
+                ],
+                temperature=1,
+                max_tokens=8192,
+                stream=False,
               )
+              qa_pairs = json.loads(response.choices[0].message.content)
+              conversations = []
+
+              for qa in qa_pairs:
+                rand_num = np.random.random()
+                human_value = qa["question"]
+                gpt_value = qa["answer"]
+                if rand_num < 0.5:
+                  human_value = human_value + "\n<video>"
+                else:
+                  human_value = "<video>\n" + human_value
+                conversations.append({"from": "human", "value": human_value})
+                conversations.append({"from": "gpt", "value": gpt_value})
+
+              data = {
+                "id": video_id_with_chunk_id,
+                "video": f"shard_{shard_id}/{video_id_with_chunk_id}.mp4",
+                "description": describer_response.text.strip(),
+                "conversations": conversations,
+                "generator": "together/meta-llama/Llama-3-70b-chat-hf",
+              }
+
+              with open(
+                f"{BASE_DATA_PATH}/output/metadata/shard_{shard_id}.jsonl",
+                "a",
+              ) as f:
+                f.write(
+                  json.dumps(
+                    data,
+                    ensure_ascii=False,
+                  )
+                  + "\n"
+                )
+            except Exception as e:
+              print(
+                f"Couldn't generate QA pairs for video {video_id_with_chunk_id}: {str(e)}. Retrying with Gemini..."
+              )
+              qa_generator = genai.GenerativeModel(
+                "google/gemini-1.5-flash",
+                generation_config={
+                  "response_mime_type": "application/json",
+                  "temperature": 1,
+                },
+              )
+              full_prompt = f"""{GENERATE_QA_PROMPT}
+
+    VIDEO CONTENT: {describer_response.text.strip()}"""
+
+              qa_generator_response = qa_generator.generate_content(full_prompt)
+              qa_pairs = json.loads(qa_generator_response.text)
+              conversations = []
+
+              for qa in qa_pairs:
+                rand_num = np.random.random()
+                human_value = qa["question"]
+                gpt_value = qa["answer"]
+                if rand_num < 0.5:
+                  human_value = human_value + "\n<video>"
+                else:
+                  human_value = "<video>\n" + human_value
+                conversations.append({"from": "human", "value": human_value})
+                conversations.append({"from": "gpt", "value": gpt_value})
+
+              data = {
+                "id": video_id_with_chunk_id,
+                "video": f"shard_{shard_id}/{video_id_with_chunk_id}.mp4",
+                "description": describer_response.text.strip(),
+                "conversations": conversations,
+                "generator": "gemini-1.5-flash",
+              }
+
+              with open(
+                f"{BASE_DATA_PATH}/output/metadata/shard_{shard_id}.jsonl",
+                "a",
+              ) as f:
+                f.write(
+                  json.dumps(
+                    data,
+                    ensure_ascii=False,
+                  )
+                  + "\n"
+                )
     except Exception as e:
       print(f"Error generating metadata for video {video_id_with_chunk_id}: {e}")
       with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
@@ -350,7 +414,7 @@ def prepare():
 
 def main():
   prepare()
-  last_successful_shard = 0
+  last_successful_shard = 1
   for shard in tqdm(
     sorted(
       os.listdir(f"{BASE_DATA_PATH}/vivid_instruct_65k"),
