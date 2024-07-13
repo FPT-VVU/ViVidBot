@@ -157,7 +157,7 @@ def _process(batch: dict):
 
         if video_file is None or not video_file.state.name == "ACTIVE":
           if video_file and not video_file.state.name == "ACTIVE":
-            genai.delete_file(name=google_file_name)
+            genai.delete_file(name=video_file.name)
           video_file = genai.upload_file(
             path=f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4",
             name=google_file_name,
