@@ -24,7 +24,7 @@ for i in tqdm.tqdm(range(start, end + 1)):
         shutil.rmtree(path_out + "/video")
 
     file_name = f"shard_{i}.zip"
-    if uploader.check_file_exist(
+    if uploader.check_file_exists(
         repo_type="dataset", repo_id=repo_id, path_in_repo="video2/" + file_name
     ):
         continue

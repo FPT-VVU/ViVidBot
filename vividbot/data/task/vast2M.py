@@ -214,7 +214,7 @@ def download(args: argparse.Namespace, executor: Executor):
     name = os.path.basename(executor.file_path).split(".")[0]
     path_out_chunks = f"{args.output_dir}/{name}"
     if (
-        uploader.check_file_exist(
+        uploader.check_file_exists(
             repo_type="dataset", repo_id=args.repo_id, path_in_repo=f"video/{name}.zip"
         )
         and not args.overwrite
