@@ -15,14 +15,13 @@ import google.generativeai as genai
 import numpy as np
 from datasets import load_dataset
 from dotenv import load_dotenv
+from groq import Groq
 from yt_dlp.utils import DownloadError
 
 from vividbot.data.discord.discord import DiscordNotifier
 from vividbot.data.processor.download import YoutubeDownloader
 from vividbot.data.processor.executor import Executor
 from vividbot.data.processor.upload_hf import Uploader
-from groq import Groq
-
 
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
@@ -40,7 +39,7 @@ Examples of questions:
 - What is the position of the object in the video?
 And more questions that can be asked about the video content (what, where, when, why, how, etc.) with varying levels of complexity.
 All questions should be relevant to the video content and the answers should be accurate.
-Return the questions and answers in the following format:
+Return the questions and answers in the following JSON schema:
 [{"question": "Q1","answer": "A1"},{"question": "Q2","answer": "A2"},...]
 """
 
@@ -154,19 +153,20 @@ def _process(batch: dict):
             [video_file, DESCRIBE_VIDEO_PROMPT],
           )
           try:
-            full_prompt = f"""{GENERATE_QA_PROMPT}
-
-VIDEO CONTENT: {describer_response.text.strip()}"""
             chat_completion = groq_client.chat.completions.create(
               messages=[
                 {
+                  "role": "system",
+                  "content": GENERATE_QA_PROMPT,
+                },
+                {
                   "role": "user",
-                  "content": full_prompt,
-                }
+                  "content": f"VIDEO CONTENT: {describer_response.text.strip()}",
+                },
               ],
               model="llama3-70b-8192",
               temperature=1,
-              response_format="json_object",
+              response_format={"type": "json_object"},
               max_tokens=8192,
               stream=False,
             )
@@ -350,12 +350,12 @@ def prepare():
 
 def main():
   prepare()
-
+  last_successful_shard = 0
   for shard in tqdm(
     sorted(
       os.listdir(f"{BASE_DATA_PATH}/vivid_instruct_65k"),
       key=lambda x: int(x.split(".")[0].split("_")[1]),
-    )
+    )[last_successful_shard + 1 :]
   ):
     process(shard)
 
