@@ -53,30 +53,12 @@ def send_upload_shard_success_message(shard_count, duration):
       "embeds": [
         {
           "title": f"✅ ViVid Instruct 65k: Uploaded shard {shard_count}!",
-          "description": f"Uploaded shard {shard_count} of {len(os.listdir(f'{BASE_DATA_PATH}/output/videos/shard_{shard_count}'))} clips in {duration}(s). Visit at https://huggingface.co/datasets/Vividbot/vividbot_video.",
+          "description": f"Uploaded shard {shard_count} \
+of {len(os.listdir(f'{BASE_DATA_PATH}/output/videos/shard_{shard_count}'))} clips \
+in {duration}(s). \
+Visit at https://huggingface.co/datasets/Vividbot/vividbot_video/tree/main/videos.",
           "color": 2278494,
           "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
-        }
-      ]
-    }
-  )
-
-
-def send_upload_shard_failure_message(shard_count, e):
-  notifier.send(
-    body={
-      "embeds": [
-        {
-          "title": f"❌ ViVid Instruct 65k: Failed to upload shard {shard_count}!",
-          "description": f"Failed to upload shard {shard_count} with {len(os.listdir(f'{BASE_DATA_PATH}/videos/shard_{shard_count}'))} clips at https://huggingface.co/datasets/Vividbot/vividbot_video.",
-          "color": 16711680,
-          "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
-          "fields": [
-            {
-              "name": "Error",
-              "value": str(e),
-            }
-          ],
         }
       ]
     }
@@ -92,27 +74,6 @@ def send_upload_metadata_success_message(shard_count):
           "description": f"Uploaded metadata for shard shard_{shard_count} at https://huggingface.co/datasets/Vividbot/vividbot_video.",
           "color": 2278494,
           "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
-        }
-      ]
-    }
-  )
-
-
-def send_upload_metadata_failure_message(shard_count, e):
-  notifier.send(
-    body={
-      "embeds": [
-        {
-          "title": f"❌ ViVid Instruct 65k: Failed to upload metadata for shard shard_{shard_count}!",
-          "description": f"Failed to upload metadata for shard shard_{shard_count} at https://huggingface.co/datasets/Vividbot/vividbot_video.",
-          "color": 16711680,
-          "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
-          "fields": [
-            {
-              "name": "Error",
-              "value": str(e),
-            }
-          ],
         }
       ]
     }
@@ -137,9 +98,9 @@ def _download(batch: dict):
         end=end,
         path=f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}",
       )
-    except DownloadError:
+    except DownloadError as e:
       with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
-        data = {"id": video_id_with_chunk_id}
+        data = {"id": video_id_with_chunk_id, "reason": str(e)}
         f.write(json.dumps(data) + "\n")
 
 
@@ -168,7 +129,7 @@ def download(shard: str):
   dataset.map(
     _download,
     batched=True,
-    batch_size=100,
+    batch_size=200,
     num_proc=os.cpu_count(),
   )
 
@@ -189,8 +150,13 @@ def download(shard: str):
     )
 
   end_time = time()
+  duration = round(end_time - start_time, 2)
 
-  send_upload_shard_success_message(shard_id, end_time - start_time)
+  send_upload_shard_success_message(shard_id, duration)
+
+
+def generate():
+  pass
 
 
 def prepare():
