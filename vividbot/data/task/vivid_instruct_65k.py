@@ -53,7 +53,7 @@ def send_upload_shard_success_message(shard_count, duration):
       "embeds": [
         {
           "title": f"✅ ViVid Instruct 65k: Uploaded shard {shard_count}!",
-          "description": f"Uploaded shard {shard_count} with {len(os.listdir(f'{BASE_DATA_PATH}/videos/shard_{shard_count}'))} clips in {duration}s at https://huggingface.co/datasets/Vividbot/vividbot_video.",
+          "description": f"Uploaded shard {shard_count} of {len(os.listdir(f'{BASE_DATA_PATH}/output/videos/shard_{shard_count}'))} clips in {duration}(s). Visit at https://huggingface.co/datasets/Vividbot/vividbot_video.",
           "color": 2278494,
           "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
         }
