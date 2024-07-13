@@ -110,7 +110,9 @@ def _process(batch: dict):
           continue
 
         video_file = None
-        google_file_name = f"files/{shard_id}-{video_id}-{chunk_id}".lower()
+        google_file_name = f"files/{shard_id}-{video_id}-{chunk_id}".lower().replace(
+          "_", "-"
+        )
         try:
           video_file = genai.get_file(name=google_file_name)
         except Exception as e:
