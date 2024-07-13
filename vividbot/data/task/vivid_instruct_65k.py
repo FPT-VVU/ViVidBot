@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+from time import time
 
 from tqdm import tqdm
 
@@ -46,13 +47,13 @@ uploader = Uploader()
 downloader = YoutubeDownloader()
 
 
-def send_upload_shard_success_message(shard_count):
+def send_upload_shard_success_message(shard_count, duration):
   notifier.send(
     body={
       "embeds": [
         {
           "title": f"✅ ViVid Instruct 65k: Uploaded shard {shard_count}!",
-          "description": f"Uploaded shard {shard_count} with {len(os.listdir(f'{BASE_DATA_PATH}/videos/shard_{shard_count}'))} clips at https://huggingface.co/datasets/Vividbot/vividbot_video.",
+          "description": f"Uploaded shard {shard_count} with {len(os.listdir(f'{BASE_DATA_PATH}/videos/shard_{shard_count}'))} clips in {duration}s at https://huggingface.co/datasets/Vividbot/vividbot_video.",
           "color": 2278494,
           "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
         }
@@ -146,6 +147,7 @@ def download(shard: str):
   """
   shard: str = "shard_0.json"
   """
+  start_time = time()
 
   shard_id = int(shard.split(".")[0].split("_")[1])
   if uploader.check_file_exists(
@@ -186,7 +188,9 @@ def download(shard: str):
     overwrite=True,
   )
 
-  send_upload_shard_success_message(shard_id)
+  end_time = time()
+
+  send_upload_shard_success_message(shard_id, end_time - start_time)
 
 
 def prepare():
@@ -197,9 +201,11 @@ def prepare():
 
 def main():
   prepare()
-  for shard in sorted(
-    os.listdir(f"{BASE_DATA_PATH}/vivid_instruct_65k"),
-    key=lambda x: int(x.split(".")[0].split("_")[1]),
+  for shard in tqdm(
+    sorted(
+      os.listdir(f"{BASE_DATA_PATH}/vivid_instruct_65k"),
+      key=lambda x: int(x.split(".")[0].split("_")[1]),
+    )
   ):
     download(shard)
 
