@@ -197,7 +197,7 @@ def _process(batch: dict):
                 },
                 {
                   "role": "user",
-                  "content": f"VIDEO CONTENT: {describer_response.text.strip()}",
+                  "content": f"{describer_response.text.strip()}",
                 },
               ],
               temperature=1,
@@ -256,7 +256,7 @@ def _process(batch: dict):
                   },
                   {
                     "role": "user",
-                    "content": f"VIDEO CONTENT: {describer_response.text.strip()}",
+                    "content": f"{describer_response.text.strip()}",
                   },
                 ],
                 model="llama3-70b-8192",
@@ -315,7 +315,7 @@ def _process(batch: dict):
                   messages=[
                     {
                       "role": "user",
-                      "content": f"VIDEO CONTENT: {describer_response.text.strip()}",
+                      "content": f"{describer_response.text.strip()}",
                     },
                   ],
                   stream=False,
@@ -369,10 +369,9 @@ def _process(batch: dict):
                     "response_mime_type": "application/json",
                     "temperature": 1,
                   },
+                  system_instruction=[GENERATE_QA_PROMPT],
                 )
-                full_prompt = f"""{GENERATE_QA_PROMPT}
-
-  VIDEO CONTENT: {describer_response.text.strip()}"""
+                full_prompt = f"{describer_response.text.strip()}"
 
                 qa_generator_response = qa_generator.generate_content(
                   full_prompt,
