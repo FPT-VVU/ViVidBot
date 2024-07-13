@@ -146,7 +146,7 @@ def prepare():
 
 def download(executor: Executor):
   name = os.path.basename(executor.file_path).split(".")[0]
-  path_out_chunks = f"/root/data/output/{name}"
+  path_out_chunks = f"${BASE_DATA_PATH}/output/{name}"
 
   executor.process(
     map_fn=_download,
@@ -167,7 +167,7 @@ def download(executor: Executor):
     overwrite=True,
   )
   uploader.upload_file(
-    file_path=f"/root/data/output/error/error_{name}.json",
+    file_path=f"${BASE_DATA_PATH}/output/error/error_{name}.json",
     repo_id="Vividbot/vividbot_video",
     path_in_repo=f"error/error_{name}.json",
     repo_type="dataset",
@@ -177,9 +177,9 @@ def download(executor: Executor):
 
 def main():
   executor = Executor(
-    file_path="/root/data/6.vivid_instruct_65k_result.jsonl",
-    cache_dir="/root/data/cache",
-    output_dir="/root/data/output",
+    file_path=f"${BASE_DATA_PATH}/vivid_instruct_65k_result.jsonl",
+    cache_dir=f"${BASE_DATA_PATH}/cache",
+    output_dir=f"{BASE_DATA_PATH}/output",
     num_shards=500,
   )
 
