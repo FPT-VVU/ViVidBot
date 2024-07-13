@@ -74,6 +74,13 @@ uploader = Uploader()
 downloader = YoutubeDownloader()
 
 
+def process_response_content(response_content: str) -> str:
+  # the response content may not begin with a list, so we need to find the first list
+  response_content = response_content.strip()
+  response_content = response_content[response_content.index("[") :]
+  return response_content
+
+
 def send_process_shard_success_message(shard_count, duration):
   notifier.send(
     body={
@@ -195,10 +202,13 @@ def _process(batch: dict):
               stream=False,
               max_tokens=4096,
             )
-            logger.info(
-              f"Together response for video {video_id_with_chunk_id}: {response.choices[0].message.content.strip()}"
+            response_content = process_response_content(
+              response.choices[0].message.content
             )
-            qa_pairs = json.loads(response.choices[0].message.content.strip())
+            logger.info(
+              f"Together response for video {video_id_with_chunk_id}: {response_content}"
+            )
+            qa_pairs = json.loads(response_content)
             conversations = []
 
             for qa in qa_pairs:
@@ -252,10 +262,13 @@ def _process(batch: dict):
                 stream=False,
                 max_tokens=8192,
               )
-              logger.info(
-                f"Groq response for video {video_id_with_chunk_id}: {chat_completion.choices[0].message.content.strip()}"
+              response_content = process_response_content(
+                chat_completion.choices[0].message.content
               )
-              qa_pairs = json.loads(chat_completion.choices[0].message.content.strip())
+              logger.info(
+                f"Groq response for video {video_id_with_chunk_id}: {response_content}"
+              )
+              qa_pairs = json.loads(response_content)
               conversations = []
 
               for qa in qa_pairs:
@@ -401,6 +414,19 @@ def _process(batch: dict):
         f.write(json.dumps(data) + "\n")
 
 
+def _delete_video(batch: dict):
+  for video_id_with_chunk_id, shard_id in tqdm(zip(batch["id"], batch["shard_id"])):
+    video_id, chunk_id = video_id_with_chunk_id.split(".")
+
+    google_file_name = f"files/{shard_id}-{video_id}-{chunk_id}".lower().replace(
+      "_", "-"
+    )
+    try:
+      genai.delete_file(name=google_file_name)
+    except Exception as e:
+      logger.error(f"Error deleting video file {google_file_name}: {e}")
+
+
 def process(shard: str):
   """
   shard: str = "shard_0.json"
@@ -467,16 +493,12 @@ def process(shard: str):
 
   # remove video file from google cloud
   logger.info(f"Cleaning up shard {shard_id}...")
-  for video in os.listdir(f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}"):
-    video_id_with_chunk_id = video.replace(".mp4", "")
-    video_id, chunk_id = video_id_with_chunk_id.split(".")
-    google_file_name = f"files/{shard_id}-{video_id}-{chunk_id}".lower().replace(
-      "_", "-"
-    )
-    try:
-      genai.delete_file(name=google_file_name)
-    except Exception as e:
-      logger.error(f"Error deleting video file {google_file_name}: {e}")
+  dataset.map(
+    _delete_video,
+    batched=True,
+    batch_size=200,
+    num_proc=os.cpu_count(),
+  )
 
   shutil.rmtree(f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}", ignore_errors=True)
 
