@@ -28,7 +28,7 @@ load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 BASE_DATA_PATH = f"{Path.home()}/data"
 DESCRIBE_VIDEO_PROMPT = "Describe only the visual content of the video without using its audio or transcript so that a person without vision can fully understand it. Remember to use Vietnamese language to describe the video."
-GENERATE_QA_PROMPT = """Generate 5 different pairs of questions and answers based on the description of the video (in which the description is generated for person without vision can fully understand it).
+GENERATE_QA_PROMPT = """Generate 5 different pairs of questions and answers in JSON format based on the description of the video (in which the description is generated for person without vision can fully understand it).
 The questions should be relevant to the video content and the answers should be correct.
 Also, diversify the types of questions and answers as much as possible.
 Remember to use Vietnamese language to generate the questions and answers.
@@ -44,7 +44,7 @@ And more questions that can be asked about the video content (what, where, when,
 All questions should be relevant to the video content and the answers should be accurate.
 Only return the list of pair of questions and answers in the following JSON format:
 [{"question":"Q1","answer":"A1"},{"question":"Q2","answer":"A2"},...]
-Do not include any other information in the response.
+Your response should be only the list without narrative or additional information.
 """
 
 logger = logging.getLogger(__name__)
