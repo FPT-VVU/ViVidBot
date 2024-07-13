@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import shutil
 import sys
@@ -22,6 +23,12 @@ from yt_dlp.utils import DownloadError
 from vividbot.data.discord.discord import DiscordNotifier
 from vividbot.data.processor.download import YoutubeDownloader
 from vividbot.data.processor.upload_hf import Uploader
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+  level=logging.INFO,
+  format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
@@ -92,7 +99,7 @@ def _process(batch: dict):
         path_in_repo=f"videos/shard_{shard_id}.zip",
         repo_type="dataset",
       ):
-        print(f"Downloading video {video_id_with_chunk_id}...")
+        logger.info(f"Downloading video {video_id_with_chunk_id}...")
         downloader.process(
           video_id=video_id,
           video_id_with_chunk_id=video_id_with_chunk_id,
@@ -102,7 +109,7 @@ def _process(batch: dict):
         )
 
     except DownloadError as e:
-      print(f"Error downloading video {video_id_with_chunk_id}: {e}")
+      logger.error(f"Error downloading video {video_id_with_chunk_id}: {e}")
       with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
         data = {"id": video_id_with_chunk_id, "reason": str(e)}
         f.write(json.dumps(data) + "\n")
@@ -113,11 +120,11 @@ def _process(batch: dict):
         path_in_repo=f"metadata/shard_{shard_id}.jsonl",
         repo_type="dataset",
       ):
-        print(f"Generating metadata for video {video_id_with_chunk_id}...")
+        logger.info(f"Generating metadata for video {video_id_with_chunk_id}...")
         if not os.path.exists(
           f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
         ):
-          print(f"Video {video_id_with_chunk_id} not found. Skipping...")
+          logger.info(f"Video {video_id_with_chunk_id} not found. Skipping...")
           continue
 
         video_file = None
@@ -127,7 +134,7 @@ def _process(batch: dict):
         try:
           video_file = genai.get_file(name=google_file_name)
         except Exception as e:
-          print(f"Error getting video file {google_file_name}: {e}")
+          logger.error(f"Error getting video file {google_file_name}: {e}")
 
         if video_file is None:
           video_file = genai.upload_file(
@@ -141,7 +148,9 @@ def _process(batch: dict):
           video_file = genai.get_file(video_file.name)
 
         if video_file.state.name == "FAILED":
-          print(f"Error uploading video {video_id_with_chunk_id}: {video_file.error}")
+          logger.error(
+            f"Error uploading video {video_id_with_chunk_id}: {video_file.error}"
+          )
           with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
             data = {
               "id": video_id_with_chunk_id,
@@ -160,7 +169,7 @@ def _process(batch: dict):
           )
 
           try:
-            print(
+            logger.info(
               f"Generating QA pairs for video {video_id_with_chunk_id} with Groq..."
             )
             chat_completion = groq_client.chat.completions.create(
@@ -179,7 +188,7 @@ def _process(batch: dict):
               stream=False,
               max_tokens=8192,
             )
-            print(chat_completion.choices[0].message.content.strip())
+            logger.info(chat_completion.choices[0].message.content.strip())
             qa_pairs = json.loads(chat_completion.choices[0].message.content.strip())
             conversations = []
 
@@ -214,7 +223,7 @@ def _process(batch: dict):
                 + "\n"
               )
           except Exception as e:
-            print(
+            logger.error(
               f"Couldn't generate QA pairs for video {video_id_with_chunk_id}: {str(e)}. Retrying with Together..."
             )
             try:
@@ -234,7 +243,7 @@ def _process(batch: dict):
                 stream=False,
                 max_tokens=4096,
               )
-              print(response.choices[0].message.content.strip())
+              logger.info(response.choices[0].message.content.strip())
               qa_pairs = json.loads(response.choices[0].message.content.strip())
               conversations = []
 
@@ -269,7 +278,7 @@ def _process(batch: dict):
                   + "\n"
                 )
             except Exception as e:
-              print(
+              logger.error(
                 f"Couldn't generate QA pairs for video {video_id_with_chunk_id}: {str(e)}. Retrying with Gemini..."
               )
               qa_generator = genai.GenerativeModel(
@@ -318,7 +327,7 @@ def _process(batch: dict):
                   + "\n"
                 )
     except Exception as e:
-      print(f"Error generating metadata for video {video_id_with_chunk_id}: {e}")
+      logger.error(f"Error generating metadata for video {video_id_with_chunk_id}: {e}")
       with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
         data = {"id": video_id_with_chunk_id, "reason": str(e)}
         f.write(json.dumps(data) + "\n")
@@ -332,7 +341,7 @@ def process(shard: str):
 
   shard_id = int(shard.split(".")[0].split("_")[1])
 
-  print(f"Processing videos for shard {shard_id}...")
+  logger.info(f"Processing videos for shard {shard_id}...")
 
   os.makedirs(f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}", exist_ok=True)
 
@@ -352,7 +361,7 @@ def process(shard: str):
     path_in_repo=f"videos/shard_{shard_id}.zip",
     repo_type="dataset",
   ):
-    print(f"Shard {shard_id} already uploaded. Skipping...")
+    logger.info(f"Shard {shard_id} already uploaded. Skipping...")
   else:
     uploader.zip_and_upload_dir(
       dir_path=f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}",
@@ -375,7 +384,7 @@ def process(shard: str):
     path_in_repo=f"metadata/shard_{shard_id}.jsonl",
     repo_type="dataset",
   ):
-    print(f"Metadata for shard {shard_id} already uploaded. Skipping...")
+    logger.info(f"Metadata for shard {shard_id} already uploaded. Skipping...")
   else:
     uploader.upload_file(
       file_path=f"{BASE_DATA_PATH}/output/metadata/shard_{shard_id}.jsonl",
@@ -389,7 +398,7 @@ def process(shard: str):
   duration = round(end_time - start_time, 2)
 
   # remove video file from google cloud
-  print(f"Cleaning up shard {shard_id}...")
+  logger.info(f"Cleaning up shard {shard_id}...")
   for video in os.listdir(f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}"):
     video_id_with_chunk_id = video.replace(".mp4", "")
     video_id, chunk_id = video_id_with_chunk_id.split(".")
@@ -399,9 +408,9 @@ def process(shard: str):
     try:
       genai.delete_file(name=google_file_name)
     except Exception as e:
-      print(f"Error deleting video file {google_file_name}: {e}")
+      logger.error(f"Error deleting video file {google_file_name}: {e}")
 
-  shutil.rmtree(f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}")
+  shutil.rmtree(f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}", ignore_errors=True)
 
   send_process_shard_success_message(shard_id, duration)
 
