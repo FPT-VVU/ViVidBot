@@ -297,7 +297,7 @@ def _process(batch: dict):
               )
               full_prompt = f"""{GENERATE_QA_PROMPT}
 
-    VIDEO CONTENT: {describer_response.text.strip()}"""
+VIDEO CONTENT: {describer_response.text.strip()}"""
 
               qa_generator_response = qa_generator.generate_content(full_prompt)
               qa_pairs = json.loads(qa_generator_response.text)
