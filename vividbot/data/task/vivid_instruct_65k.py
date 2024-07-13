@@ -28,8 +28,10 @@ from vividbot.data.processor.upload_hf import Uploader
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 BASE_DATA_PATH = f"{Path.home()}/data"
-DESCRIBE_VIDEO_PROMPT = "Describe only the visual content of the video without using its audio or transcript so that a person without vision can fully understand it. Remember to use Vietnamese language to describe the video."
-GENERATE_QA_PROMPT = """Generate 5 different pairs of questions and answers in JSON format based on the description of the video (in which the description is generated for person without vision can fully understand it).
+DESCRIBE_VIDEO_PROMPT = """Describe only the visual content of the video without using the audio or transcript so that a normal people can interpret what is happening in the video.
+Don't use the audio or transcript of the video to describe the video content. Use only the visual content.
+Remember to use Vietnamese language to describe the video."""
+GENERATE_QA_PROMPT = """Generate 5 different pairs of questions and answers in JSON format based on the description of the video (in which the description is generated for person without vision can understand the video content).
 The questions should be relevant to the video content and the answers should be correct.
 Also, diversify the types of questions and answers as much as possible.
 Remember to use Vietnamese language to generate the questions and answers.
@@ -84,6 +86,7 @@ def process_response_content(response_content: str) -> str:
 
 
 def send_process_shard_success_message(shard_count, duration):
+  logger.info(f"Processed shard {shard_count} in {duration}(s).")
   notifier.send(
     body={
       "embeds": [
@@ -429,6 +432,13 @@ def _delete_video(batch: dict):
     except Exception as e:
       logger.error(f"Error deleting video file {google_file_name}: {e}")
 
+    try:
+      os.remove(
+        f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+      )
+    except Exception as e:
+      logger.error(f"Error deleting video {video_id_with_chunk_id}: {e}")
+
 
 def process(shard: str):
   """
@@ -449,7 +459,7 @@ def process(shard: str):
   dataset.map(
     _process,
     batched=True,
-    batch_size=200,
+    batch_size=128,
     num_proc=os.cpu_count(),
   )
 
@@ -493,19 +503,15 @@ def process(shard: str):
 
   # remove video file from google cloud
   logger.info(f"Cleaning up shard {shard_id}...")
-
-  dataset.map(
-    _delete_video,
-    batched=True,
-    batch_size=200,
-    num_proc=os.cpu_count(),
-  )
   try:
-    shutil.rmtree(
-      f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}", ignore_errors=True
+    dataset.map(
+      _delete_video,
+      batched=True,
+      batch_size=16,
+      num_proc=os.cpu_count(),
     )
   except Exception as e:
-    logger.error(f"Error cleaning up videos for shard {shard_id}: {e}")
+    logger.error(f"Error deleting videos for shard {shard_id}: {e}")
     pass
 
   end_time = time.time()
