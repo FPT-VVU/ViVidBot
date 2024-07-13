@@ -48,7 +48,7 @@ Return the questions and answers in the following JSON format (a list of pairs o
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
-  filename=f"{BASE_DATA_PATH}/output/logs/vivid_instruct_65k.log",
+  filename="/root/ViVidBot/run.log",
   filemode="a",
   level=logging.INFO,
   format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
