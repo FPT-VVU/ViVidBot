@@ -42,8 +42,9 @@ Examples of questions:
 - What is the position of the object in the video?
 And more questions that can be asked about the video content (what, where, when, why, how, etc.) with varying levels of complexity.
 All questions should be relevant to the video content and the answers should be accurate.
-Return the questions and answers in the following JSON format (a list of pairs of questions and answers):
+Only return the list of pair of questions and answers in the following JSON format:
 [{"question": "Q1","answer": "A1"},{"question": "Q2","answer": "A2"}, # and so on...]
+Do not include any other information in the response.
 """
 
 logger = logging.getLogger(__name__)
