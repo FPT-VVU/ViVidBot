@@ -177,6 +177,7 @@ def _process(batch: dict):
               model="llama3-70b-8192",
               temperature=1,
               stream=False,
+              max_tokens=8192,
             )
             qa_pairs = json.loads(chat_completion.choices[0].message.content.strip())
             conversations = []
@@ -230,6 +231,7 @@ def _process(batch: dict):
                 ],
                 temperature=1,
                 stream=False,
+                max_tokens=4096,
               )
               qa_pairs = json.loads(response.choices[0].message.content.strip())
               conversations = []
@@ -384,8 +386,6 @@ def process(shard: str):
   end_time = time.time()
   duration = round(end_time - start_time, 2)
 
-  send_process_shard_success_message(shard_id, duration)
-
   # remove video file from google cloud
   for video in os.listdir(f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}"):
     video_id_with_chunk_id = video.replace(".mp4", "")
@@ -399,8 +399,8 @@ def process(shard: str):
       print(f"Error deleting video file {google_file_name}: {e}")
 
   shutil.rmtree(f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}")
-  os.remove(f"{BASE_DATA_PATH}/output/metadata/shard_{shard_id}.jsonl")
-  os.remove(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl")
+
+  send_process_shard_success_message(shard_id, duration)
 
 
 def prepare():
