@@ -41,10 +41,10 @@ Examples of questions:
 - How does the person in the video look?
 - What is the position of the object in the video?
 And more questions that can be asked about the video content (what, where, when, why, how, etc.) with varying levels of complexity.
-All questions should be relevant to the video content and the answers should be accurate.
+All questions should be relevant to the video content and the answers should be FULLY informative and correct. The answer should be a complete sentence or a complete phrase.
 Only return the list of pair of questions and answers in the following JSON format:
 [{"question":"Q1","answer":"A1"},{"question":"Q2","answer":"A2"},...]
-Your response should be only the list without narrative or additional information.
+Your response should be only the JSON list without narrative or additional information.
 """
 
 logger = logging.getLogger(__name__)
@@ -139,7 +139,7 @@ def _process(batch: dict):
         except Exception as e:
           logger.error(f"Error getting video file {google_file_name}: {e}")
 
-        if video_file is None:
+        if video_file is None or not video_file.state.name == "ACTIVE":
           video_file = genai.upload_file(
             path=f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4",
             name=google_file_name,
@@ -191,7 +191,9 @@ def _process(batch: dict):
               stream=False,
               max_tokens=8192,
             )
-            logger.info(chat_completion.choices[0].message.content.strip())
+            logger.info(
+              f"Groq response for video {video_id_with_chunk_id}: {chat_completion.choices[0].message.content.strip()}"
+            )
             qa_pairs = json.loads(chat_completion.choices[0].message.content.strip())
             conversations = []
 
@@ -246,7 +248,9 @@ def _process(batch: dict):
                 stream=False,
                 max_tokens=4096,
               )
-              logger.info(response.choices[0].message.content.strip())
+              logger.info(
+                f"Together response for video {video_id_with_chunk_id}: {response.choices[0].message.content.strip()}"
+              )
               qa_pairs = json.loads(response.choices[0].message.content.strip())
               conversations = []
 
