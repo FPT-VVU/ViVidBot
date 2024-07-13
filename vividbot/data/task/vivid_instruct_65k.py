@@ -181,11 +181,12 @@ def _process(batch: dict):
             "models/gemini-1.5-flash",
             generation_config={
               "temperature": 0,
-              "max_output_tokens": 2048,
+              "max_output_tokens": 512,
             },
           )
           describer_response = describer.generate_content(
             [video_file, DESCRIBE_VIDEO_PROMPT],
+            request_options={"timeout": 30, "retry": 2},
           )
 
           try:
@@ -529,7 +530,7 @@ def prepare():
 
 def main():
   prepare()
-  last_successful_shard = 7
+  last_successful_shard = 9
   for shard in tqdm(
     sorted(
       os.listdir(f"{BASE_DATA_PATH}/vivid_instruct_65k"),
