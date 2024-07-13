@@ -1,5 +1,8 @@
+import json
 import os
 import sys
+
+from tqdm import tqdm
 
 sys.path.append(os.getcwd())
 import datetime
@@ -7,6 +10,7 @@ from datetime import timezone
 from pathlib import Path
 
 import google.generativeai as genai
+from datasets import load_dataset
 from dotenv import load_dotenv
 from yt_dlp.utils import DownloadError
 
@@ -114,11 +118,9 @@ def send_upload_metadata_failure_message(shard_count, e):
   )
 
 
-def _download(batch: dict, path: str):
-  error_list = {"url_error": []}
-
-  for start, end, video_id_with_chunk_id in zip(
-    batch["start"], batch["end"], batch["id"]
+def _download(batch: dict):
+  for start, end, video_id_with_chunk_id, shard_id in tqdm(
+    zip(batch["start"], batch["end"], batch["id"], batch["shard_id"])
   ):
     video_id = video_id_with_chunk_id.split(".")[0]
     try:
@@ -127,64 +129,66 @@ def _download(batch: dict, path: str):
         video_id_with_chunk_id=video_id_with_chunk_id,
         start=start,
         end=end,
-        path=path,
+        path=f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}",
       )
     except DownloadError:
-      error_list["url_error"].append(video_id_with_chunk_id)
-  return error_list
+      with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
+        data = {"id": video_id_with_chunk_id}
+        f.write(json.dumps(data) + "\n")
 
 
-def prepare():
-  os.makedirs(f"{BASE_DATA_PATH}/videos", exist_ok=True)
-  os.makedirs(f"{BASE_DATA_PATH}/metadata", exist_ok=True)
-  os.makedirs(f"{BASE_DATA_PATH}/output/error", exist_ok=True)
-  os.makedirs(f"{BASE_DATA_PATH}/output/video", exist_ok=True)
-  os.makedirs(f"{BASE_DATA_PATH}/output/metadata", exist_ok=True)
-  os.makedirs(f"{BASE_DATA_PATH}/cache", exist_ok=True)
+def download(shard: str):
+  """
+  shard: str = "shard_0.json"
+  """
 
+  shard_id = int(shard.split(".")[0].split("_")[1])
+  print(f"Downloading videos for shard {shard_id}...")
 
-def download(executor: Executor):
-  name = os.path.basename(executor.file_path).split(".")[0]
-  path_out_chunks = f"{BASE_DATA_PATH}/output/{name}"
+  os.makedirs(f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}", exist_ok=True)
 
-  executor.process(
-    map_fn=_download,
-    task="download",
+  dataset = load_dataset(
+    "json", data_files=f"{BASE_DATA_PATH}/vivid_instruct_65k/{shard}"
+  )["train"]
+  dataset.map(
+    _download,
+    batched=True,
     batch_size=16,
     num_proc=os.cpu_count(),
-    save=True,
-    remove_columns=[],
-    name_out=f"error/error_{name}",
-    fn_kwargs={"path": path_out_chunks},
   )
 
   uploader.zip_and_upload_dir(
-    dir_path=path_out_chunks,
+    dir_path=f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}",
     repo_id="Vividbot/vividbot_video",
-    path_in_repo=f"video/{name}.zip",
+    path_in_repo=f"videos/shard_{shard_id}.zip",
     repo_type="dataset",
     overwrite=True,
   )
+
   uploader.upload_file(
-    file_path=f"{BASE_DATA_PATH}/output/error/error_{name}.json",
+    file_path=f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl",
     repo_id="Vividbot/vividbot_video",
-    path_in_repo=f"error/error_{name}.json",
+    path_in_repo=f"errors/shard_{shard_id}.jsonl",
     repo_type="dataset",
     overwrite=True,
   )
+
+  send_upload_shard_success_message(shard_id)
+
+
+def prepare():
+  os.makedirs(f"{BASE_DATA_PATH}/output", exist_ok=True)
+  os.makedirs(f"{BASE_DATA_PATH}/output/videos", exist_ok=True)
+  os.makedirs(f"{BASE_DATA_PATH}/output/errors", exist_ok=True)
 
 
 def main():
   prepare()
-
-  executor = Executor(
-    file_path=f"{BASE_DATA_PATH}/vivid_instruct_65k_result.json",
-    cache_dir=f"{BASE_DATA_PATH}/cache",
-    output_dir=f"{BASE_DATA_PATH}/output",
-    num_shards=500,
-  )
-
-  download(executor)
+  for shard in sorted(
+    os.listdir(f"{BASE_DATA_PATH}/vivid_instruct_65k"),
+    key=lambda x: int(x.split(".")[0].split("_")[1]),
+  ):
+    download(shard)
 
 
 if __name__ == "__main__":
