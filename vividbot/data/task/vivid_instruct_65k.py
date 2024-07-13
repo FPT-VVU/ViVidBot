@@ -110,19 +110,17 @@ def _process(batch: dict):
           continue
 
         video_file = None
-
+        google_file_name = f"files/{shard_id}-{video_id}-{chunk_id}".lower()
         try:
-          video_file = genai.get_file(name=f"files/{shard_id}-{video_id}-{chunk_id}")
+          video_file = genai.get_file(name=google_file_name)
         except Exception as e:
-          print(
-            f"Error getting video file {video_id_with_chunk_id}: {e}, file name: {shard_id}-{video_id}-{chunk_id}"
-          )
+          print(f"Error getting video file {google_file_name}: {e}")
           raise e
 
         if video_file is None:
           video_file = genai.upload_file(
             path=f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4",
-            name=f"files/{shard_id}-{video_id}-{chunk_id}",
+            name=google_file_name,
             display_name=video_id_with_chunk_id,
           )
 
