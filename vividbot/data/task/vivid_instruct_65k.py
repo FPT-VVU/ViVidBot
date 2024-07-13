@@ -264,6 +264,18 @@ def process(shard: str):
 
   send_process_shard_success_message(shard_id, duration)
 
+  # remove video file from google cloud
+  for video in os.listdir(f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}"):
+    video_id_with_chunk_id = video.replace(".mp4", "")
+    video_id, chunk_id = video_id_with_chunk_id.split(".")
+    google_file_name = f"files/{shard_id}-{video_id}-{chunk_id}".lower().replace(
+      "_", "-"
+    )
+    try:
+      genai.delete_file(name=google_file_name)
+    except Exception as e:
+      print(f"Error deleting video file {google_file_name}: {e}")
+
   shutil.rmtree(f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}")
   os.remove(f"{BASE_DATA_PATH}/output/metadata/shard_{shard_id}.jsonl")
   os.remove(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl")
