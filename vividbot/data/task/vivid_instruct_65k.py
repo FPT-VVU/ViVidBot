@@ -179,14 +179,14 @@ def download(shard: str):
     repo_type="dataset",
     overwrite=True,
   )
-
-  uploader.upload_file(
-    file_path=f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl",
-    repo_id="Vividbot/vividbot_video",
-    path_in_repo=f"errors/shard_{shard_id}.jsonl",
-    repo_type="dataset",
-    overwrite=True,
-  )
+  if os.path.exists(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl"):
+    uploader.upload_file(
+      file_path=f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl",
+      repo_id="Vividbot/vividbot_video",
+      path_in_repo=f"errors/shard_{shard_id}.jsonl",
+      repo_type="dataset",
+      overwrite=True,
+    )
 
   end_time = time()
 
