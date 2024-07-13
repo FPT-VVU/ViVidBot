@@ -179,6 +179,7 @@ def _process(batch: dict):
               stream=False,
               max_tokens=8192,
             )
+            print(chat_completion.choices[0].message.content.strip())
             qa_pairs = json.loads(chat_completion.choices[0].message.content.strip())
             conversations = []
 
@@ -233,6 +234,7 @@ def _process(batch: dict):
                 stream=False,
                 max_tokens=4096,
               )
+              print(response.choices[0].message.content.strip())
               qa_pairs = json.loads(response.choices[0].message.content.strip())
               conversations = []
 
