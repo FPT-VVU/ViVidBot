@@ -39,6 +39,7 @@ Examples of questions:
 - How does the person in the video look?
 - What is the position of the object in the video?
 And more questions that can be asked about the video content (what, where, when, why, how, etc.) with varying levels of complexity.
+All questions should be relevant to the video content and the answers should be accurate.
 Return the questions and answers in the following format:
 [{"question": "Q1","answer": "A1"},{"question": "Q2","answer": "A2"},...]
 """
