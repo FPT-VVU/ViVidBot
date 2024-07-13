@@ -173,7 +173,7 @@ def main():
   prepare()
 
   executor = Executor(
-    file_path=f"{BASE_DATA_PATH}/vivid_instruct_65k_result.jsonl",
+    file_path=f"{BASE_DATA_PATH}/vivid_instruct_65k_result.json",
     cache_dir=f"{BASE_DATA_PATH}/cache",
     output_dir=f"{BASE_DATA_PATH}/output",
     num_shards=500,
