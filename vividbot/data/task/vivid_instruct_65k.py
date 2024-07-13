@@ -319,6 +319,8 @@ def _process(batch: dict):
                       "content": f"VIDEO CONTENT: {describer_response.text.strip()}",
                     },
                   ],
+                  stream=False,
+                  max_tokens=8192,
                 )
                 logger.info(
                   f"Anthropic response for video {video_id_with_chunk_id}: {message.content.strip()}"
