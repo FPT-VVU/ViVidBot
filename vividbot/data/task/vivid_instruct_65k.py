@@ -71,7 +71,7 @@ def _process(batch: dict):
   for start, end, video_id_with_chunk_id, shard_id in tqdm(
     zip(batch["start"], batch["end"], batch["id"], batch["shard_id"])
   ):
-    video_id = video_id_with_chunk_id.split(".")[0]
+    video_id, chunk_id = video_id_with_chunk_id.split(".")
 
     try:
       if not os.path.exists(
@@ -109,9 +109,20 @@ def _process(batch: dict):
           print(f"Video {video_id_with_chunk_id} not found. Skipping...")
           continue
 
-        video_file = genai.upload_file(
-          path=f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
-        )
+        video_file = None
+
+        try:
+          video_file = genai.get_file(name=f"files/{shard_id}-{video_id}-{chunk_id}")
+        except Exception as e:
+          print(f"Error getting video file {video_id_with_chunk_id}: {e}")
+          pass
+
+        if video_file is None:
+          video_file = genai.upload_file(
+            path=f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4",
+            name=f"files/{shard_id}-{video_id}-{chunk_id}",
+            display_name=video_id_with_chunk_id,
+          )
 
         while video_file.state.name == "PROCESSING":
           time.sleep(5)
