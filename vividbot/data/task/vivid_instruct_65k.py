@@ -2,7 +2,7 @@ import json
 import os
 import shutil
 import sys
-from time import time
+import time
 
 from tqdm import tqdm
 
@@ -114,11 +114,13 @@ def _process(batch: dict):
         )
 
         while video_file.state.name == "PROCESSING":
-          time.sleep(10)
+          time.sleep(5)
           video_file = genai.get_file(video_file.name)
 
         if video_file.state.name == "FAILED":
-          print(f"Error generating metadata for video {video_id_with_chunk_id}: {video_file.error}")
+          print(
+            f"Error generating metadata for video {video_id_with_chunk_id}: {video_file.error}"
+          )
           with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
             data = {"id": video_id_with_chunk_id, "reason": video_file.error}
             f.write(json.dumps(data) + "\n")
@@ -188,7 +190,7 @@ def process(shard: str):
   """
   shard: str = "shard_0.json"
   """
-  start_time = time()
+  start_time = time.time()
 
   shard_id = int(shard.split(".")[0].split("_")[1])
 
@@ -245,7 +247,7 @@ def process(shard: str):
       overwrite=True,
     )
 
-  end_time = time()
+  end_time = time.time()
   duration = round(end_time - start_time, 2)
 
   send_process_shard_success_message(shard_id, duration)
