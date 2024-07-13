@@ -123,6 +123,11 @@ def _download(batch: dict):
     zip(batch["start"], batch["end"], batch["id"], batch["shard_id"])
   ):
     video_id = video_id_with_chunk_id.split(".")[0]
+    if os.path.exists(
+      f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+    ):
+      continue
+
     try:
       downloader.process(
         video_id=video_id,
@@ -143,6 +148,14 @@ def download(shard: str):
   """
 
   shard_id = int(shard.split(".")[0].split("_")[1])
+  if uploader.check_file_exists(
+    repo_id="Vividbot/vividbot_video",
+    path_in_repo=f"videos/shard_{shard_id}.zip",
+    repo_type="dataset",
+  ):
+    print(f"Shard {shard_id} already uploaded. Skipping...")
+    return
+
   print(f"Downloading videos for shard {shard_id}...")
 
   os.makedirs(f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}", exist_ok=True)
@@ -153,7 +166,7 @@ def download(shard: str):
   dataset.map(
     _download,
     batched=True,
-    batch_size=16,
+    batch_size=100,
     num_proc=os.cpu_count(),
   )
 
