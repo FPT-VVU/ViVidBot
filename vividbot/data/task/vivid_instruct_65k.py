@@ -43,7 +43,7 @@ Examples of questions:
 And more questions that can be asked about the video content (what, where, when, why, how, etc.) with varying levels of complexity.
 All questions should be relevant to the video content and the answers should be accurate.
 Only return the list of pair of questions and answers in the following JSON format:
-[{"question": "Q1","answer": "A1"},{"question": "Q2","answer": "A2"}, # and so on...]
+[{"question":"Q1","answer":"A1"},{"question":"Q2","answer":"A2"},...]
 Do not include any other information in the response.
 """
 
