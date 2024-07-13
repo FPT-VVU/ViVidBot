@@ -12,6 +12,7 @@ import datetime
 from datetime import timezone
 from pathlib import Path
 
+import anthropic
 import google.generativeai as genai
 import numpy as np
 import openai
@@ -62,6 +63,9 @@ groq_client = Groq(
 together_client = openai.OpenAI(
   base_url="https://api.together.xyz/v1",
   api_key=os.getenv("TOGETHER_API_KEY"),
+)
+anthropic_client = anthropic.Anthropic(
+  api_key=os.getenv("ANTHROPIC_API_KEY"),
 )
 notifier = DiscordNotifier(
   "https://discord.com/api/webhooks/1255505460040040508/n-QCTqNgp3RrsNc1hBRnXH4dfOejeH8iPTd8lqGevbSb_wAovD4xxv5ZVkVJBfVLF8vN"
@@ -286,53 +290,109 @@ def _process(batch: dict):
                 )
             except Exception as e:
               logger.error(
-                f"Couldn't generate QA pairs for video {video_id_with_chunk_id}: {str(e)}. Retrying with Gemini..."
+                f"Couldn't generate QA pairs for video {video_id_with_chunk_id}: {str(e)}. Retrying with Anthropic..."
               )
-              qa_generator = genai.GenerativeModel(
-                "gemini-1.5-flash",
-                generation_config={
-                  "response_mime_type": "application/json",
-                  "temperature": 1,
-                },
-              )
-              full_prompt = f"""{GENERATE_QA_PROMPT}
-
-VIDEO CONTENT: {describer_response.text.strip()}"""
-
-              qa_generator_response = qa_generator.generate_content(full_prompt)
-              qa_pairs = json.loads(qa_generator_response.text)
-              conversations = []
-
-              for qa in qa_pairs:
-                rand_num = np.random.random()
-                human_value = qa["question"]
-                gpt_value = qa["answer"]
-                if rand_num < 0.5:
-                  human_value = human_value + "\n<video>"
-                else:
-                  human_value = "<video>\n" + human_value
-                conversations.append({"from": "human", "value": human_value})
-                conversations.append({"from": "gpt", "value": gpt_value})
-
-              data = {
-                "id": video_id_with_chunk_id,
-                "video": f"shard_{shard_id}/{video_id_with_chunk_id}.mp4",
-                "generator": "google/gemini-1.5-flash",
-                "description": describer_response.text.strip(),
-                "conversations": conversations,
-              }
-
-              with open(
-                f"{BASE_DATA_PATH}/output/metadata/shard_{shard_id}.jsonl",
-                "a",
-              ) as f:
-                f.write(
-                  json.dumps(
-                    data,
-                    ensure_ascii=False,
-                  )
-                  + "\n"
+              try:
+                message = anthropic_client.messages.create(
+                  model="claude-3-haiku-20240307",
+                  messages=[
+                    {
+                      "role": "system",
+                      "content": GENERATE_QA_PROMPT,
+                    },
+                    {
+                      "role": "user",
+                      "content": f"VIDEO CONTENT: {describer_response.text.strip()}",
+                    },
+                  ],
                 )
+                logger.info(
+                  f"Anthropic response for video {video_id_with_chunk_id}: {message.content.strip()}"
+                )
+                qa_pairs = json.loads(message.content.strip())
+                conversations = []
+
+                for qa in qa_pairs:
+                  rand_num = np.random.random()
+                  human_value = qa["question"]
+                  gpt_value = qa["answer"]
+                  if rand_num < 0.5:
+                    human_value = human_value + "\n<video>"
+                  else:
+                    human_value = "<video>\n" + human_value
+                  conversations.append({"from": "human", "value": human_value})
+                  conversations.append({"from": "gpt", "value": gpt_value})
+
+                data = {
+                  "id": video_id_with_chunk_id,
+                  "video": f"shard_{shard_id}/{video_id_with_chunk_id}.mp4",
+                  "generator": "anthropic/claude-3-haiku-20240307",
+                  "description": describer_response.text.strip(),
+                  "conversations": conversations,
+                }
+
+                with open(
+                  f"{BASE_DATA_PATH}/output/metadata/shard_{shard_id}.jsonl",
+                  "a",
+                ) as f:
+                  f.write(
+                    json.dumps(
+                      data,
+                      ensure_ascii=False,
+                    )
+                    + "\n"
+                  )
+              except Exception as e:
+                logger.error(
+                  f"Couldn't generate QA pairs for video {video_id_with_chunk_id}: {str(e)}. Retrying with Gemini..."
+                )
+                qa_generator = genai.GenerativeModel(
+                  "gemini-1.5-flash",
+                  generation_config={
+                    "response_mime_type": "application/json",
+                    "temperature": 1,
+                  },
+                )
+                full_prompt = f"""{GENERATE_QA_PROMPT}
+
+  VIDEO CONTENT: {describer_response.text.strip()}"""
+
+                qa_generator_response = qa_generator.generate_content(
+                  full_prompt,
+                )
+                qa_pairs = json.loads(qa_generator_response.text)
+                conversations = []
+
+                for qa in qa_pairs:
+                  rand_num = np.random.random()
+                  human_value = qa["question"]
+                  gpt_value = qa["answer"]
+                  if rand_num < 0.5:
+                    human_value = human_value + "\n<video>"
+                  else:
+                    human_value = "<video>\n" + human_value
+                  conversations.append({"from": "human", "value": human_value})
+                  conversations.append({"from": "gpt", "value": gpt_value})
+
+                data = {
+                  "id": video_id_with_chunk_id,
+                  "video": f"shard_{shard_id}/{video_id_with_chunk_id}.mp4",
+                  "generator": "google/gemini-1.5-flash",
+                  "description": describer_response.text.strip(),
+                  "conversations": conversations,
+                }
+
+                with open(
+                  f"{BASE_DATA_PATH}/output/metadata/shard_{shard_id}.jsonl",
+                  "a",
+                ) as f:
+                  f.write(
+                    json.dumps(
+                      data,
+                      ensure_ascii=False,
+                    )
+                    + "\n"
+                  )
     except Exception as e:
       logger.error(f"Error generating metadata for video {video_id_with_chunk_id}: {e}")
       with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
