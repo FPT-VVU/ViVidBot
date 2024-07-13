@@ -211,9 +211,9 @@ def _process(batch: dict):
             data = {
               "id": video_id_with_chunk_id,
               "video": f"shard_{shard_id}/{video_id_with_chunk_id}.mp4",
+              "generator": "groq/llama3-70b-8192",
               "description": describer_response.text.strip(),
               "conversations": conversations,
-              "generator": "groq/llama3-70b-8192",
             }
 
             with open(
@@ -268,9 +268,9 @@ def _process(batch: dict):
               data = {
                 "id": video_id_with_chunk_id,
                 "video": f"shard_{shard_id}/{video_id_with_chunk_id}.mp4",
+                "generator": "together/meta-llama/Llama-3-70b-chat-hf",
                 "description": describer_response.text.strip(),
                 "conversations": conversations,
-                "generator": "together/meta-llama/Llama-3-70b-chat-hf",
               }
 
               with open(
@@ -317,9 +317,9 @@ def _process(batch: dict):
               data = {
                 "id": video_id_with_chunk_id,
                 "video": f"shard_{shard_id}/{video_id_with_chunk_id}.mp4",
+                "generator": "google/gemini-1.5-flash",
                 "description": describer_response.text.strip(),
                 "conversations": conversations,
-                "generator": "google/gemini-1.5-flash",
               }
 
               with open(
