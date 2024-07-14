@@ -241,6 +241,18 @@ def _process(batch: dict):
               "conversations": conversations,
             }
 
+            with open(
+              f"{BASE_DATA_PATH}/output/metadata/shard_{shard_id}.jsonl",
+              "a",
+            ) as f:
+              f.write(
+                json.dumps(
+                  data,
+                  ensure_ascii=False,
+                )
+                + "\n"
+              )
+
           except Exception as e:
             logger.error(
               f"Couldn't generate QA pairs for video {video_id_with_chunk_id}: {str(e)}. Retrying with Groq..."
@@ -289,18 +301,6 @@ def _process(batch: dict):
                 "description": describer_response.text.strip(),
                 "conversations": conversations,
               }
-
-              with open(
-                f"{BASE_DATA_PATH}/output/metadata/shard_{shard_id}.jsonl",
-                "a",
-              ) as f:
-                f.write(
-                  json.dumps(
-                    data,
-                    ensure_ascii=False,
-                  )
-                  + "\n"
-                )
 
               with open(
                 f"{BASE_DATA_PATH}/output/metadata/shard_{shard_id}.jsonl",
@@ -369,6 +369,7 @@ def _process(batch: dict):
                     )
                     + "\n"
                   )
+                  
               except Exception as e:
                 logger.error(
                   f"Couldn't generate QA pairs for video {video_id_with_chunk_id}: {str(e)}. Retrying with Gemini..."
@@ -535,7 +536,7 @@ def prepare():
 
 def main():
   prepare()
-  last_successful_shard = 9
+  last_successful_shard = 30
   for shard in tqdm(
     sorted(
       os.listdir(f"{BASE_DATA_PATH}/vivid_instruct_65k"),
