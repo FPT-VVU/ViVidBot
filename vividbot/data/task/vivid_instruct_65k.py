@@ -369,7 +369,7 @@ def _process(batch: dict):
                     )
                     + "\n"
                   )
-                  
+
               except Exception as e:
                 logger.error(
                   f"Couldn't generate QA pairs for video {video_id_with_chunk_id}: {str(e)}. Retrying with Gemini..."
@@ -536,7 +536,7 @@ def prepare():
 
 def main():
   prepare()
-  last_successful_shard = 30
+  last_successful_shard = 29
   for shard in tqdm(
     sorted(
       os.listdir(f"{BASE_DATA_PATH}/vivid_instruct_65k"),
