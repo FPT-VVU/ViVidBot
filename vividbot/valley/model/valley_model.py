@@ -303,8 +303,8 @@ class VividGPTForCausalLM(LlamaForCausalLM):
 
         hidden_states = outputs[0]
         logits = self.lm_head(hidden_states)
-        print("*"*100)
-        print(self.config.vocab_size)
+        # print("*"*100)
+        # print(self.config.vocab_size)
 
         loss = None
         if labels is not None:

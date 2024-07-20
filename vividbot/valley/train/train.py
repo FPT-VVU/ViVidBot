@@ -59,7 +59,7 @@ class DataArguments:
     conv_mode:str = field(default = 'v1')
     only_mask_system: str = field(default= True)
     project_name: str = field(default='valley')
-    hf_reppo_video: str = field(default=None)
+    hf_repo_video: str = field(default=None)
     hf_repo_image: str = field(default=None)
 
 @dataclass
