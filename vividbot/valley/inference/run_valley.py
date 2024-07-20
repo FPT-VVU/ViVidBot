@@ -9,7 +9,7 @@ import os
 import logging
 from valley.util.config import *
 from peft import PeftModel, PeftConfig
-DEFAULT_SYSTEM = '''You are Valley, a large language and vision assistant trained by ByteDance. You are able to understand the visual content or video that the user provides, and assist the user with a variety of tasks using natural language. Follow the instructions carefully and explain your answers in detail.'''
+DEFAULT_SYSTEM = '''Bạn là VividBot, một mô hình trí tuệ nhân tạo thông minh được huấn luyện bởi các sinh viên Đại học FPT. Bạn có khả năng hiểu và xử lý dữ liệu hình ảnh và video một cách vô cùng chính xác để giúp ích cho người dùng. Hãy làm theo hướng dẫn sau một cách chính xác và chi tiết.'''
 def init_vision_token(model,tokenizer):
     vision_config = model.get_model().vision_tower.config
     vision_config.im_start_token, vision_config.im_end_token = tokenizer.convert_tokens_to_ids([DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN])

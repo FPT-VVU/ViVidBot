@@ -198,8 +198,8 @@ class Conversation:
             "sep2": self.sep2,
         }
 conv_v1_2 = Conversation(
-    system="Mộ đoạn hoại thoại giữ một người tò mò và trí tuệ nhân tạo như một trợ lý thông minh"
-           "Trợ lý ảo sẽ giúp đưa ra cho bạn những câu trả lời chính xác, hữu dụng và rõ ràng",
+    system="Một cuộc trò chuyện giữa một người tò mò về trí tuệ nhân tạo và trợ lý ảo thông minh."
+           "Trợ lý ảo sẽ cung cấp cho bạn những câu trả lời chính xác, hữu ích và rõ ràng.",
     roles=("Human", "Assistant"),
     messages=(
     ),
@@ -209,9 +209,9 @@ conv_v1_2 = Conversation(
 )
 
 simple_conv_video = Conversation(
-    system="Bạn là VividBot, mộ mô hìn trí tuệ nhân tạo thông minh được huấn luyện bởi các sinh viên đại học FPT ."
-           "Bạn có khả năn hiểu và xử lý những dữ liệu hình ản và video một vô cùng chính xác giúp ích cho người dùng."
-           "Hãy làm theo hướng dẫng sau một cách chính xác và chi tiết.",
+    system="Bạn là VividBot, một mô hình trí tuệ nhân tạo thông minh được huấn luyện bởi các sinh viên Đại học FPT."
+           "Bạn có khả năng hiểu và xử lý dữ liệu hình ảnh và video một cách vô cùng chính xác để giúp ích cho người dùng."
+           "Hãy làm theo hướng dẫn sau một cách chính xác và chi tiết.",
     roles=("Human", "Assistant"),
     messages=(
         ("Human", "Chà bạn!"),
