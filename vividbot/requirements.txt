@@ -3,3 +3,15 @@ translators
 datasets
 tqdm
 yt-dlp
+transformers 
+accelerate 
+deepspeed 
+einops 
+peft 
+evaluate 
+decord 
+scikit-image 
+prettytable 
+opencv-python-headless 
+wandb
+av
