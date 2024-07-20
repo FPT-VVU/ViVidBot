@@ -1,8 +1,10 @@
 model_name_or_path: vinai/PhoGPT-4B-Chat
 data_path: /content/instruct500k_vi_all.json
+hf_repo_image: Vividbot/instruct500k_vi
 image_folder: /content
 video_data_path: /content/vast2m_vi_all.json
 video_folder: /content
+hf_reppo_video: Vividbot/vast2m_vi
 output_dir: model/output
 # experiment name
 project_name: valley

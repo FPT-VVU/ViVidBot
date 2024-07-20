@@ -95,7 +95,9 @@ class HybridDataset(Dataset):
                     if os.path.exists(img_path):
                         image = Image.open(os.path.join(image_folder, image_file))
                     else:
-                        image = load_image_hf(repo_id="Vividbot/instruct500k_vi", hf_image_path=image_file)
+                        if self.multimodal_cfg["hf_repo_image"] is None:
+                            raise ValueError("Please specify the HF repo where the image is stored")
+                        image = load_image_hf(repo_id=self.multimodal_cfg["hf_repo_image"], hf_image_path=image_file)
 
                     if self.multimodal_cfg['image_aspect_ratio'] == 'keep':
                         max_hw, min_hw = max(image.size), min(image.size)
@@ -127,7 +129,7 @@ class HybridDataset(Dataset):
                 if 'source' in self.list_data_dict[i]:
                     video_file_source = self.list_data_dict[i]['source']
                     video_folder = self.multimodal_cfg['video_folder'] + \
-                        '/'+video_file_source
+                        '/'+ video_file_source
                 else:
                     video_folder = self.multimodal_cfg['video_folder'] + \
                         '/'
@@ -135,7 +137,9 @@ class HybridDataset(Dataset):
                 if os.path.exists(video_path):
                     video = load_video(video_path)
                 else:
-                    video = load_video_hf(repo_id="Vividbot/vast2m_vi", hf_video_path=video_file)
+                    if self.multimodal_cfg["hf_repo_video"] is None:
+                        raise ValueError("Please specify the HF repo where the video is stored")
+                    video = load_video_hf(repo_id=self.multimodal_cfg["hf_repo_video"], hf_video_path=video_file)
                 # print(video.shape)
                 video = video.permute(1, 0, 2, 3)
                 # FIXME: 14 is hardcoded patch size
@@ -176,8 +180,6 @@ class DataCollatorForSupervisedDataset(object):
     """Collate examples for supervised fine-tuning."""
 
     tokenizer: transformers.PreTrainedTokenizer
-
-
     def __call__(self, instances: Sequence[Dict]) -> Dict[str, torch.Tensor]:
         instances_no_error = []
         for ins in instances:
@@ -226,7 +228,9 @@ def make_video_supervised_data_module(tokenizer: transformers.PreTrainedTokenize
             is_multimodal=data_args.is_multimodal,
             image_token_len=data_args.image_token_len,
             image_folder=data_args.image_folder,
+            hf_repo_image=data_args.hf_repo_image,
             video_folder=data_args.video_folder,
+            hf_repo_video=data_args.hf_repo_video,
             image_aspect_ratio=data_args.image_aspect_ratio,
             use_im_start_end=getattr(
                 data_args, 'mm_use_im_start_end', False),
