@@ -30,6 +30,7 @@ langchain-anthropic = "^0.1.20"
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.5.4"
 ipykernel = "^6.29.5"
+pre-commit = "^3.7.1"
 
 [build-system]
 requires = ["poetry-core"]
