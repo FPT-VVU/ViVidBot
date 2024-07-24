@@ -292,16 +292,16 @@ def process(shard_file_name: str):
       local_dir=f"{BASE_DATA_PATH}/output",
     )
 
-  if hf_processor.check_file_exists(
-    repo_id="Vividbot/vividbot_video",
-    path_in_repo=f"errors/{shard}.jsonl",
-    repo_type="dataset",
-  ) and not os.path.exists(f"{BASE_DATA_PATH}/output/errors/{shard}.jsonl"):
-    hf_processor.download_file(
-      repo_id="Vividbot/vividbot_video",
-      filename=f"errors/{shard}.jsonl",
-      local_dir=f"{BASE_DATA_PATH}/output",
-    )
+  # if hf_processor.check_file_exists(
+  #   repo_id="Vividbot/vividbot_video",
+  #   path_in_repo=f"errors/{shard}.jsonl",
+  #   repo_type="dataset",
+  # ) and not os.path.exists(f"{BASE_DATA_PATH}/output/errors/{shard}.jsonl"):
+  #   hf_processor.download_file(
+  #     repo_id="Vividbot/vividbot_video",
+  #     filename=f"errors/{shard}.jsonl",
+  #     local_dir=f"{BASE_DATA_PATH}/output",
+  #   )
 
   dataset = load_dataset(
     "json", data_files=f"{BASE_DATA_PATH}/vivid_instruct_65k/{shard_file_name}"
