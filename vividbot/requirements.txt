@@ -1,7 +1,0 @@
-googletrans==3.1.0a0
-translators
-datasets
-tqdm
-yt-dlp
-google-generativeai
-python-dotenv
