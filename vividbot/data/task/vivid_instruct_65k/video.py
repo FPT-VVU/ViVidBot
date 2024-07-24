@@ -1,11 +1,17 @@
 import json
 import logging
 import os
-import sys
 import time
+from pathlib import Path
 
+import google.generativeai as genai
+import numpy as np
+from datasets import load_dataset
+from dotenv import load_dotenv
 from tqdm import tqdm
 
+from vividbot.data.processor.download import YoutubeDownloader
+from vividbot.data.processor.huggingface import HuggingFaceProcessor
 from vividbot.data.task.vivid_instruct_65k.utils.chains import GENERATE_QA_PAIRS_CHAIN
 from vividbot.data.task.vivid_instruct_65k.utils.common import (
   find_first_list_from_response,
@@ -14,18 +20,6 @@ from vividbot.data.task.vivid_instruct_65k.utils.notifications import (
   send_process_shard_success_message,
 )
 from vividbot.data.task.vivid_instruct_65k.utils.prompts import DESCRIBE_VIDEO_PROMPT
-
-sys.path.append(os.getcwd())
-
-from pathlib import Path
-
-import google.generativeai as genai
-import numpy as np
-from datasets import load_dataset
-from dotenv import load_dotenv
-
-from vividbot.data.processor.download import YoutubeDownloader
-from vividbot.data.processor.huggingface import HuggingFaceProcessor
 
 load_dotenv()
 BASE_DATA_PATH = f"{Path.home()}/data"
