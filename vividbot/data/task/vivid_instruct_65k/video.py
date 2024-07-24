@@ -304,7 +304,7 @@ def process(shard_file_name: str):
     )
 
   dataset = load_dataset(
-    "json", data_files=f"{BASE_DATA_PATH}/vivid_instruct_65k/{shard}"
+    "json", data_files=f"{BASE_DATA_PATH}/vivid_instruct_65k/{shard_file_name}"
   )["train"]
 
   dataset.map(
