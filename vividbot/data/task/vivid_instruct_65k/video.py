@@ -371,6 +371,12 @@ def main():
     key=lambda x: int(x.split(".")[0].split("_")[1]),
   )
 
+  last_successful_shard = 1
+  # only process shards after the last successful shard
+  shard_files = shard_files[last_successful_shard:]
+
+  logger.info(f"Processing shards: {shard_files}")
+
   for shard in tqdm(
     shard_files,
     desc="Processing shards",
