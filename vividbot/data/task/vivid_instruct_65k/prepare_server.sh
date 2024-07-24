@@ -11,3 +11,7 @@ poetry install && \
 cd ~/ && mkdir data && cd data && wget https://vividbot.s3.ap-southeast-1.amazonaws.com/vivid_instruct_65k.zip && \
 unzip vivid_instruct_65k.zip -d vivid_instruct_65k && \
 cd ~/ViVidBot
+
+export $(grep -v '^#' .env | xargs)
+
+poetry run python3 vividbot/data/task/vivid_instruct_65k/video.py
