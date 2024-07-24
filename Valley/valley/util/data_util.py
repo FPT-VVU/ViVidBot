@@ -1,21 +1,22 @@
-import torch
-from transformers import StoppingCriteria
-from typing import Dict, Sequence
-from valley import conversation as conversation_lib
-import transformers
-from valley.util.config import *
 import copy
-from torchvision import transforms
-from valley.data import video_transform
-import decord
-import os
-import numpy as np
-import av 
 import io
-from pathlib import Path
-from PIL import Image
-from huggingface_hub import HfFileSystem
+import os
 import zipfile
+from pathlib import Path
+from typing import Dict, Sequence
+
+import av
+import decord
+import numpy as np
+import torch
+import transformers
+from huggingface_hub import HfFileSystem
+from PIL import Image
+from torchvision import transforms
+from transformers import StoppingCriteria
+from valley import conversation as conversation_lib
+from valley.data import video_transform
+from valley.util.config import *
 
 
 def collate_wrapper(batch):
@@ -35,8 +36,9 @@ def collate_process_image_text(batch, tokenizer, image_processor):
     attention_mask = torch.as_tensor(attention_mask)
     videos = []
     for this_batch_images in batch_image:
-        video = image_processor.preprocess(
-            this_batch_images, return_tensors='pt')['pixel_values']
+        video = image_processor.preprocess(this_batch_images, return_tensors="pt")[
+            "pixel_values"
+        ]
         videos.append(video)
     return input_ids, attention_mask, videos, conv_list, label_list
 
@@ -48,41 +50,41 @@ class KeywordsStoppingCriteria(StoppingCriteria):
         self.start_len = None
         self.input_ids = input_ids
 
-    def __call__(self, output_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
+    def __call__(
+        self, output_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs
+    ) -> bool:
         if self.start_len is None:
             self.start_len = self.input_ids.shape[1]
         else:
             outputs = self.tokenizer.batch_decode(
-                output_ids[:, self.start_len:], skip_special_tokens=True)[0]
+                output_ids[:, self.start_len :], skip_special_tokens=True
+            )[0]
             for keyword in self.keywords:
                 if keyword in outputs:
                     return True
         return False
 
+
 # for finetune
 
 
-def safe_save_model_for_hf_trainer(trainer: transformers.Trainer,
-                                   output_dir: str):
+def safe_save_model_for_hf_trainer(trainer: transformers.Trainer, output_dir: str):
     """Collects the state dict and dump to disk."""
-    
+
     if trainer.args.lora:
-        if trainer.args.should_save: 
+        if trainer.args.should_save:
             trainer.model.save_pretrained(output_dir)
-        
+
     else:
         if trainer.deepspeed:
-            print('saving deepspeed model...')
+            print("saving deepspeed model...")
             torch.cuda.synchronize()
             trainer.save_model(output_dir)
             return
-        
+
         state_dict = trainer.model.state_dict()
         if trainer.args.should_save:
-            cpu_state_dict = {
-                key: value.cpu()
-                for key, value in state_dict.items()
-            }
+            cpu_state_dict = {key: value.cpu() for key, value in state_dict.items()}
             del state_dict
             trainer._save(output_dir, state_dict=cpu_state_dict)  # noqa
 
@@ -104,16 +106,19 @@ def smart_tokenizer_and_embedding_resize(
         output_embeddings = model.get_output_embeddings().weight.data
 
         input_embeddings_avg = input_embeddings[:-num_new_tokens].mean(
-            dim=0, keepdim=True)
+            dim=0, keepdim=True
+        )
         output_embeddings_avg = output_embeddings[:-num_new_tokens].mean(
-            dim=0, keepdim=True)
+            dim=0, keepdim=True
+        )
 
         input_embeddings[-num_new_tokens:] = input_embeddings_avg
         output_embeddings[-num_new_tokens:] = output_embeddings_avg
 
 
-def _tokenize_fn(strings: Sequence[str],
-                 tokenizer: transformers.PreTrainedTokenizer) -> Dict:
+def _tokenize_fn(
+    strings: Sequence[str], tokenizer: transformers.PreTrainedTokenizer
+) -> Dict:
     """Tokenize a list of strings."""
     tokenized_list = [
         tokenizer(
@@ -122,11 +127,10 @@ def _tokenize_fn(strings: Sequence[str],
             padding="longest",
             max_length=tokenizer.model_max_length,
             truncation=True,
-        ) for text in strings
+        )
+        for text in strings
     ]
-    input_ids = labels = [
-        tokenized.input_ids[0] for tokenized in tokenized_list
-    ]
+    input_ids = labels = [tokenized.input_ids[0] for tokenized in tokenized_list]
     input_ids_lens = labels_lens = [
         tokenized.input_ids.ne(tokenizer.pad_token_id).sum().item()
         for tokenized in tokenized_list
@@ -147,7 +151,7 @@ def _mask_targets(target, tokenized_lens, speakers, only_mask_system):
     if not only_mask_system:
         for tokenized_len, speaker in zip(tokenized_lens, speakers):
             if speaker == "human":
-                target[cur_idx+2:cur_idx + tokenized_len] = IGNORE_INDEX
+                target[cur_idx + 2 : cur_idx + tokenized_len] = IGNORE_INDEX
             cur_idx += tokenized_len
 
 
@@ -163,9 +167,10 @@ def _add_speaker_and_signal(header, source, get_conversation=True):
         elif from_str.lower() == "gpt":
             from_str = conversation_lib.default_conversation.roles[1]
         else:
-            from_str = 'unknown'
-        sentence["value"] = (BEGIN_SIGNAL + from_str + ": " +
-                             sentence["value"] + END_SIGNAL)
+            from_str = "unknown"
+        sentence["value"] = (
+            BEGIN_SIGNAL + from_str + ": " + sentence["value"] + END_SIGNAL
+        )
         if get_conversation:
             conversation += sentence["value"]
     conversation += BEGIN_SIGNAL
@@ -177,7 +182,7 @@ def preprocess_multimodal(
     multimodal_cfg: dict,
     cur_token_len: int,
 ) -> Dict:
-    is_multimodal = multimodal_cfg['is_multimodal']
+    is_multimodal = multimodal_cfg["is_multimodal"]
     # image_token_len = multimodal_cfg['image_token_len']
     image_token_len = cur_token_len
     if not is_multimodal:
@@ -186,21 +191,21 @@ def preprocess_multimodal(
     for source in sources:
         for sentence in source:
             replace_token = DEFAULT_IMAGE_PATCH_TOKEN * image_token_len
-            if multimodal_cfg['use_im_start_end']:
-                replace_token = DEFAULT_IM_START_TOKEN + replace_token + DEFAULT_IM_END_TOKEN
+            if multimodal_cfg["use_im_start_end"]:
+                replace_token = (
+                    DEFAULT_IM_START_TOKEN + replace_token + DEFAULT_IM_END_TOKEN
+                )
             sentence["value"] = sentence["value"].replace(
-                DEFAULT_IMAGE_TOKEN, replace_token)
+                DEFAULT_IMAGE_TOKEN, replace_token
+            )
 
     return sources
 
 
 def preprocess_multimodal_multiimage(
-    sources: Sequence[str],
-    multimodal_cfg: dict,
-    cur_token_len: int,
-    num_image: int
+    sources: Sequence[str], multimodal_cfg: dict, cur_token_len: int, num_image: int
 ) -> Dict:
-    is_multimodal = multimodal_cfg['is_multimodal']
+    is_multimodal = multimodal_cfg["is_multimodal"]
     # image_token_len = multimodal_cfg['image_token_len']
     image_token_len = cur_token_len
     if not is_multimodal:
@@ -208,21 +213,32 @@ def preprocess_multimodal_multiimage(
 
     for source in sources:
         for sentence in source:
-            if multimodal_cfg['use_im_start_end']:
-                replace_token = DEFAULT_IM_START_TOKEN + DEFAULT_IMAGE_PATCH_TOKEN * \
-                    image_token_len + DEFAULT_IM_END_TOKEN
-                replace_token = replace_token + DEFAULT_VI_START_TOKEN + \
-                    DEFAULT_VIDEO_FRAME_TOKEN * num_image + DEFAULT_VI_END_TOKEN
+            if multimodal_cfg["use_im_start_end"]:
+                replace_token = (
+                    DEFAULT_IM_START_TOKEN
+                    + DEFAULT_IMAGE_PATCH_TOKEN * image_token_len
+                    + DEFAULT_IM_END_TOKEN
+                )
+                replace_token = (
+                    replace_token
+                    + DEFAULT_VI_START_TOKEN
+                    + DEFAULT_VIDEO_FRAME_TOKEN * num_image
+                    + DEFAULT_VI_END_TOKEN
+                )
             sentence["value"] = sentence["value"].replace(
-                DEFAULT_IMAGE_TOKEN, replace_token)
+                DEFAULT_IMAGE_TOKEN, replace_token
+            )
             sentence["value"] = sentence["value"].replace(
-                DEFAULT_VIDEO_TOKEN, replace_token)
+                DEFAULT_VIDEO_TOKEN, replace_token
+            )
     return sources
 
 
 def preprocess(
     sources: Sequence[str],
-    tokenizer: transformers.PreTrainedTokenizer, conv_mode, only_mask_system = False
+    tokenizer: transformers.PreTrainedTokenizer,
+    conv_mode,
+    only_mask_system=False,
 ) -> Dict:
     """
     Given a list of sources, each is a conversation list. This transform:
@@ -242,8 +258,9 @@ def preprocess(
     input_ids = conversations_tokenized["input_ids"]
     targets = copy.deepcopy(input_ids)
     for target, source in zip(targets, sources):
-        tokenized_lens = _tokenize_fn([header] + [s["value"] for s in source],
-                                      tokenizer)["input_ids_lens"]
+        tokenized_lens = _tokenize_fn(
+            [header] + [s["value"] for s in source], tokenizer
+        )["input_ids_lens"]
         speakers = [sentence["from"] for sentence in source]
         _mask_targets(target, tokenized_lens, speakers, only_mask_system)
 
@@ -251,65 +268,80 @@ def preprocess(
 
 
 def load_video(
-        path,
-        image_processer = None,
-        frame_mode='fixed',
-        fixed_frame_number=8,
-        fps_number=0.5,
-        frame_process_method='centercrop',
+    path,
+    image_processer=None,
+    frame_mode="fixed",
+    fixed_frame_number=8,
+    fps_number=0.5,
+    frame_process_method="centercrop",
 ):
     if os.path.isfile(path):
-        video_reader = decord.VideoReader(
-            path, num_threads=1, ctx=decord.cpu(0))
-        decord.bridge.set_bridge('torch')
+        video_reader = decord.VideoReader(path, num_threads=1, ctx=decord.cpu(0))
+        decord.bridge.set_bridge("torch")
         video_len = len(video_reader)
 
-        if frame_mode == 'fixed':
-            video = video_reader.get_batch(np.linspace(
-                0, video_len - 1, fixed_frame_number).astype(np.int_)).byte()  # 8, height,width,3
-            video = video.permute(3, 0, 1, 2)  # 3 x 8 x height x width
-        elif frame_mode == 'fps':
-            fps_offset = int(round(video_reader.get_avg_fps())/fps_number)
+        if frame_mode == "fixed":
             video = video_reader.get_batch(
-                range(0, video_len, fps_offset)).byte()
+                np.linspace(0, video_len - 1, fixed_frame_number).astype(np.int_)
+            ).byte()  # 8, height,width,3
             video = video.permute(3, 0, 1, 2)  # 3 x 8 x height x width
-        input_mean = [0.48145466, 0.4578275, 0.40821073] # Consistent with clilp preprocessing
-        input_std = [0.26862954, 0.26130258, 0.27577711] #Consistent with clilp preprocessing
+        elif frame_mode == "fps":
+            fps_offset = int(round(video_reader.get_avg_fps()) / fps_number)
+            video = video_reader.get_batch(range(0, video_len, fps_offset)).byte()
+            video = video.permute(3, 0, 1, 2)  # 3 x 8 x height x width
+        input_mean = [
+            0.48145466,
+            0.4578275,
+            0.40821073,
+        ]  # Consistent with clilp preprocessing
+        input_std = [
+            0.26862954,
+            0.26130258,
+            0.27577711,
+        ]  # Consistent with clilp preprocessing
         crop_size, scale_size = 224, 256
-        trans = transforms.Compose([
-            video_transform.TensorToNumpy(),
-            video_transform.Resize(scale_size),
-            video_transform.CenterCrop(crop_size),
-            video_transform.ClipToTensor(channel_nb=3),
-            video_transform.Normalize(mean=input_mean, std=input_std)
-        ])
+        trans = transforms.Compose(
+            [
+                video_transform.TensorToNumpy(),
+                video_transform.Resize(scale_size),
+                video_transform.CenterCrop(crop_size),
+                video_transform.ClipToTensor(channel_nb=3),
+                video_transform.Normalize(mean=input_mean, std=input_std),
+            ]
+        )
         video = trans(video)
     else:
-        video_frames = list(Path(path).rglob('*'))
-        if frame_mode == 'fixed':
-            video_frames = [video_frames[i] for i in np.linspace(
-                0, len(video_frames) - 1, fixed_frame_number).astype(np.int_)]
-        elif frame_mode == 'fps':
-            raise ValueError('Input folder is not support this frame mode')
+        video_frames = list(Path(path).rglob("*"))
+        if frame_mode == "fixed":
+            video_frames = [
+                video_frames[i]
+                for i in np.linspace(
+                    0, len(video_frames) - 1, fixed_frame_number
+                ).astype(np.int_)
+            ]
+        elif frame_mode == "fps":
+            raise ValueError("Input folder is not support this frame mode")
         else:
             raise ValueError('Frame mode is only support "fps" or "fixed"')
         video_frames = [Image.open(str(path)) for path in video_frames]
 
-        if frame_process_method == 'resize':
+        if frame_process_method == "resize":
             min_length = min(video_frames[0].size)
             resize = transforms.Resize([min_length, min_length])
             video_frames = [resize(frame) for frame in video_frames]
             # test_frame = video_frames[0]
 
-        video = image_processer.preprocess(
-            video_frames, return_tensors='pt')['pixel_values']
+        video = image_processer.preprocess(video_frames, return_tensors="pt")[
+            "pixel_values"
+        ]
         video = video.permute(1, 0, 2, 3)
     return video
+
 
 def extract_frames(video_bytes, num_frames=8):
     # Create a memory-mapped file from the bytes
     container = av.open(io.BytesIO(video_bytes))
-    
+
     # Find the video stream
     visual_stream = next(iter(container.streams.video), None)
     if not visual_stream:
@@ -323,7 +355,9 @@ def extract_frames(video_bytes, num_frames=8):
 
     # Initialize arrays to store frames
     frames_array = []
-    frame_indices = set(range(0, total_frames, interval))  # Indices of frames to capture
+    frame_indices = set(
+        range(0, total_frames, interval)
+    )  # Indices of frames to capture
     frame_counter = 0
 
     # Extract frames
@@ -337,48 +371,63 @@ def extract_frames(video_bytes, num_frames=8):
             frame_counter += 1
         if len(frames_array) >= num_frames:
             break
-    
+
     return np.array(frames_array)
-def load_video_hf(repo_id,
-                  hf_video_path,     
-                  image_processer = None, 
-                  frame_mode='fixed', 
-                  fixed_frame_number=8, 
-                  fps_number=0.5, 
-                  frame_process_method='centercrop'):
+
+
+def load_video_hf(
+    repo_id,
+    hf_video_path,
+    image_processer=None,
+    frame_mode="fixed",
+    fixed_frame_number=8,
+    fps_number=0.5,
+    frame_process_method="centercrop",
+):
     # hf_path = "datasets/Vividbot/vast2m_vi/video/shard_0/video_mp4"
     fs = HfFileSystem()
     zip_path = f"datasets/{repo_id}/video/{hf_video_path.split('/')[0]}.zip"
     zip_folder = fs.open(zip_path)
-    zip_ref = zipfile.ZipFile(zip_folder, 'r')
+    zip_ref = zipfile.ZipFile(zip_folder, "r")
     video = zip_ref.read(hf_video_path)
 
-    if frame_mode == 'fixed':
+    if frame_mode == "fixed":
         video = extract_frames(video, fixed_frame_number)  # 8, height,width,3
         video = torch.from_numpy(video)
         video = video.permute(3, 0, 1, 2)  # 3 x 8 x height x width
-    elif frame_mode == 'fps':
-            raise ValueError('Input folder is not support this frame mode')
+    elif frame_mode == "fps":
+        raise ValueError("Input folder is not support this frame mode")
     else:
         raise ValueError('Frame mode is only support "fps" or "fixed"')
-    input_mean = [0.48145466, 0.4578275, 0.40821073] # Consistent with clilp preprocessing
-    input_std = [0.26862954, 0.26130258, 0.27577711] #Consistent with clilp preprocessing
+    input_mean = [
+        0.48145466,
+        0.4578275,
+        0.40821073,
+    ]  # Consistent with clilp preprocessing
+    input_std = [
+        0.26862954,
+        0.26130258,
+        0.27577711,
+    ]  # Consistent with clilp preprocessing
     crop_size, scale_size = 224, 256
-    trans = transforms.Compose([
-        video_transform.TensorToNumpy(),
-        video_transform.Resize(scale_size),
-        video_transform.CenterCrop(crop_size),
-        video_transform.ClipToTensor(channel_nb=3),
-        video_transform.Normalize(mean=input_mean, std=input_std)
-    ])
+    trans = transforms.Compose(
+        [
+            video_transform.TensorToNumpy(),
+            video_transform.Resize(scale_size),
+            video_transform.CenterCrop(crop_size),
+            video_transform.ClipToTensor(channel_nb=3),
+            video_transform.Normalize(mean=input_mean, std=input_std),
+        ]
+    )
     video = trans(video)
     return video
-    
+
+
 def load_image_hf(repo_id, hf_image_path):
     fs = HfFileSystem()
     zip_path = f"datasets/{repo_id}/images/{hf_image_path.split('/')[0]}.zip"
     zip_folder = fs.open(zip_path)
-    zip_ref = zipfile.ZipFile(zip_folder, 'r')
+    zip_ref = zipfile.ZipFile(zip_folder, "r")
     image = zip_ref.read(hf_image_path)
     image = Image.open(io.BytesIO(image))
     return image

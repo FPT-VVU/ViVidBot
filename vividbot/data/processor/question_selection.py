@@ -1,5 +1,5 @@
 import random
-import json
+
 from vividbot.data.processor.base import BaseProcessor
 
 # set seed

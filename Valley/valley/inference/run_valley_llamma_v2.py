@@ -1,16 +1,16 @@
 import argparse
-from transformers import AutoTokenizer
-from valley.model.valley_model import ValleyLlamaForCausalLM
-import torch
 from enum import Enum
 
+import torch
+from transformers import AutoTokenizer
+from valley.model.valley_model import ValleyLlamaForCausalLM
 from valley.util.config import (
-    DEFAULT_IMAGE_PATCH_TOKEN,
-    DEFAULT_IM_START_TOKEN,
     DEFAULT_IM_END_TOKEN,
-    DEFAULT_VIDEO_FRAME_TOKEN,
-    DEFAULT_VI_START_TOKEN,
+    DEFAULT_IM_START_TOKEN,
+    DEFAULT_IMAGE_PATCH_TOKEN,
     DEFAULT_VI_END_TOKEN,
+    DEFAULT_VI_START_TOKEN,
+    DEFAULT_VIDEO_FRAME_TOKEN,
     DEFAULT_VIDEO_TOKEN,
 )
 
@@ -80,4 +80,3 @@ gen_kwargs = dict(
 
 
 response = model.completion(tokenizer, video_file, message, gen_kwargs, device)
-

@@ -1,15 +1,15 @@
 import numbers
 import random
+
+import cv2
 import numpy as np
 import PIL
 import skimage
 import skimage.transform
+import torch
 import torchvision
-import torch
-from torchvision import transforms
 from PIL import Image
-import torch
-import cv2
+from torchvision import transforms
 
 
 def _is_tensor_clip(clip):
@@ -18,56 +18,54 @@ def _is_tensor_clip(clip):
 
 def crop_clip(clip, min_h, min_w, h, w):
     if isinstance(clip[0], np.ndarray):
-        cropped = [img[min_h:min_h + h, min_w:min_w + w, :] for img in clip]
+        cropped = [img[min_h : min_h + h, min_w : min_w + w, :] for img in clip]
 
     elif isinstance(clip[0], PIL.Image.Image):
-        cropped = [
-            img.crop((min_w, min_h, min_w + w, min_h + h)) for img in clip
-        ]
+        cropped = [img.crop((min_w, min_h, min_w + w, min_h + h)) for img in clip]
     else:
-        raise TypeError('Expected numpy.ndarray or PIL.Image' +
-                        'but got list of {0}'.format(type(clip[0])))
+        raise TypeError(
+            "Expected numpy.ndarray or PIL.Image"
+            + "but got list of {0}".format(type(clip[0]))
+        )
     return cropped
 
 
-def resize_clip(clip, size, interpolation='bilinear'):
+def resize_clip(clip, size, interpolation="bilinear"):
     if isinstance(clip[0], np.ndarray):
         if isinstance(size, numbers.Number):
             im_h, im_w, im_c = clip[0].shape
             # Min spatial dim already matches minimal size
-            if (im_w <= im_h and im_w == size) or (im_h <= im_w
-                                                   and im_h == size):
+            if (im_w <= im_h and im_w == size) or (im_h <= im_w and im_h == size):
                 return clip
             new_h, new_w = get_resize_sizes(im_h, im_w, size)
             size = (new_w, new_h)
         else:
             size = size[1], size[0]
-        if interpolation == 'bilinear':
+        if interpolation == "bilinear":
             np_inter = cv2.INTER_LINEAR
         else:
             np_inter = cv2.INTER_NEAREST
-        scaled = [
-            cv2.resize(img, size, interpolation=np_inter) for img in clip
-        ]
+        scaled = [cv2.resize(img, size, interpolation=np_inter) for img in clip]
     elif isinstance(clip[0], PIL.Image.Image):
         if isinstance(size, numbers.Number):
             im_w, im_h = clip[0].size
             # Min spatial dim already matches minimal size
-            if (im_w <= im_h and im_w == size) or (im_h <= im_w
-                                                   and im_h == size):
+            if (im_w <= im_h and im_w == size) or (im_h <= im_w and im_h == size):
                 return clip
             new_h, new_w = get_resize_sizes(im_h, im_w, size)
             size = (new_w, new_h)
         else:
             size = size[1], size[0]
-        if interpolation == 'bilinear':
+        if interpolation == "bilinear":
             pil_inter = PIL.Image.NEAREST
         else:
             pil_inter = PIL.Image.BILINEAR
         scaled = [img.resize(size, pil_inter) for img in clip]
     else:
-        raise TypeError('Expected numpy.ndarray or PIL.Image' +
-                        'but got list of {0}'.format(type(clip[0])))
+        raise TypeError(
+            "Expected numpy.ndarray or PIL.Image"
+            + "but got list of {0}".format(type(clip[0]))
+        )
     return scaled
 
 
@@ -83,7 +81,7 @@ def get_resize_sizes(im_h, im_w, size):
 
 def normalize(clip, mean, std, inplace=False):
     if not _is_tensor_clip(clip):
-        raise TypeError('tensor is not a torch clip_test.')
+        raise TypeError("tensor is not a torch clip_test.")
 
     if not inplace:
         clip = clip.clone()
@@ -101,8 +99,7 @@ def normalize(clip, mean, std, inplace=False):
 
 
 def convert_img(img):
-    """Converts (H, W, C) numpy.ndarray to (C, W, H) format
-    """
+    """Converts (H, W, C) numpy.ndarray to (C, W, H) format"""
     if len(img.shape) == 3:
         img = img.transpose(2, 0, 1)
     if len(img.shape) == 2:
@@ -128,13 +125,16 @@ class ClipToTensor(object):
         # Retrieve shape
         if isinstance(clip[0], np.ndarray):
             h, w, ch = clip[0].shape
-            assert ch == self.channel_nb, 'Got {0} instead of 3 channels'.format(
-                ch)
+            assert ch == self.channel_nb, "Got {0} instead of 3 channels".format(ch)
         elif isinstance(clip[0], Image.Image):
             w, h = clip[0].size
         else:
-            raise TypeError('Expected numpy.ndarray or PIL.Image\
-            but got list of {0}'.format(type(clip[0])))
+            raise TypeError(
+                "Expected numpy.ndarray or PIL.Image\
+            but got list of {0}".format(
+                    type(clip[0])
+                )
+            )
 
         np_clip = np.zeros([self.channel_nb, len(clip), int(h), int(w)])
 
@@ -145,8 +145,12 @@ class ClipToTensor(object):
             elif isinstance(img, Image.Image):
                 img = np.array(img, copy=False)
             else:
-                raise TypeError('Expected numpy.ndarray or PIL.Image\
-                but got list of {0}'.format(type(clip[0])))
+                raise TypeError(
+                    "Expected numpy.ndarray or PIL.Image\
+                but got list of {0}".format(
+                        type(clip[0])
+                    )
+                )
             img = convert_img(img)
             np_clip[:, img_idx, :, :] = img
         if self.numpy:
@@ -165,17 +169,17 @@ class ClipToTensor(object):
 
 
 class ToTensor(object):
-    """Converts numpy array to tensor
-    """
+    """Converts numpy array to tensor"""
 
     def __call__(self, array):
         tensor = torch.from_numpy(array)
         return tensor
 
+
 class ColorDistortion(object):
     def __init__(self, s=1.0):
         self.s = s
-        self.color_jitter = transforms.ColorJitter(0.8*s, 0.8*s, 0.8*s, 0.2*s)
+        self.color_jitter = transforms.ColorJitter(0.8 * s, 0.8 * s, 0.8 * s, 0.2 * s)
         self.rnd_color_jitter = transforms.RandomApply([self.color_jitter], p=0.8)
         self.rnd_gray = transforms.RandomGrayscale(p=0.2)
 
@@ -217,12 +221,12 @@ class RandomHorizontalFlip(object):
             if isinstance(clip[0], np.ndarray):
                 return [np.fliplr(img) for img in clip]
             elif isinstance(clip[0], PIL.Image.Image):
-                return [
-                    img.transpose(PIL.Image.FLIP_LEFT_RIGHT) for img in clip
-                ]
+                return [img.transpose(PIL.Image.FLIP_LEFT_RIGHT) for img in clip]
             else:
-                raise TypeError('Expected numpy.ndarray or PIL.Image' +
-                                ' but got list of {0}'.format(type(clip[0])))
+                raise TypeError(
+                    "Expected numpy.ndarray or PIL.Image"
+                    + " but got list of {0}".format(type(clip[0]))
+                )
         return clip
 
 
@@ -236,7 +240,7 @@ class RandomResize(object):
     size (tuple): (widht, height)
     """
 
-    def __init__(self, ratio=(3. / 4., 4. / 3.), interpolation='nearest'):
+    def __init__(self, ratio=(3.0 / 4.0, 4.0 / 3.0), interpolation="nearest"):
         self.ratio = ratio
         self.interpolation = interpolation
 
@@ -251,8 +255,7 @@ class RandomResize(object):
         new_w = int(im_w * scaling_factor)
         new_h = int(im_h * scaling_factor)
         new_size = (new_w, new_h)
-        resized = resize_clip(
-            clip, new_size, interpolation=self.interpolation)
+        resized = resize_clip(clip, new_size, interpolation=self.interpolation)
         return resized
 
 
@@ -266,13 +269,12 @@ class Resize(object):
     size (tuple): (widht, height)
     """
 
-    def __init__(self, size, interpolation='nearest'):
+    def __init__(self, size, interpolation="nearest"):
         self.size = size
         self.interpolation = interpolation
 
     def __call__(self, clip):
-        resized = resize_clip(
-            clip, self.size, interpolation=self.interpolation)
+        resized = resize_clip(clip, self.size, interpolation=self.interpolation)
         return resized
 
 
@@ -303,14 +305,18 @@ class RandomCrop(object):
         elif isinstance(clip[0], PIL.Image.Image):
             im_w, im_h = clip[0].size
         else:
-            raise TypeError('Expected numpy.ndarray or PIL.Image' +
-                            'but got list of {0}'.format(type(clip[0])))
+            raise TypeError(
+                "Expected numpy.ndarray or PIL.Image"
+                + "but got list of {0}".format(type(clip[0]))
+            )
         if w > im_w or h > im_h:
             error_msg = (
-                'Initial image size should be larger then '
-                'cropped size but got cropped sizes : ({w}, {h}) while '
-                'initial image is ({im_w}, {im_h})'.format(
-                    im_w=im_w, im_h=im_h, w=w, h=h))
+                "Initial image size should be larger then "
+                "cropped size but got cropped sizes : ({w}, {h}) while "
+                "initial image is ({im_w}, {im_h})".format(
+                    im_w=im_w, im_h=im_h, w=w, h=h
+                )
+            )
             raise ValueError(error_msg)
 
         x1 = random.randint(0, im_w - w)
@@ -329,35 +335,35 @@ class CornerCrop(object):
         else:
             self.randomize = False
         self.crop_position = crop_position
-        self.crop_positions = ['c', 'tl', 'tr', 'bl', 'br']
+        self.crop_positions = ["c", "tl", "tr", "bl", "br"]
 
     def __call__(self, imgs):
         t, h, w, c = imgs.shape
         corner_imgs = list()
         for n in self.crop_positions:
-            #print(n)
-            if n == 'c':
+            # print(n)
+            if n == "c":
                 th, tw = (self.size, self.size)
-                x1 = int(round((w- tw) / 2.))
-                y1 = int(round((h - th) / 2.))
+                x1 = int(round((w - tw) / 2.0))
+                y1 = int(round((h - th) / 2.0))
                 x2 = x1 + tw
                 y2 = y1 + th
-            elif n == 'tl':
+            elif n == "tl":
                 x1 = 0
                 y1 = 0
                 x2 = self.size
                 y2 = self.size
-            elif n == 'tr':
+            elif n == "tr":
                 x1 = w - self.size
                 y1 = 0
                 x2 = w
                 y2 = self.size
-            elif n == 'bl':
+            elif n == "bl":
                 x1 = 0
                 y1 = h - self.size
                 x2 = self.size
                 y2 = h
-            elif n == 'br':
+            elif n == "br":
                 x1 = w - self.size
                 y1 = h - self.size
                 x2 = w
@@ -367,9 +373,9 @@ class CornerCrop(object):
 
     def randomize_parameters(self):
         if self.randomize:
-            self.crop_position = self.crop_positions[random.randint(
-                0,
-                len(self.crop_positions) - 1)]
+            self.crop_position = self.crop_positions[
+                random.randint(0, len(self.crop_positions) - 1)
+            ]
 
 
 class RandomRotation(object):
@@ -384,13 +390,11 @@ class RandomRotation(object):
     def __init__(self, degrees):
         if isinstance(degrees, numbers.Number):
             if degrees < 0:
-                raise ValueError('If degrees is a single number,'
-                                 'must be positive')
+                raise ValueError("If degrees is a single number," "must be positive")
             degrees = (-degrees, degrees)
         else:
             if len(degrees) != 2:
-                raise ValueError('If degrees is a sequence,'
-                                 'it must be of len 2.')
+                raise ValueError("If degrees is a sequence," "it must be of len 2.")
 
         self.degrees = degrees
 
@@ -408,8 +412,10 @@ class RandomRotation(object):
         elif isinstance(clip[0], PIL.Image.Image):
             rotated = [img.rotate(angle) for img in clip]
         else:
-            raise TypeError('Expected numpy.ndarray or PIL.Image' +
-                            'but got list of {0}'.format(type(clip[0])))
+            raise TypeError(
+                "Expected numpy.ndarray or PIL.Image"
+                + "but got list of {0}".format(type(clip[0]))
+            )
 
         return rotated
 
@@ -426,13 +432,11 @@ class STA_RandomRotation(object):
     def __init__(self, degrees):
         if isinstance(degrees, numbers.Number):
             if degrees < 0:
-                raise ValueError('If degrees is a single number,'
-                                 'must be positive')
+                raise ValueError("If degrees is a single number," "must be positive")
             degrees = (-degrees, degrees)
         else:
             if len(degrees) != 2:
-                raise ValueError('If degrees is a sequence,'
-                                 'it must be of len 2.')
+                raise ValueError("If degrees is a sequence," "it must be of len 2.")
 
         self.degrees = degrees
 
@@ -446,14 +450,18 @@ class STA_RandomRotation(object):
         """
         bsz = len(clip)
         angle = random.uniform(self.degrees[0], self.degrees[1])
-        angles = [(i+1)/(bsz+1) * angle for i in range(bsz)]
+        angles = [(i + 1) / (bsz + 1) * angle for i in range(bsz)]
         if isinstance(clip[0], np.ndarray):
-            rotated = [skimage.transform.rotate(img, angles[i]) for i, img in enumerate(clip)]
+            rotated = [
+                skimage.transform.rotate(img, angles[i]) for i, img in enumerate(clip)
+            ]
         elif isinstance(clip[0], PIL.Image.Image):
             rotated = [img.rotate(angles[i]) for i, img in enumerate(clip)]
         else:
-            raise TypeError('Expected numpy.ndarray or PIL.Image' +
-                            'but got list of {0}'.format(type(clip[0])))
+            raise TypeError(
+                "Expected numpy.ndarray or PIL.Image"
+                + "but got list of {0}".format(type(clip[0]))
+            )
 
         return rotated
 
@@ -470,13 +478,11 @@ class Each_RandomRotation(object):
     def __init__(self, degrees):
         if isinstance(degrees, numbers.Number):
             if degrees < 0:
-                raise ValueError('If degrees is a single number,'
-                                 'must be positive')
+                raise ValueError("If degrees is a single number," "must be positive")
             degrees = (-degrees, degrees)
         else:
             if len(degrees) != 2:
-                raise ValueError('If degrees is a sequence,'
-                                 'it must be of len 2.')
+                raise ValueError("If degrees is a sequence," "it must be of len 2.")
 
         self.degrees = degrees
 
@@ -492,12 +498,16 @@ class Each_RandomRotation(object):
         angles = [random.uniform(self.degrees[0], self.degrees[1]) for i in range(bsz)]
         # print(angles)
         if isinstance(clip[0], np.ndarray):
-            rotated = [skimage.transform.rotate(img, angles[i]) for i, img in enumerate(clip)]
+            rotated = [
+                skimage.transform.rotate(img, angles[i]) for i, img in enumerate(clip)
+            ]
         elif isinstance(clip[0], PIL.Image.Image):
             rotated = [img.rotate(angles[i]) for i, img in enumerate(clip)]
         else:
-            raise TypeError('Expected numpy.ndarray or PIL.Image' +
-                            'but got list of {0}'.format(type(clip[0])))
+            raise TypeError(
+                "Expected numpy.ndarray or PIL.Image"
+                + "but got list of {0}".format(type(clip[0]))
+            )
 
         return rotated
 
@@ -529,18 +539,22 @@ class CenterCrop(object):
         elif isinstance(clip[0], PIL.Image.Image):
             im_w, im_h = clip[0].size
         else:
-            raise TypeError('Expected numpy.ndarray or PIL.Image' +
-                            'but got list of {0}'.format(type(clip[0])))
+            raise TypeError(
+                "Expected numpy.ndarray or PIL.Image"
+                + "but got list of {0}".format(type(clip[0]))
+            )
         if w > im_w or h > im_h:
             error_msg = (
-                'Initial image size should be larger then '
-                'cropped size but got cropped sizes : ({w}, {h}) while '
-                'initial image is ({im_w}, {im_h})'.format(
-                    im_w=im_w, im_h=im_h, w=w, h=h))
+                "Initial image size should be larger then "
+                "cropped size but got cropped sizes : ({w}, {h}) while "
+                "initial image is ({im_w}, {im_h})".format(
+                    im_w=im_w, im_h=im_h, w=w, h=h
+                )
+            )
             raise ValueError(error_msg)
 
-        x1 = int(round((im_w - w) / 2.))
-        y1 = int(round((im_h - h) / 2.))
+        x1 = int(round((im_w - w) / 2.0))
+        y1 = int(round((im_h - h) / 2.0))
         cropped = crop_clip(clip, y1, x1, h, w)
 
         return cropped
@@ -567,20 +581,17 @@ class ColorJitter(object):
 
     def get_params(self, brightness, contrast, saturation, hue):
         if brightness > 0:
-            brightness_factor = random.uniform(
-                max(0, 1 - brightness), 1 + brightness)
+            brightness_factor = random.uniform(max(0, 1 - brightness), 1 + brightness)
         else:
             brightness_factor = None
 
         if contrast > 0:
-            contrast_factor = random.uniform(
-                max(0, 1 - contrast), 1 + contrast)
+            contrast_factor = random.uniform(max(0, 1 - contrast), 1 + contrast)
         else:
             contrast_factor = None
 
         if saturation > 0:
-            saturation_factor = random.uniform(
-                max(0, 1 - saturation), 1 + saturation)
+            saturation_factor = random.uniform(max(0, 1 - saturation), 1 + saturation)
         else:
             saturation_factor = None
 
@@ -598,22 +609,36 @@ class ColorJitter(object):
         list PIL.Image : list of transformed PIL.Image
         """
         if isinstance(clip[0], np.ndarray):
-            raise TypeError(
-                'Color jitter not yet implemented for numpy arrays')
+            raise TypeError("Color jitter not yet implemented for numpy arrays")
         elif isinstance(clip[0], PIL.Image.Image):
             brightness, contrast, saturation, hue = self.get_params(
-                self.brightness, self.contrast, self.saturation, self.hue)
+                self.brightness, self.contrast, self.saturation, self.hue
+            )
 
             # Create img sync_dir function sequence
             img_transforms = []
             if brightness is not None:
-                img_transforms.append(lambda img: torchvision.transforms.functional.adjust_brightness(img, brightness))
+                img_transforms.append(
+                    lambda img: torchvision.transforms.functional.adjust_brightness(
+                        img, brightness
+                    )
+                )
             if saturation is not None:
-                img_transforms.append(lambda img: torchvision.transforms.functional.adjust_saturation(img, saturation))
+                img_transforms.append(
+                    lambda img: torchvision.transforms.functional.adjust_saturation(
+                        img, saturation
+                    )
+                )
             if hue is not None:
-                img_transforms.append(lambda img: torchvision.transforms.functional.adjust_hue(img, hue))
+                img_transforms.append(
+                    lambda img: torchvision.transforms.functional.adjust_hue(img, hue)
+                )
             if contrast is not None:
-                img_transforms.append(lambda img: torchvision.transforms.functional.adjust_contrast(img, contrast))
+                img_transforms.append(
+                    lambda img: torchvision.transforms.functional.adjust_contrast(
+                        img, contrast
+                    )
+                )
             random.shuffle(img_transforms)
 
             # Apply to all images
@@ -624,8 +649,10 @@ class ColorJitter(object):
                 jittered_clip.append(jittered_img)
 
         else:
-            raise TypeError('Expected numpy.ndarray or PIL.Image' +
-                            'but got list of {0}'.format(type(clip[0])))
+            raise TypeError(
+                "Expected numpy.ndarray or PIL.Image"
+                + "but got list of {0}".format(type(clip[0]))
+            )
         return jittered_clip
 
 
@@ -650,20 +677,17 @@ class EachColorJitter(object):
 
     def get_params(self, brightness, contrast, saturation, hue):
         if brightness > 0:
-            brightness_factor = random.uniform(
-                max(0, 1 - brightness), 1 + brightness)
+            brightness_factor = random.uniform(max(0, 1 - brightness), 1 + brightness)
         else:
             brightness_factor = None
 
         if contrast > 0:
-            contrast_factor = random.uniform(
-                max(0, 1 - contrast), 1 + contrast)
+            contrast_factor = random.uniform(max(0, 1 - contrast), 1 + contrast)
         else:
             contrast_factor = None
 
         if saturation > 0:
-            saturation_factor = random.uniform(
-                max(0, 1 - saturation), 1 + saturation)
+            saturation_factor = random.uniform(max(0, 1 - saturation), 1 + saturation)
         else:
             saturation_factor = None
 
@@ -681,22 +705,36 @@ class EachColorJitter(object):
         list PIL.Image : list of transformed PIL.Image
         """
         if isinstance(clip[0], np.ndarray):
-            raise TypeError(
-                'Color jitter not yet implemented for numpy arrays')
+            raise TypeError("Color jitter not yet implemented for numpy arrays")
         elif isinstance(clip[0], PIL.Image.Image):
             brightness, contrast, saturation, hue = self.get_params(
-                self.brightness, self.contrast, self.saturation, self.hue)
+                self.brightness, self.contrast, self.saturation, self.hue
+            )
 
             # Create img sync_dir function sequence
             img_transforms = []
             if brightness is not None:
-                img_transforms.append(lambda img: torchvision.transforms.functional.adjust_brightness(img, brightness))
+                img_transforms.append(
+                    lambda img: torchvision.transforms.functional.adjust_brightness(
+                        img, brightness
+                    )
+                )
             if saturation is not None:
-                img_transforms.append(lambda img: torchvision.transforms.functional.adjust_saturation(img, saturation))
+                img_transforms.append(
+                    lambda img: torchvision.transforms.functional.adjust_saturation(
+                        img, saturation
+                    )
+                )
             if hue is not None:
-                img_transforms.append(lambda img: torchvision.transforms.functional.adjust_hue(img, hue))
+                img_transforms.append(
+                    lambda img: torchvision.transforms.functional.adjust_hue(img, hue)
+                )
             if contrast is not None:
-                img_transforms.append(lambda img: torchvision.transforms.functional.adjust_contrast(img, contrast))
+                img_transforms.append(
+                    lambda img: torchvision.transforms.functional.adjust_contrast(
+                        img, contrast
+                    )
+                )
             random.shuffle(img_transforms)
 
             # Apply to all images
@@ -707,8 +745,10 @@ class EachColorJitter(object):
                 jittered_clip.append(jittered_img)
 
         else:
-            raise TypeError('Expected numpy.ndarray or PIL.Image' +
-                            'but got list of {0}'.format(type(clip[0])))
+            raise TypeError(
+                "Expected numpy.ndarray or PIL.Image"
+                + "but got list of {0}".format(type(clip[0]))
+            )
         return jittered_clip
 
 
@@ -738,7 +778,9 @@ class Normalize(object):
         return normalize(clip, self.mean, self.std)
 
     def __repr__(self):
-        return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
+        return self.__class__.__name__ + "(mean={0}, std={1})".format(
+            self.mean, self.std
+        )
 
 
 class TensorToNumpy(object):
@@ -748,5 +790,8 @@ class TensorToNumpy(object):
 
     def __call__(self, clip):
         np_clip = clip.permute(1, 2, 3, 0).cpu().detach().numpy()
-        pil_clip = [Image.fromarray(np.uint8(numpy_image)).convert('RGB') for numpy_image in np_clip]
+        pil_clip = [
+            Image.fromarray(np.uint8(numpy_image)).convert("RGB")
+            for numpy_image in np_clip
+        ]
         return pil_clip
