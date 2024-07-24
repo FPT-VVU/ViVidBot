@@ -17,7 +17,7 @@ class YoutubeDownloader(BaseProcessor):
     self,
   ):
     self.opts = {
-      "format": "best[ext=mp4]",
+      "format": "best[ext=mp4]/best",
       "quiet": True,
       "fixup": "never",
       "no_warnings": True,
