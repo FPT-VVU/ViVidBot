@@ -3,9 +3,9 @@ import sys
 
 sys.path.append(os.getcwd())
 
-from vividbot.data.processor.upload_hf import Uploader
+from vividbot.data.processor.huggingface import HuggingFaceProcessor
 
-uploader = Uploader()
+uploader = HuggingFaceProcessor()
 path = "/home/duytran/Downloads/output/instruct500k_vi_all.json"
 
 # uploader.upload_dir(dir_path=path,

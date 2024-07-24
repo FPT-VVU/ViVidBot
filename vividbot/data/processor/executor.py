@@ -11,7 +11,7 @@ from datasets import (
 )
 
 from vividbot.data.processor.base import BaseProcessor
-from vividbot.data.processor.upload_hf import Uploader
+from vividbot.data.processor.huggingface import HuggingFaceProcessor
 
 
 class Executor(BaseProcessor):
@@ -50,7 +50,7 @@ class Executor(BaseProcessor):
             if self.num_file_temp == 0 and self.num_file_result == 0
             else None
         )
-        self.uploader = Uploader()
+        self.uploader = HuggingFaceProcessor()
 
     def load_dataset(self):
         if (

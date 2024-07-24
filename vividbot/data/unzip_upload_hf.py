@@ -6,9 +6,9 @@ import tqdm
 from huggingface_hub import hf_hub_download
 
 sys.path.append(os.getcwd())
-from vividbot.data.processor.upload_hf import Uploader
+from vividbot.data.processor.huggingface import HuggingFaceProcessor
 
-uploader = Uploader()
+uploader = HuggingFaceProcessor()
 
 repo_id = "Vividbot/vast2m_vi"
 start = 0

@@ -13,7 +13,7 @@ from datasets import load_dataset
 from vividbot.data.processor.executor import Executor
 from vividbot.data.processor.question_selection import QuestionSelection
 from vividbot.data.processor.translator import GGTranslator
-from vividbot.data.processor.upload_hf import Uploader
+from vividbot.data.processor.huggingface import HuggingFaceProcessor
 
 
 def parse_args() -> argparse.Namespace:
@@ -144,7 +144,7 @@ question_list = QuestionSelection(
     "vividbot/data/stuff/questions_img.txt", tags="<image>"
 )
 translator = GGTranslator()
-uploader = Uploader()
+uploader = HuggingFaceProcessor()
 
 
 def _translate(batch):
