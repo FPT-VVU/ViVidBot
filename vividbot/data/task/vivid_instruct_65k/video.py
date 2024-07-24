@@ -271,7 +271,7 @@ def process(shard_file_name: str):
     repo_id="Vividbot/vividbot_video",
     path_in_repo=f"videos/{shard}.zip",
     repo_type="dataset",
-  ):
+  ) and not os.path.exists(f"{BASE_DATA_PATH}/output/videos/{shard}"):
     hf_processor.download_and_unzip_file(
       repo_id="Vividbot/vividbot_video",
       filename=f"videos/{shard}.zip",
@@ -285,7 +285,7 @@ def process(shard_file_name: str):
     repo_id="Vividbot/vividbot_video",
     path_in_repo=f"metadata/{shard}.jsonl",
     repo_type="dataset",
-  ):
+  ) and not os.path.exists(f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl"):
     hf_processor.download_file(
       repo_id="Vividbot/vividbot_video",
       filename=f"metadata/{shard}.jsonl",
@@ -296,7 +296,7 @@ def process(shard_file_name: str):
     repo_id="Vividbot/vividbot_video",
     path_in_repo=f"errors/{shard}.jsonl",
     repo_type="dataset",
-  ):
+  ) and not os.path.exists(f"{BASE_DATA_PATH}/output/errors/{shard}.jsonl"):
     hf_processor.download_file(
       repo_id="Vividbot/vividbot_video",
       filename=f"errors/{shard}.jsonl",
