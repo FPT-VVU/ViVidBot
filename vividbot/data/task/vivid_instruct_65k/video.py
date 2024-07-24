@@ -106,7 +106,7 @@ def _process(batch: dict):
       try:
         video_file = genai.get_file(name=google_file_name)
       except Exception as e:
-        logger.warn(f"Couldn't get video file {google_file_name}: {e}")
+        logger.warning(f"Couldn't get video file {google_file_name}: {e}")
 
       if video_file is None or not video_file.state.name == "ACTIVE":
         if video_file and not video_file.state.name == "ACTIVE":
@@ -365,12 +365,18 @@ def prepare():
 
 def main():
   prepare()
+  shard_files = os.listdir(f"{BASE_DATA_PATH}/vivid_instruct_65k")
+  shard_files = sorted(
+    shard_files,
+    key=lambda x: int(x.split(".")[0].split("_")[1]),
+  )
 
   for shard in tqdm(
-    sorted(
-      os.listdir(f"{BASE_DATA_PATH}/vivid_instruct_65k"),
-      key=lambda x: int(x.split(".")[0].split("_")[1]),
-    )
+    shard_files,
+    desc="Processing shards",
+    unit="shard",
+    unit_scale=True,
+    unit_divisor=1024,
   ):
     process(shard)
 

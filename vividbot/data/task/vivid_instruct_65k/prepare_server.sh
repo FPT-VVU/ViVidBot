@@ -8,5 +8,6 @@ git clone https://dminhvu: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@github.com/FP
 cd ViVidBot && \
 git checkout data/vivid-instruct-65k && \
 poetry install && \
-cd .. && wget https://vividbot.s3.ap-southeast-1.amazonaws.com/vivid_instruct_65k.zip && \
+cd ~/ && mkdir data && cd data && wget https://vividbot.s3.ap-southeast-1.amazonaws.com/vivid_instruct_65k.zip && \
 unzip vivid_instruct_65k.zip -d vivid_instruct_65k && \
+cd ~/ViVidBot
