@@ -88,6 +88,20 @@ def _process(batch: dict):
 
         continue
 
+    if not os.path.exists(
+      f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+    ):
+      logger.error(f"Error downloading video {video_id_with_chunk_id}.")
+      with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
+        data = {
+          "id": video_id_with_chunk_id,
+          "reason": "Video not found after download.",
+          "timestamp": round(time.time()),
+        }
+        f.write(json.dumps(data) + "\n")
+
+      continue
+
     try:
       logger.info(f"Generating metadata for video {video_id_with_chunk_id}...")
 
@@ -111,7 +125,7 @@ def _process(batch: dict):
         )
 
       while video_file and video_file.state.name == "PROCESSING":
-        time.sleep(5)
+        time.sleep(10)
         video_file = genai.get_file(video_file.name)
 
       if video_file and video_file.state.name == "FAILED":
@@ -164,6 +178,7 @@ def _process(batch: dict):
               human_value = human_value + "\n<video>"
             else:
               human_value = "<video>\n" + human_value
+
             conversations.append({"from": "human", "value": human_value})
             conversations.append({"from": "gpt", "value": gpt_value})
 
@@ -209,6 +224,13 @@ def _process(batch: dict):
             "timestamp": round(time.time()),
           }
           f.write(json.dumps(data) + "\n")
+
+        if os.path.exists(
+          f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+        ):
+          os.remove(
+            f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+          )
 
     except Exception as e:
       logger.error(f"Error generating metadata for video {video_id_with_chunk_id}: {e}")

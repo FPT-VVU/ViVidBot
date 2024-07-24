@@ -5,6 +5,7 @@ Remember to use Vietnamese language to describe the video."""
 GENERATE_QA_PROMPT = """Generate 5 different pairs of questions and answers in JSON format based on the description of the video (in which the description is generated for person without vision can understand the video content).
 The questions should be relevant to the video content and the answers should be correct.
 Also, diversify the types of questions and answers as much as possible.
+Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
 Remember to use Vietnamese language to generate the questions and answers.
 Examples of questions (do not need to follow the order and these are just examples, you must generate your own questions based on the video content):
 - What's the video about?
