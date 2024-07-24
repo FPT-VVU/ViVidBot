@@ -1,6 +1,7 @@
 import os
+import zipfile
 
-from huggingface_hub import HfApi, HfFileSystem, HfFolder, hf_hub_download
+from huggingface_hub import HfApi, HfFileSystem, HfFolder
 
 from vividbot.data.processor.base import BaseProcessor
 from vividbot.data.utils.file import zip_dir
@@ -103,7 +104,7 @@ class HuggingFaceProcessor(BaseProcessor):
     repo_id: str,
     filename: str,
     repo_type: str = "dataset",
-    overwrite: bool = False,
+    local_dir: str = ".",
   ) -> None:
     """
     Download file from the hub.
@@ -111,5 +112,26 @@ class HuggingFaceProcessor(BaseProcessor):
     :param filename:        Filename.
     :param repo_type:       Repository type.
     """
-    if overwrite or not os.path.exists(filename):
-      hf_hub_download(repo_id, filename, repo_type)
+    self.api.hf_hub_download(
+      repo_id=repo_id, filename=filename, repo_type=repo_type, local_dir=local_dir
+    )
+
+  def download_and_unzip_file(
+    self,
+    repo_id: str,
+    filename: str,
+    repo_type: str = "dataset",
+    local_dir: str = None,
+    extract_dir: str = None,
+  ) -> None:
+    """
+    Download and unzip file from the hub.
+    :param repo_id:         Repository id.
+    :param filename:        Filename.
+    :param repo_type:       Repository type.
+    """
+    self.download_file(
+      repo_id=repo_id, filename=filename, repo_type=repo_type, local_dir=local_dir
+    )
+    with zipfile.ZipFile(os.path.join(local_dir, filename), "r") as zip_ref:
+      zip_ref.extractall(extract_dir)

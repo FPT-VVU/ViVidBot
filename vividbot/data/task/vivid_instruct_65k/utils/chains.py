@@ -16,4 +16,4 @@ GENERATE_QA_PAIRS_CHAIN = (
   )
   | LLM
   | StrOutputParser()
-)
+).with_types(input_type={"message": str})

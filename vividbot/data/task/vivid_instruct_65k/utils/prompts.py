@@ -14,10 +14,10 @@ Examples of questions (do not need to follow the order and these are just exampl
 - What is the person in the video holding and what are its characteristics?
 - How does the person in the video look?
 - What is the position of the object in the video?
+- How does the object X relate to object Y?
 - ...
-And more questions that can be asked about the video content (what, where, when, why, how, etc.) with varying levels of complexity.
+And more questions that can be asked about the video content (what, where, when, why, how, etc.) with varying levels of complexity and logic. Harder questions that require more thinking are encouraged.
 All questions should be relevant to the video content and the answers should be FULLY informative and correct. The answer should be a complete sentence or a complete phrase.
 Only return the list of pair of questions and answers in the following JSON format:
-[{"question":"Q1","answer":"A1"},{"question":"Q2","answer":"A2"},...]
-Your response should be only the JSON list without narrative or additional information.
-"""
+[{{"question":"Q1","answer":"A1"}},{{"question":"Q2","answer":"A2"}},...]
+Your response should be only the JSON list without narrative or additional information."""
