@@ -257,11 +257,13 @@ def _delete_video(batch: dict):
       logger.error(f"Error deleting video {video_id_with_chunk_id}: {e}")
 
 
-def process(shard: str):
+def process(shard_file_name: str):
   """
-  shard: str = "shard_0.json"
+  shard_file_name: str = "shard_0.jsonl"
   """
   start_time = time.time()
+
+  shard = shard_file_name.split(".")[0]
 
   logger.info(f"Processing videos for shard {shard}...")
 
