@@ -320,30 +320,32 @@ def process(shard_file_name: str):
     batch_size=128,
     num_proc=os.cpu_count(),
   )
+  if os.path.exists(f"{BASE_DATA_PATH}/output/videos/{shard}"):
+    hf_processor.zip_and_upload_dir(
+      dir_path=f"{BASE_DATA_PATH}/output/videos/{shard}",
+      repo_id="Vividbot/vividbot_video",
+      path_in_repo=f"videos/{shard}.zip",
+      repo_type="dataset",
+      overwrite=True,
+    )
 
-  hf_processor.zip_and_upload_dir(
-    dir_path=f"{BASE_DATA_PATH}/output/videos/{shard}",
-    repo_id="Vividbot/vividbot_video",
-    path_in_repo=f"videos/{shard}.zip",
-    repo_type="dataset",
-    overwrite=True,
-  )
+  if os.path.exists(f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl"):
+    hf_processor.upload_file(
+      file_path=f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl",
+      repo_id="Vividbot/vividbot_video",
+      path_in_repo=f"metadata/{shard}.jsonl",
+      repo_type="dataset",
+      overwrite=True,
+    )
 
-  hf_processor.upload_file(
-    file_path=f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl",
-    repo_id="Vividbot/vividbot_video",
-    path_in_repo=f"metadata/{shard}.jsonl",
-    repo_type="dataset",
-    overwrite=True,
-  )
-
-  hf_processor.upload_file(
-    file_path=f"{BASE_DATA_PATH}/output/errors/{shard}.jsonl",
-    repo_id="Vividbot/vividbot_video",
-    path_in_repo=f"errors/{shard}.jsonl",
-    repo_type="dataset",
-    overwrite=True,
-  )
+  if os.path.exists(f"{BASE_DATA_PATH}/output/errors/{shard}.jsonl"):
+    hf_processor.upload_file(
+      file_path=f"{BASE_DATA_PATH}/output/errors/{shard}.jsonl",
+      repo_id="Vividbot/vividbot_video",
+      path_in_repo=f"errors/{shard}.jsonl",
+      repo_type="dataset",
+      overwrite=True,
+    )
 
   # remove video file from google cloud
   logger.info(f"Cleaning up shard {shard}...")
