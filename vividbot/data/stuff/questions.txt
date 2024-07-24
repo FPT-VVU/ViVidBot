@@ -1,0 +1,20 @@
+Tóm tắt ngắn gọn nhưng cung cấp đầy đủ thông tin về video clip này.
+Kể lại nội dung của video clip một cách ngắn gọn và rõ ràng.
+Giải thích ngắn gọn về những gì được trình chiếu trong video.
+Cung cấp tóm tắt, súc tích về nội dung của video.
+Giới thiệu các điểm chính của video clip một cách cô đọng.
+Diễn giải một cách ngắn gọn về video được cung cấp.
+Cung cấp mô tả ngắn gọn về video clip được đưa ra.
+Tóm tắt nội dung của video sau.
+Giải thích ngắn gọn và rõ ràng về video clip phía dưới.
+Mô tả ngắn gọn về video sau.
+Nêu bật những điểm quan trọng của video clip trong vài câu.
+Hãy cho biết tóm lược nhanh về nội dung chính của video.\n>video>
+Bằng vài lời, phác họa nội dung của video dưới đây.
+Bạn có thể cho tôi biết video này nói về cái gì không?
+Giải nghĩa nhanh video này để mình hiểu.
+Xem video xong, bạn có thể chia sẻ ý chính không?
+Mình cần nắm được nội dung cơ bản của video, bạn có thể tóm tắt giúp không?
+Cho mình xin vài ý tóm tắt về video này để nắm.
+Bạn có thể cho mình biết video này đang diễn ra sự kiện gì không?
+Nhìn vào video, bạn có thể hiểu được nội dung chính không? Hãy cho mình biết nhé.
