@@ -174,10 +174,11 @@ def _process(batch: dict):
             data = {
               "id": video_id_with_chunk_id,
               "video": f"shard_{shard_id}/{video_id_with_chunk_id}.mp4",
-              "generator": "chain",
+              "timestamp": round(time.time()),
+              "start": start,
+              "end": end,
               "description": describer_response.text.strip(),
               "conversations": conversations,
-              "timestamp": round(time.time()),
             }
 
             f.write(
