@@ -41,10 +41,15 @@ yt_downloader = YoutubeDownloader()
 
 
 def _process(batch: dict):
-  processed_dataset = load_dataset(
-    "json",
-    data_files=f"{BASE_DATA_PATH}/output/metadata/shard_{batch['shard_id'][0]}.jsonl",
-  )["train"]
+  processed_dataset = None
+
+  if os.path.exists(
+    f"{BASE_DATA_PATH}/output/errors/shard_{batch['shard_id'][0]}.jsonl"
+  ):
+    processed_dataset = load_dataset(
+      "json",
+      data_files=f"{BASE_DATA_PATH}/output/metadata/shard_{batch['shard_id'][0]}.jsonl",
+    )["train"]
 
   for start, end, video_id_with_chunk_id, shard_id in tqdm(
     zip(batch["start"], batch["end"], batch["id"], batch["shard_id"])
@@ -52,7 +57,9 @@ def _process(batch: dict):
     video_id, chunk_id = video_id_with_chunk_id.split(".")
 
     if (
-      processed_dataset.filter(lambda x: x["id"] == video_id_with_chunk_id).num_rows > 0
+      processed_dataset is not None
+      and processed_dataset.filter(lambda x: x["id"] == video_id_with_chunk_id).num_rows
+      > 0
     ):
       logger.info(f"Video {video_id_with_chunk_id} already processed. Skipping...")
       continue
@@ -371,9 +378,9 @@ def main():
     key=lambda x: int(x.split(".")[0].split("_")[1]),
   )
 
-  last_successful_shard = 1
+  last_successful_shard = 6
   # only process shards after the last successful shard
-  shard_files = shard_files[last_successful_shard:]
+  shard_files = shard_files[last_successful_shard + 1 :]
 
   logger.info(f"Processing shards: {shard_files}")
 
