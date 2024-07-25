@@ -25,6 +25,7 @@ langchain-openai = "^0.1.17"
 langchain-fireworks = "^0.1.5"
 langchain-together = "^0.1.4"
 langchain-anthropic = "^0.1.20"
+langchain-community = "^0.2.10"
 
 
 [tool.poetry.group.dev.dependencies]
