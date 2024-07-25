@@ -44,7 +44,7 @@ def _process(batch: dict):
   processed_dataset = None
 
   if os.path.exists(
-    f"{BASE_DATA_PATH}/output/errors/shard_{batch['shard_id'][0]}.jsonl"
+    f"{BASE_DATA_PATH}/output/metadata/shard_{batch['shard_id'][0]}.jsonl"
   ):
     processed_dataset = load_dataset(
       "json",
@@ -330,6 +330,21 @@ def process(shard_file_name: str):
     )
 
   if os.path.exists(f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl"):
+    # filter out duplicate ids by taking only the last occurrence
+    final_datas = []
+    ids = set()
+    with open(f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl", "r") as f:
+      lines = f.readlines()
+      for line in reversed(lines):
+        data = json.loads(line)
+        if data["id"] not in ids:
+          ids.add(data["id"])
+          final_datas.append(data)
+
+    with open(f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl", "w") as f:
+      for data in reversed(final_datas):
+        f.write(json.dumps(data, ensure_ascii=False) + "\n")
+
     hf_processor.upload_file(
       file_path=f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl",
       repo_id="Vividbot/vividbot_video",
