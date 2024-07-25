@@ -8,6 +8,7 @@ import google.generativeai as genai
 import numpy as np
 from datasets import load_dataset
 from dotenv import load_dotenv
+from google.generativeai.types import HarmBlockThreshold, HarmCategory
 from langfuse.callback import CallbackHandler
 from tqdm import tqdm
 
@@ -155,11 +156,19 @@ def _process(batch: dict):
           "models/gemini-1.5-flash",
           generation_config={
             "temperature": 0.25,
-            "max_output_tokens": 512,
+            "max_output_tokens": 1536,
           },
+          safety_settings={
+            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_UNSPECIFIED: HarmBlockThreshold.BLOCK_NONE,
+          },
+          system_instruction=DESCRIBE_VIDEO_PROMPT,
         )
         describer_response = describer.generate_content(
-          [video_file, DESCRIBE_VIDEO_PROMPT],
+          [video_file, "Describe the video as instructed."],
           request_options={
             "timeout": 60,
           },
@@ -430,7 +439,7 @@ def main():
     key=lambda x: int(x.split(".")[0].split("_")[1]),
   )
 
-  last_successful_shard = 49
+  last_successful_shard = -1
   # only process shards after the last successful shard
   shard_files = shard_files[last_successful_shard + 1 :]
 
