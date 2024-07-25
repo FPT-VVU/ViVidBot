@@ -345,6 +345,8 @@ def process(shard_file_name: str):
       for data in reversed(final_datas):
         f.write(json.dumps(data, ensure_ascii=False) + "\n")
 
+    logger.info(f"Found {len(final_datas)} unique videos for shard {shard}.")
+
     hf_processor.upload_file(
       file_path=f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl",
       repo_id="Vividbot/vividbot_video",
@@ -395,7 +397,7 @@ def main():
     key=lambda x: int(x.split(".")[0].split("_")[1]),
   )
 
-  last_successful_shard = 6
+  last_successful_shard = 7
   # only process shards after the last successful shard
   shard_files = shard_files[last_successful_shard + 1 :]
 
