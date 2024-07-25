@@ -358,6 +358,12 @@ def process(shard_file_name: str):
   )
 
   if os.path.exists(f"{BASE_DATA_PATH}/output/videos/{shard}"):
+    # remove partial video files *.part
+    logger.info(f"Removing partially downloaded video files for shard {shard}...")
+    for file in os.listdir(f"{BASE_DATA_PATH}/output/videos/{shard}"):
+      if file.endswith(".part"):
+        os.remove(f"{BASE_DATA_PATH}/output/videos/{shard}/{file}")
+
     logger.info(f"Zipping and uploading videos for shard {shard}...")
     hf_processor.zip_and_upload_dir(
       dir_path=f"{BASE_DATA_PATH}/output/videos/{shard}",
@@ -414,12 +420,6 @@ def process(shard_file_name: str):
       batch_size=16,
       num_proc=os.cpu_count(),
     )
-
-    # remove partial video files *.part
-    logger.info(f"Removing partially downloaded video files for shard {shard}...")
-    for file in os.listdir(f"{BASE_DATA_PATH}/output/videos/{shard}"):
-      if file.endswith(".part"):
-        os.remove(f"{BASE_DATA_PATH}/output/videos/{shard}/{file}")
   except Exception as e:
     logger.error(f"Error deleting videos for shard {shard}: {e}")
 
