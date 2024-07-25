@@ -10,7 +10,7 @@ GENERATE_QA_PAIRS_CHAIN = (
       ("system", GENERATE_QA_PROMPT),
       (
         "human",
-        "Generate QA pairs as instructed from this description:\n\n{message}\n\nQA pairs:",
+        "Generate QA pairs as instructed from this description:\n\n{message}\n\n5 QA pairs:",
       ),
     ]
   )
