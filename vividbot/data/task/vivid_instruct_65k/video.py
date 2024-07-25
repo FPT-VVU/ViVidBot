@@ -17,7 +17,6 @@ from vividbot.data.task.vivid_instruct_65k.utils.chains import GENERATE_QA_PAIRS
 from vividbot.data.task.vivid_instruct_65k.utils.common import (
   find_first_list_from_response,
 )
-from vividbot.data.task.vivid_instruct_65k.utils.langfuse import langfuse_handler
 from vividbot.data.task.vivid_instruct_65k.utils.notifications import (
   send_process_shard_success_message,
 )
