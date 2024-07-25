@@ -36,3 +36,19 @@ Visit at https://huggingface.co/datasets/Vividbot/vividbot_video/tree/main/video
       ]
     }
   )
+
+
+def send_completion_message():
+  notifier.send(
+    body={
+      "embeds": [
+        {
+          "title": "✅ ViVid Instruct 65k: Completed!",
+          "description": "Completed processing all shards of videos. \
+Visit at https://huggingface.co/datasets/Vividbot/vividbot_video/tree/main/videos.",
+          "color": 2278494,
+          "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
+        }
+      ]
+    }
+  )

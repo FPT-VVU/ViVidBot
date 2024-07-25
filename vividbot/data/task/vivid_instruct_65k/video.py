@@ -18,6 +18,7 @@ from vividbot.data.task.vivid_instruct_65k.utils.common import (
   find_first_list_from_response,
 )
 from vividbot.data.task.vivid_instruct_65k.utils.notifications import (
+  send_completion_message,
   send_process_shard_success_message,
 )
 from vividbot.data.task.vivid_instruct_65k.utils.prompts import DESCRIBE_VIDEO_PROMPT
@@ -440,6 +441,8 @@ def main():
     unit_divisor=1024,
   ):
     process(shard)
+
+  send_completion_message()
 
 
 if __name__ == "__main__":
