@@ -153,7 +153,7 @@ def _process(batch: dict):
         describer = genai.GenerativeModel(
           "models/gemini-1.5-flash",
           generation_config={
-            "temperature": 0.2,
+            "temperature": 0.25,
             "max_output_tokens": 512,
           },
         )
@@ -176,8 +176,8 @@ def _process(batch: dict):
             {"message": describer_response.text.strip()},
             {"callbacks": [langfuse_handler]},
           )
-          if not response.startswith("["):
-            response = find_first_list_from_response(response)
+
+          response = find_first_list_from_response(response)
 
           qa_pairs = json.loads(response)
           conversations = []
@@ -213,6 +213,10 @@ def _process(batch: dict):
                 ensure_ascii=False,
               )
               + "\n"
+            )
+
+            logger.info(
+              f"Generated metadata for video {video_id_with_chunk_id}: {json.dumps(data, ensure_ascii=False)}"
             )
 
         except Exception as e:
