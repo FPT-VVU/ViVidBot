@@ -11,6 +11,12 @@ FIREWORKS_LLAMA3_1_405B = ChatFireworks(
   temperature=1,
   streaming=False,
 )
+FIREWORKS_LLAMA3_1_70B = ChatFireworks(
+  model="accounts/fireworks/models/llama-v3p1-70b-instruct",
+  max_retries=0,
+  temperature=1,
+  streaming=False,
+)
 GROQ_LLAMA3_1_70B = ChatGroq(
   model="llama-3.1-70b-versatile",
   max_retries=0,
@@ -51,6 +57,7 @@ GPT_4O_MINI = ChatOpenAI(
 LLM = FIREWORKS_LLAMA3_1_405B.with_fallbacks(
   [
     DEEPINFRA_LLAMA3_1_405B,
+    FIREWORKS_LLAMA3_1_70B,
     DEEPINFRA_LLAMA3_1_70B,
     TOGETHER_LLAMA3_1_70B,
     GROQ_LLAMA3_1_70B,

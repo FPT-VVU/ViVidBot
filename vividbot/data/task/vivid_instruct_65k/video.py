@@ -16,6 +16,7 @@ from vividbot.data.task.vivid_instruct_65k.utils.chains import GENERATE_QA_PAIRS
 from vividbot.data.task.vivid_instruct_65k.utils.common import (
   find_first_list_from_response,
 )
+from vividbot.data.task.vivid_instruct_65k.utils.langfuse import langfuse_handler
 from vividbot.data.task.vivid_instruct_65k.utils.notifications import (
   send_process_shard_success_message,
 )
@@ -163,8 +164,10 @@ def _process(batch: dict):
           },
         )
         try:
+          langfuse_handler.session_id = video_id_with_chunk_id
           response: str = GENERATE_QA_PAIRS_CHAIN.invoke(
-            {"message": describer_response.text.strip()}
+            {"message": describer_response.text.strip()},
+            {"callbacks": [langfuse_handler]},
           )
           if not response.startswith("["):
             response = find_first_list_from_response(response)
@@ -412,7 +415,7 @@ def main():
     key=lambda x: int(x.split(".")[0].split("_")[1]),
   )
 
-  last_successful_shard = 8
+  last_successful_shard = 9
   # only process shards after the last successful shard
   shard_files = shard_files[last_successful_shard + 1 :]
 
