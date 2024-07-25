@@ -17,7 +17,7 @@ GENERATE_QA_PAIRS_CHAIN = (
   | LLM
   | JsonOutputParser()
 ).with_fallbacks(
-  fallbacks=(
+  [
     ChatPromptTemplate.from_messages(
       [
         ("system", GENERATE_QA_PROMPT),
@@ -29,5 +29,5 @@ GENERATE_QA_PAIRS_CHAIN = (
     )
     | FALLBACK_LLM
     | JsonOutputParser()
-  )
+  ]
 )
