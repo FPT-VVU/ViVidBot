@@ -216,6 +216,14 @@ def _process(batch: dict):
               "timestamp": round(time.time()),
             }
             f.write(json.dumps(data) + "\n")
+
+          if os.path.exists(
+            f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+          ):
+            os.remove(
+              f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+            )
+
       else:
         logger.error(f"Error uploading video {video_id_with_chunk_id}: {video_file}")
         with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
@@ -279,6 +287,7 @@ def process(shard_file_name: str):
     path_in_repo=f"videos/{shard}.zip",
     repo_type="dataset",
   ) and not os.path.exists(f"{BASE_DATA_PATH}/output/videos/{shard}"):
+    logger.info(f"Downloading videos for shard {shard} from Hugging Face...")
     hf_processor.download_and_unzip_file(
       repo_id="Vividbot/vividbot_video",
       filename=f"videos/{shard}.zip",
@@ -293,6 +302,7 @@ def process(shard_file_name: str):
     path_in_repo=f"metadata/{shard}.jsonl",
     repo_type="dataset",
   ) and not os.path.exists(f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl"):
+    logger.info(f"Downloading metadata for shard {shard} from Hugging Face...")
     hf_processor.download_file(
       repo_id="Vividbot/vividbot_video",
       filename=f"metadata/{shard}.jsonl",
@@ -320,7 +330,9 @@ def process(shard_file_name: str):
     batch_size=128,
     num_proc=os.cpu_count(),
   )
+
   if os.path.exists(f"{BASE_DATA_PATH}/output/videos/{shard}"):
+    logger.info(f"Zipping and uploading videos for shard {shard}...")
     hf_processor.zip_and_upload_dir(
       dir_path=f"{BASE_DATA_PATH}/output/videos/{shard}",
       repo_id="Vividbot/vividbot_video",
@@ -329,10 +341,11 @@ def process(shard_file_name: str):
       overwrite=True,
     )
 
+  final_datas = []
+  ids = set()
   if os.path.exists(f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl"):
+    logger.info(f"Filtering out duplicate videos for shard {shard}...")
     # filter out duplicate ids by taking only the last occurrence
-    final_datas = []
-    ids = set()
     with open(f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl", "r") as f:
       lines = f.readlines()
       for line in reversed(lines):
@@ -347,6 +360,7 @@ def process(shard_file_name: str):
 
     logger.info(f"Found {len(final_datas)} unique videos for shard {shard}.")
 
+    logger.info(f"Uploading metadata for shard {shard}...")
     hf_processor.upload_file(
       file_path=f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl",
       repo_id="Vividbot/vividbot_video",
@@ -356,6 +370,7 @@ def process(shard_file_name: str):
     )
 
   if os.path.exists(f"{BASE_DATA_PATH}/output/errors/{shard}.jsonl"):
+    logger.info(f"Uploading errors for shard {shard}...")
     hf_processor.upload_file(
       file_path=f"{BASE_DATA_PATH}/output/errors/{shard}.jsonl",
       repo_id="Vividbot/vividbot_video",
@@ -365,8 +380,8 @@ def process(shard_file_name: str):
     )
 
   # remove video file from google cloud
-  logger.info(f"Cleaning up shard {shard}...")
   try:
+    logger.info(f"Cleaning up shard {shard}...")
     dataset.map(
       _delete_video,
       batched=True,
@@ -379,7 +394,7 @@ def process(shard_file_name: str):
   end_time = time.time()
   duration = round(end_time - start_time, 2)
 
-  send_process_shard_success_message(shard, duration)
+  send_process_shard_success_message(shard, duration, count=len(final_datas))
 
 
 def prepare():
@@ -397,7 +412,7 @@ def main():
     key=lambda x: int(x.split(".")[0].split("_")[1]),
   )
 
-  last_successful_shard = 7
+  last_successful_shard = 8
   # only process shards after the last successful shard
   shard_files = shard_files[last_successful_shard + 1 :]
 
