@@ -1,9 +1,9 @@
 from langchain_anthropic import ChatAnthropic
+from langchain_community.chat_models import ChatDeepInfra
 from langchain_fireworks import ChatFireworks
 from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
 from langchain_together import ChatTogether
-from langchain_community.chat_models import ChatDeepInfra
 
 FIREWORKS_LLAMA3_1_405B = ChatFireworks(
   model="accounts/fireworks/models/llama-v3p1-405b-instruct",
@@ -65,3 +65,5 @@ LLM = FIREWORKS_LLAMA3_1_405B.with_fallbacks(
     CLAUDE_3_HAIKU,
   ]
 )
+
+FALLBACK_LLM = GPT_4O_MINI.with_fallbacks([CLAUDE_3_HAIKU])

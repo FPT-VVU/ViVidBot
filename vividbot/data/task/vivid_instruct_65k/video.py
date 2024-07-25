@@ -3,6 +3,7 @@ import logging
 import os
 import time
 from pathlib import Path
+from typing import List
 
 import google.generativeai as genai
 import numpy as np
@@ -15,9 +16,6 @@ from tqdm import tqdm
 from vividbot.data.processor.download import YoutubeDownloader
 from vividbot.data.processor.huggingface import HuggingFaceProcessor
 from vividbot.data.task.vivid_instruct_65k.utils.chains import GENERATE_QA_PAIRS_CHAIN
-from vividbot.data.task.vivid_instruct_65k.utils.common import (
-  find_first_list_from_response,
-)
 from vividbot.data.task.vivid_instruct_65k.utils.notifications import (
   send_completion_message,
   send_process_shard_success_message,
@@ -181,14 +179,34 @@ def _process(batch: dict):
             session_id=video_id_with_chunk_id,
           )
 
-          response: str = GENERATE_QA_PAIRS_CHAIN.invoke(
+          qa_pairs: List = GENERATE_QA_PAIRS_CHAIN.invoke(
             {"message": describer_response.text.strip()},
             {"callbacks": [langfuse_handler]},
           )
 
-          response = find_first_list_from_response(response)
+          if not qa_pairs:
+            logger.error(
+              f"Couldn't generate QA pairs for video {video_id_with_chunk_id}: QA pairs could not be generated."
+            )
+            with open(
+              f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a"
+            ) as f:
+              data = {
+                "id": video_id_with_chunk_id,
+                "reason": "QA pairs could not be generated.",
+                "timestamp": round(time.time()),
+              }
+              f.write(json.dumps(data) + "\n")
 
-          qa_pairs = json.loads(response)
+            if os.path.exists(
+              f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+            ):
+              os.remove(
+                f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+              )
+
+            continue
+
           conversations = []
 
           for qa in qa_pairs:
