@@ -1,6 +1,7 @@
 DESCRIBE_VIDEO_PROMPT = """Describe only the visual content of the video without using the audio or transcript so that a normal person without visibility can interpret what happens in the video.
 Don't use the audio or transcript of the video to describe the video content. Use only the visual content and chain the logical sequence of events in the video. Things described should show the correlation among them if they are related.
 The description should first introduce the general overview of the video. Then describe the main objects, actions, and interactions in the video through time.
+Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
 Remember to use Vietnamese language to describe the video."""
 
 GENERATE_QA_PROMPT = """Generate 5 different pairs of questions and answers in JSON format based on the description of the video (in which the description is generated for person without vision can understand the video content).

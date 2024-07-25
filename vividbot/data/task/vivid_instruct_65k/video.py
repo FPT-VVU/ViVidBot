@@ -251,12 +251,12 @@ def _process(batch: dict):
 
         except Exception as e:
           logger.error(
-            f"Couldn't generate QA pairs for video {video_id_with_chunk_id}: {str(e)}."
+            f"Couldn't generate QA pairs for video {video_id_with_chunk_id}: {str(e)} - Response: {describer_response}"
           )
           with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
             data = {
               "id": video_id_with_chunk_id,
-              "reason": str(e),
+              "reason": f"{str(e)} - Response: {describer_response}",
               "timestamp": round(time.time()),
             }
             f.write(json.dumps(data) + "\n")
