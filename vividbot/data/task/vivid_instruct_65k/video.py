@@ -184,8 +184,11 @@ def _process(batch: dict):
           conversations = []
 
           for qa in qa_pairs:
-            human_value = qa["question"]
-            gpt_value = qa["answer"]
+            if not qa.get("question") or not qa.get("answer"):
+              continue
+
+            human_value = str(qa["question"]).strip()
+            gpt_value = str(qa["answer"]).strip()
             if np.random.random() < 0.5:
               human_value = human_value + "\n<video>"
             else:
