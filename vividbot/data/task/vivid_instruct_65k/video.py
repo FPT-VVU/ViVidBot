@@ -15,12 +15,16 @@ from tqdm import tqdm
 
 from vividbot.data.processor.download import YoutubeDownloader
 from vividbot.data.processor.huggingface import HuggingFaceProcessor
-from vividbot.data.task.vivid_instruct_65k.utils.chains import GENERATE_QA_PAIRS_CHAIN
+from vividbot.data.task.vivid_instruct_65k.utils.chains import (
+  get_generate_qa_pairs_chain,
+)
 from vividbot.data.task.vivid_instruct_65k.utils.notifications import (
   send_completion_message,
   send_process_shard_success_message,
 )
-from vividbot.data.task.vivid_instruct_65k.utils.prompts import DESCRIBE_VIDEO_PROMPT
+from vividbot.data.task.vivid_instruct_65k.utils.prompts import (
+  get_describe_video_prompt,
+)
 
 load_dotenv()
 BASE_DATA_PATH = f"{Path.home()}/data"
@@ -151,10 +155,10 @@ def _process(batch: dict):
 
       elif video_file and video_file.state.name == "ACTIVE":
         describer = genai.GenerativeModel(
-          "models/gemini-1.5-flash",
+          "models/gemini-1.5-pro",
           generation_config={
             "temperature": 0.25,
-            "max_output_tokens": 1536,
+            "max_output_tokens": 2048,
           },
           safety_settings={
             HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
@@ -162,7 +166,7 @@ def _process(batch: dict):
             HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
           },
-          system_instruction=DESCRIBE_VIDEO_PROMPT,
+          system_instruction=get_describe_video_prompt(),
         )
         describer_response = describer.generate_content(
           [video_file, "Describe the video as instructed."],
@@ -178,6 +182,8 @@ def _process(batch: dict):
             tags=["vividbot"],
             session_id=video_id_with_chunk_id,
           )
+
+          GENERATE_QA_PAIRS_CHAIN = get_generate_qa_pairs_chain()
 
           qa_pairs: List = GENERATE_QA_PAIRS_CHAIN.invoke(
             {"message": describer_response.text.strip()},
@@ -462,7 +468,7 @@ def main():
     key=lambda x: int(x.split(".")[0].split("_")[1]),
   )
 
-  last_successful_shard = 110
+  last_successful_shard = 76
   # only process shards after the last successful shard
   shard_files = shard_files[last_successful_shard + 1 :]
 

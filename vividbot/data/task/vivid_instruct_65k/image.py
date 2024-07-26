@@ -151,10 +151,10 @@ def _process(batch: dict):
 
       elif video_file and video_file.state.name == "ACTIVE":
         describer = genai.GenerativeModel(
-          "models/gemini-1.5-flash",
+          "models/gemini-1.5-pro",
           generation_config={
             "temperature": 0.25,
-            "max_output_tokens": 1536,
+            "max_output_tokens": 2048,
           },
           safety_settings={
             HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,

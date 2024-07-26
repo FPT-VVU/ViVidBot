@@ -2,32 +2,36 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 
 from vividbot.data.task.vivid_instruct_65k.utils.llms import FALLBACK_LLM, LLM
-from vividbot.data.task.vivid_instruct_65k.utils.prompts import GENERATE_QA_PROMPT
+from vividbot.data.task.vivid_instruct_65k.utils.prompts import get_generate_qa_prompt
 
-GENERATE_QA_PAIRS_CHAIN = (
-  ChatPromptTemplate.from_messages(
-    [
-      ("system", GENERATE_QA_PROMPT),
-      (
-        "human",
-        "Generate QA pairs as instructed from this description:\n\n{message}\n\n5 QA pairs:",
-      ),
-    ]
-  )
-  | LLM
-  | JsonOutputParser()
-).with_fallbacks(
-  [
+
+def get_generate_qa_pairs_chain():
+  GENERATE_QA_PROMPT = get_generate_qa_prompt()
+
+  return (
     ChatPromptTemplate.from_messages(
       [
         ("system", GENERATE_QA_PROMPT),
         (
           "human",
-          "Generate QA pairs as instructed from this description:\n\n{message}\n\n5 QA pairs:",
+          "Generate QA pairs as instructed from this description:\n\n{message}\n\n5 to 20 QA pairs:",
         ),
       ]
     )
-    | FALLBACK_LLM
+    | LLM
     | JsonOutputParser()
-  ]
-)
+  ).with_fallbacks(
+    [
+      ChatPromptTemplate.from_messages(
+        [
+          ("system", GENERATE_QA_PROMPT),
+          (
+            "human",
+            "Generate QA pairs as instructed from this description:\n\n{message}\n\n5 to 20 QA pairs:",
+          ),
+        ]
+      )
+      | FALLBACK_LLM
+      | JsonOutputParser()
+    ]
+  )
