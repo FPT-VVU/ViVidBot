@@ -6,27 +6,20 @@ DESCRIBE_VIDEO_PROMPTS = [
   # The description should first introduce the general overview of the video. Then describe the main objects, actions, and interactions in the video through time.
   # Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
   # Remember to use Vietnamese language to describe the video.""",
-  """Paint a vivid picture of the video's content through a descriptive explanation.
-Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
-Remember to use Vietnamese language to describe the video.""",
-  """Write a complete and exhaustive depiction of the video, capturing its essence and key moments.
-Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
-Remember to use Vietnamese language to describe the video.""",
-  """Conduct a comprehensive and detailed examination of the video, analyzing its themes and elements.
-Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
-Remember to use Vietnamese language to describe the video.""",
-  """Articulate the contents of the video with precision, emphasizing its storyline and visuals.
-Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
-Remember to use Vietnamese language to describe the video.""",
-  """Present a detailed breakdown of the video's components, focusing on its essential parts.
-Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
-Remember to use Vietnamese language to describe the video.""",
-  """Explore the video closely and provide a detailed account of its actions, characters, and setting.
-Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
-Remember to use Vietnamese language to describe the video.""",
-  """Delve into the details of the video, including its setting, characters, and events.
-Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
-Remember to use Vietnamese language to describe the video.""",
+  """Paint a vivid picture of the video's content through a descriptive explanation in Vietnamese language.
+Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.""",
+  """Write a complete and exhaustive depiction of the video, capturing its essence and key moments in Vietnamese language.
+Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.""",
+  """Conduct a comprehensive and detailed examination of the video, analyzing its themes and elements in Vietnamese language.
+Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.""",
+  """Articulate the contents of the video with precision, emphasizing its storyline and visuals in Vietnamese language.
+Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.""",
+  """Present a detailed breakdown of the video's components, focusing on its essential parts in Vietnamese language.
+Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.""",
+  """Explore the video closely and provide a detailed account of its actions, characters, and setting in Vietnamese language.
+Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.""",
+  """Delve into the details of the video, including its setting, characters, and events in Vietnamese language.
+Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.""",
 ]
 
 GENERATE_QA_PROMPTS = [
