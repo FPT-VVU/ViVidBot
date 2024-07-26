@@ -17,12 +17,12 @@ class YoutubeDownloader(BaseProcessor):
     self,
   ):
     self.opts = {
-      "format": "best[ext=mp4]/best",
+      "format": "best[ext=mp4]/bestvideo[ext=mp4]+bestaudio*/best",
       "quiet": True,
       "fixup": "never",
       "no_warnings": True,
       "force_keyframes_at_cuts": True,
-      "downloader": "aria2c",
+      # "downloader": "aria2c",
     }
 
   def process(
