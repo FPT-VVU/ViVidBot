@@ -468,8 +468,7 @@ def main():
     key=lambda x: int(x.split(".")[0].split("_")[1]),
   )
 
-  last_successful_shard = 89
-  count = 0
+  last_successful_shard = 93
   # only process shards after the last successful shard
   shard_files = shard_files[last_successful_shard + 1 :]
 
@@ -482,10 +481,7 @@ def main():
     unit_scale=True,
     unit_divisor=1024,
   ):
-    if count >= 4:
-      break
     process(shard)
-    count += 1
 
   send_completion_message()
 
