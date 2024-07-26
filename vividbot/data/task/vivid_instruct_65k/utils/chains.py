@@ -14,7 +14,7 @@ def get_generate_qa_pairs_chain():
         ("system", GENERATE_QA_PROMPT),
         (
           "human",
-          "Generate QA pairs as instructed from this description:\n\n{message}\n\n5 to 20 QA pairs:",
+          "Generate QA pairs as instructed from this description:\n\n{message}\n\nQA pairs:",
         ),
       ]
     )
@@ -27,7 +27,7 @@ def get_generate_qa_pairs_chain():
           ("system", GENERATE_QA_PROMPT),
           (
             "human",
-            "Generate QA pairs as instructed from this description:\n\n{message}\n\n5 to 20 QA pairs:",
+            "Generate QA pairs as instructed from this description:\n\n{message}\n\nQA pairs:",
           ),
         ]
       )

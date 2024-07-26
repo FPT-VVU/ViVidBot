@@ -35,7 +35,7 @@ The questions should be relevant to the video content and the answers should be 
 Diversify the types of questions and answers as much as possible.
 Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
 Remember to use Vietnamese language to generate the questions and answers.
-Examples of questions ranging from normal conversations to causal reasoning or complex reasoning (do not need to follow the order and these are just examples, you must generate your own questions based on the video content):
+Examples of questions (do not need to follow the order and these are just examples, you must generate your own questions based on the video content):
 - How does the guy create the multicolored vases using the glassblowing technique?
 - What factors contribute to the collapse of the bridge during flooding?
 - How did the Colorado Center for the blind interact with the interactive art wall mural?
@@ -50,7 +50,24 @@ The answer should be descriptive, informative and correct in the form of complet
 Sometimes, the description may repeat one information multiple times at the last part due to errors, you should avoid generating questions about that repeated information.
 Only return the list of pair of questions and answers in the following JSON list format without any additional information:
 [{{"question":"Q1","answer":"A1"}},{{"question":"Q2","answer":"A2"}},...]""",
-  """Generate 5 to 20 different pairs of questions and answers in JSON format based on the description of the video (in which the description is generated for person without vision can understand the video content).
+  """Generate 2 different pairs of questions and answers in JSON format based on the description of the video (in which the description is generated for person without vision can understand the video content).
+The questions should be relevant to the video content and the answers should be correct.
+Diversify the types of questions and answers as much as possible.
+Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
+Remember to use Vietnamese language to generate the questions and answers.
+Examples of questions (do not need to follow the order and these are just examples, you must generate your own questions based on the video content):
+- Did the lady in the black tanktop open the window?
+- What was the lady in black with the gun trying to do?
+- Is the young man in yellow sure that beat-boxing won't upset the boy with the black hood?
+- Who is kneeling on the ground?
+- What does the man in black feel about the blue creatures in the jars?
+- ...
+And more questions that can be asked about the video content (what, where, when, why, how, etc.) with varying levels of complexity and logic. Harder questions that require more logical thinking are encouraged.
+The answer should be descriptive, informative and correct in the form of complete sentences or complete phrases with proper grammar and punctuation.
+Sometimes, the description may repeat one information multiple times at the last part due to errors, you should avoid generating questions about that repeated information.
+Only return the list of pair of questions and answers in the following JSON list format without any additional information:
+[{{"question":"Q1","answer":"A1"}},{{"question":"Q2","answer":"A2"}},...]""",
+  """Generate 5 to 10 different pairs of questions and answers in JSON format based on the description of the video (in which the description is generated for person without vision can understand the video content).
 The questions should be relevant to the video content and the answers should be correct.
 Diversify the types of questions and answers as much as possible.
 Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
