@@ -51,11 +51,11 @@ def _process(batch: dict):
     for url in tqdm(details.get("urls_list", [])):
       image_filename = url.split("/")[-1]
       image_id = image_filename.split(".")[0]
-      google_file_name = f"files/{image_filename}".lower().replace("_", "-")
+      google_filename = f"files/{image_id}".lower().replace("_", "-")
 
       image_file = genai.upload_file(
         path=f"{BASE_DATA_PATH}/output/images/{image_filename}",
-        name=google_file_name,
+        name=google_filename,
         display_name=image_id,
       )
 
