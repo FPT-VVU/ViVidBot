@@ -468,7 +468,7 @@ def main():
     key=lambda x: int(x.split(".")[0].split("_")[1]),
   )
 
-  last_successful_shard = 112
+  last_successful_shard = -1
   # only process shards after the last successful shard
   shard_files = shard_files[last_successful_shard + 1 :]
 
