@@ -54,11 +54,15 @@ def _process(batch: dict):
 
     for url in tqdm(details.get("urls_list", [])):
       image_filename = url.split("/")[-1]
+      if not os.path.exists(f"{BASE_DATA_PATH}/output/images/{image_filename}"):
+        continue
+
       image_id = image_filename.split(".")[0]
 
       # skip if image_id already exists in metadata
-      if processed_dataset is not None and any(
-        item["id"] == image_id for item in processed_dataset
+      if (
+        processed_dataset is not None
+        and processed_dataset.filter(lambda x: x["id"] == image_id).num_rows > 0
       ):
         logger.info(f"Image {image_id} already processed. Skipping...")
         continue
