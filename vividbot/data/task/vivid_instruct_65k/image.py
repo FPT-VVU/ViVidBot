@@ -210,6 +210,14 @@ def prepare():
   with open(f"{BASE_DATA_PATH}/run.log", "w") as f:
     f.write("")
 
+  # create metadata.jsonl file
+  with open(f"{BASE_DATA_PATH}/metadata.jsonl", "w") as f:
+    f.write("")
+
+  # create errors.jsonl file
+  with open(f"{BASE_DATA_PATH}/errors.jsonl", "w") as f:
+    f.write("")
+
 
 def main():
   prepare()
