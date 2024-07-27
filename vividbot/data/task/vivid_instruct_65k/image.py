@@ -49,7 +49,7 @@ def _process(batch: dict):
   for keyword, category in tqdm(zip(batch["keyword"], batch["category"])):
     logger.info(f"Processing images for keyword {keyword}...")
     details = pinscrape.scraper.scrape(
-      keyword, f"{BASE_DATA_PATH}/output/images", {}, 4, 50
+      keyword, f"{BASE_DATA_PATH}/output/images", {}, 12, 50
     )
 
     for url in tqdm(details.get("urls_list", [])):
@@ -60,15 +60,23 @@ def _process(batch: dict):
       if processed_dataset is not None and any(
         item["id"] == image_id for item in processed_dataset
       ):
+        logger.info(f"Image {image_id} already processed. Skipping...")
         continue
 
       google_filename = f"files/{image_id}".lower().replace("_", "-")
 
-      image_file = genai.upload_file(
-        path=f"{BASE_DATA_PATH}/output/images/{image_filename}",
-        name=google_filename,
-        display_name=image_id,
-      )
+      image_file = None
+      try:
+        image_file = genai.get_file(name=google_filename)
+      except Exception as e:
+        logger.warning(f"Couldn't get file {google_filename}: {str(e)}")
+
+      if image_file is None:
+        image_file = genai.upload_file(
+          path=f"{BASE_DATA_PATH}/output/images/{image_filename}",
+          name=google_filename,
+          display_name=image_id,
+        )
 
       describer = genai.GenerativeModel(
         "models/gemini-1.5-pro",
@@ -161,8 +169,8 @@ def process():
   dataset.map(
     _process,
     batched=True,
-    batch_size=32,
-    num_proc=2,
+    batch_size=128,
+    num_proc=4,
   )
 
   # remove files in output/images that are not in metadata
