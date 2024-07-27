@@ -202,7 +202,7 @@ def process():
     _process,
     batched=True,
     batch_size=128,
-    num_proc=4,
+    num_proc=6,
   )
 
   # remove files in output/images that are not in metadata
