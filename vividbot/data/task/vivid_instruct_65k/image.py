@@ -189,6 +189,10 @@ def prepare():
   os.makedirs(f"{BASE_DATA_PATH}/output", exist_ok=True)
   os.makedirs(f"{BASE_DATA_PATH}/output/images", exist_ok=True)
 
+  # create run.log file
+  with open(f"{BASE_DATA_PATH}/run.log", "w") as f:
+    f.write("")
+
 
 def main():
   prepare()
