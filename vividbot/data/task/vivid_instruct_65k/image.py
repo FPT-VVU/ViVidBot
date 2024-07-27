@@ -83,7 +83,7 @@ def _process(batch: dict):
         )
 
       describer = genai.GenerativeModel(
-        "models/gemini-1.5-pro",
+        "models/gemini-1.5-flash",
         generation_config={
           "temperature": 0.5,
           "max_output_tokens": 2048,
@@ -108,6 +108,10 @@ def _process(batch: dict):
         if describer_response.text
         else describer_response.parts[0].text
         if describer_response.parts and len(describer_response.parts) > 0
+        else describer_response.candidates[0].content.parts[0].text
+        if describer_response.candidates
+        and len(describer_response.candidates) > 0
+        and len(describer_response.candidates[0].content.parts) > 0
         else None
       )
 
@@ -154,7 +158,6 @@ def _process(batch: dict):
             "image": image_filename,
             "conversations": conversations,
             "timestamp": round(time.time()),
-            "description": describer_response.text.strip(),
             "keyword": keyword,
             "category": category,
           }
