@@ -31,6 +31,7 @@ youtube-search-python = "^1.6.6"
 langchain-core = "^0.2.24"
 pydotmap = "^0.1.3"
 opencv-python = "^4.10.0.84"
+beautifulsoup4 = "^4.12.3"
 
 
 [tool.poetry.group.dev.dependencies]
