@@ -179,6 +179,19 @@ def process():
     overwrite=True,
   )
 
+  # remove files that are not processed
+  processed_dataset = load_dataset(
+    "json", data_files=f"{BASE_DATA_PATH}/metadata.jsonl"
+  )["train"]
+
+  processed_images = set([item["image_filename"] for item in processed_dataset])
+  all_images = set(
+    [item.split("/")[-1] for item in os.listdir(f"{BASE_DATA_PATH}/output/images")]
+  )
+
+  for image in all_images - processed_images:
+    os.remove(f"{BASE_DATA_PATH}/output/images/{image}")
+
   end_time = time.time()
   duration = round(end_time - start_time, 2)
 
