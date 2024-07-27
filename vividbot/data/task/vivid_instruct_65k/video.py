@@ -155,9 +155,9 @@ def _process(batch: dict):
 
       elif video_file and video_file.state.name == "ACTIVE":
         describer = genai.GenerativeModel(
-          "models/gemini-1.5-pro",
+          "models/gemini-1.5-flash",
           generation_config={
-            "temperature": 0.25,
+            "temperature": 0.5,
             "max_output_tokens": 2048,
           },
           safety_settings={
@@ -468,7 +468,7 @@ def main():
     key=lambda x: int(x.split(".")[0].split("_")[1]),
   )
 
-  last_successful_shard = 93
+  last_successful_shard = 112
   # only process shards after the last successful shard
   shard_files = shard_files[last_successful_shard + 1 :]
 

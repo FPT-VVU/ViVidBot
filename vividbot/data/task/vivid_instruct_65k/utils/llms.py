@@ -1,3 +1,5 @@
+import os
+
 from langchain_anthropic import ChatAnthropic
 from langchain_community.chat_models import ChatDeepInfra
 from langchain_fireworks import ChatFireworks
@@ -7,6 +9,14 @@ from langchain_together import ChatTogether
 
 FIREWORKS_LLAMA3_1_405B = ChatFireworks(
   model="accounts/fireworks/models/llama-v3p1-405b-instruct",
+  max_retries=0,
+  temperature=1,
+  streaming=False,
+)
+LEPTON_LLAMA3_1_405B = ChatOpenAI(
+  base_url="https://llama3-1-405b.lepton.run/api/v1/",
+  api_key=os.getenv("LEPTON_API_KEY"),
+  model="llama3-1-405b",
   max_retries=0,
   temperature=1,
   streaming=False,
@@ -56,6 +66,7 @@ GPT_4O_MINI = ChatOpenAI(
 
 LLM = FIREWORKS_LLAMA3_1_405B.with_fallbacks(
   [
+    LEPTON_LLAMA3_1_405B,
     DEEPINFRA_LLAMA3_1_405B,
     FIREWORKS_LLAMA3_1_70B,
     DEEPINFRA_LLAMA3_1_70B,
