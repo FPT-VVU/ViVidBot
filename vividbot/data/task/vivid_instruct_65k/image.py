@@ -102,8 +102,33 @@ def _process(batch: dict):
           "timeout": 60,
         },
       )
+
+      json_text = (
+        describer_response.text
+        if describer_response.text
+        else describer_response.parts[0].text
+        if describer_response.parts and len(describer_response.parts) > 0
+        else None
+      )
+
+      if not json_text:
+        logger.error(
+          f"Couldn't generate QA pairs for image {image_id}: {describer_response}"
+        )
+        with open(f"{BASE_DATA_PATH}/errors.jsonl", "a") as f:
+          data = {
+            "id": image_id,
+            "reason": f"Couldn't generate QA pairs - Response: {describer_response}",
+            "timestamp": round(time.time()),
+          }
+          f.write(json.dumps(data) + "\n")
+
+        if os.path.exists(f"{BASE_DATA_PATH}/{image_filename}"):
+          os.remove(f"{BASE_DATA_PATH}/{image_filename}")
+        continue
+
       try:
-        qa_pairs = json.loads(describer_response.text.strip())
+        qa_pairs = json.loads(json_text.strip())
         conversations = []
 
         for qa in qa_pairs:
