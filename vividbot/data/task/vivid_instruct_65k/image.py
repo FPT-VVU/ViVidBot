@@ -193,7 +193,7 @@ def process():
 
   dataset = load_dataset(
     "json", data_files=f"{BASE_DATA_PATH}/flattened_keywords.jsonl"
-  )["train"]
+  ).shuffle(seed=42)["train"]
 
   dataset.map(
     _process,
