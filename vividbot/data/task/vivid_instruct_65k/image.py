@@ -83,7 +83,7 @@ def _process(batch: dict):
         )
 
       describer = genai.GenerativeModel(
-        "models/gemini-1.5-flash",
+        "models/gemini-1.5-pro",
         generation_config={
           "temperature": 0.5,
           "max_output_tokens": 2048,
