@@ -39,18 +39,24 @@ hf_processor = HuggingFaceProcessor()
 
 
 def _process(batch: dict):
+  processed_dataset = load_dataset(
+    "json", data_files=f"{BASE_DATA_PATH}/metadata.jsonl"
+  )["train"]
+
   for keyword, category in tqdm(zip(batch["keyword"], batch["category"])):
     logger.info(f"Processing images for keyword {keyword}...")
     details = pinscrape.scraper.scrape(
       keyword, f"{BASE_DATA_PATH}/output/images", {}, 4, 50
     )
 
-    # 'urls_list': ['https://i.pinimg.com/originals/12/8e/6e/128e6e5e651dab7aae7f135e24b74a08.jpg',
-    # 'https://i.pinimg.com/originals/6d/8c/ef/6d8cef114f2613042765e3f7fc8262d0.jpg'],
-
     for url in tqdm(details.get("urls_list", [])):
       image_filename = url.split("/")[-1]
       image_id = image_filename.split(".")[0]
+
+      # skip if image_id already exists in metadata
+      if any(item["id"] == image_id for item in processed_dataset):
+        continue
+
       google_filename = f"files/{image_id}".lower().replace("_", "-")
 
       image_file = genai.upload_file(
@@ -103,9 +109,8 @@ def _process(batch: dict):
         ) as f:
           data = {
             "id": image_id,
-            "image": image_id,
+            "image": image_filename,
             "conversations": conversations,
-            "image_filename": image_filename,
             "timestamp": round(time.time()),
             "description": describer_response.text.strip(),
             "keyword": keyword,
@@ -155,6 +160,17 @@ def process():
     num_proc=2,
   )
 
+  # remove files in output/images that are not in metadata
+  processed_dataset = load_dataset(
+    "json", data_files=f"{BASE_DATA_PATH}/metadata.jsonl"
+  )["train"]
+
+  processed_image_ids = [item["id"] for item in processed_dataset]
+  for image_filename in os.listdir(f"{BASE_DATA_PATH}/output/images"):
+    image_id = image_filename.split(".")[0]
+    if image_id not in processed_image_ids:
+      os.remove(f"{BASE_DATA_PATH}/output/images/{image_filename}")
+
   hf_processor.zip_and_upload_dir(
     dir_path=f"{BASE_DATA_PATH}/output/images",
     repo_id="Vividbot/vividbot_image",
@@ -178,19 +194,6 @@ def process():
     repo_type="dataset",
     overwrite=True,
   )
-
-  # remove files that are not processed
-  processed_dataset = load_dataset(
-    "json", data_files=f"{BASE_DATA_PATH}/metadata.jsonl"
-  )["train"]
-
-  processed_images = set([item["image_filename"] for item in processed_dataset])
-  all_images = set(
-    [item.split("/")[-1] for item in os.listdir(f"{BASE_DATA_PATH}/output/images")]
-  )
-
-  for image in all_images - processed_images:
-    os.remove(f"{BASE_DATA_PATH}/output/images/{image}")
 
   end_time = time.time()
   duration = round(end_time - start_time, 2)
