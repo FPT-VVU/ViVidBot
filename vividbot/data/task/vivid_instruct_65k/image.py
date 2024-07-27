@@ -186,6 +186,7 @@ def process():
 
 
 def prepare():
+  os.makedirs(BASE_DATA_PATH, exist_ok=True)
   os.makedirs(f"{BASE_DATA_PATH}/output", exist_ok=True)
   os.makedirs(f"{BASE_DATA_PATH}/output/images", exist_ok=True)
 
