@@ -39,9 +39,12 @@ hf_processor = HuggingFaceProcessor()
 
 
 def _process(batch: dict):
-  processed_dataset = load_dataset(
-    "json", data_files=f"{BASE_DATA_PATH}/metadata.jsonl"
-  )["train"]
+  processed_dataset = None
+
+  if os.path.exists(f"{BASE_DATA_PATH}/metadata.jsonl"):
+    processed_dataset = load_dataset(
+      "json", data_files=f"{BASE_DATA_PATH}/metadata.jsonl"
+    )["train"]
 
   for keyword, category in tqdm(zip(batch["keyword"], batch["category"])):
     logger.info(f"Processing images for keyword {keyword}...")
@@ -54,7 +57,9 @@ def _process(batch: dict):
       image_id = image_filename.split(".")[0]
 
       # skip if image_id already exists in metadata
-      if any(item["id"] == image_id for item in processed_dataset):
+      if processed_dataset is not None and any(
+        item["id"] == image_id for item in processed_dataset
+      ):
         continue
 
       google_filename = f"files/{image_id}".lower().replace("_", "-")
@@ -208,14 +213,6 @@ def prepare():
 
   # create run.log file
   with open(f"{BASE_DATA_PATH}/run.log", "w") as f:
-    f.write("")
-
-  # create metadata.jsonl file
-  with open(f"{BASE_DATA_PATH}/metadata.jsonl", "w") as f:
-    f.write("")
-
-  # create errors.jsonl file
-  with open(f"{BASE_DATA_PATH}/errors.jsonl", "w") as f:
     f.write("")
 
 
