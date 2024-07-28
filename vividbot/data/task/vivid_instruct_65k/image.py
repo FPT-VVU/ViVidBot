@@ -75,12 +75,26 @@ def _process(batch: dict):
       except Exception as e:
         logger.warning(f"Couldn't get file {google_filename}: {str(e)}")
 
-      if image_file is None:
-        image_file = genai.upload_file(
-          path=f"{BASE_DATA_PATH}/output/images/{image_filename}",
-          name=google_filename,
-          display_name=image_id,
-        )
+      if not image_file:
+        try:
+          image_file = genai.upload_file(
+            path=f"{BASE_DATA_PATH}/output/images/{image_filename}",
+            name=google_filename,
+            display_name=image_id,
+          )
+        except:
+          pass
+
+      if not image_file:
+        logger.error(f"Couldn't upload file {google_filename}")
+        with open(f"{BASE_DATA_PATH}/errors.jsonl", "a") as f:
+          data = {
+            "id": image_id,
+            "reason": "Couldn't upload file",
+            "timestamp": round(time.time()),
+          }
+          f.write(json.dumps(data) + "\n")
+        continue
 
       describer = genai.GenerativeModel(
         "models/gemini-1.5-flash",
@@ -103,19 +117,37 @@ def _process(batch: dict):
         },
       )
 
-      json_text = (
-        describer_response.text
-        if describer_response.text
-        else str(describer_response.parts[0].text).encode("utf-8").decode("utf-8")
-        if describer_response.parts and len(describer_response.parts) > 0
-        else str(describer_response.candidates[0].content.parts[0].text)
-        .encode("utf-8")
-        .decode("utf-8")
-        if describer_response.candidates
-        and len(describer_response.candidates) > 0
-        and len(describer_response.candidates[0].content.parts) > 0
-        else None
-      )
+      json_text = None
+
+      try:
+        json_text = (
+          describer_response.text
+          if describer_response.text
+          else str(describer_response.parts[0].text).encode("utf-8").decode("utf-8")
+          if describer_response.parts and len(describer_response.parts) > 0
+          else str(describer_response.candidates[0].content.parts[0].text)
+          .encode("utf-8")
+          .decode("utf-8")
+          if describer_response.candidates
+          and len(describer_response.candidates) > 0
+          and len(describer_response.candidates[0].content.parts) > 0
+          else None
+        )
+      except Exception as e:
+        logger.error(
+          f"Couldn't generate QA pairs for image {image_id}: {str(e)} - Response: {describer_response}"
+        )
+        with open(f"{BASE_DATA_PATH}/errors.jsonl", "a") as f:
+          data = {
+            "id": image_id,
+            "reason": f"{str(e)} - Response: {describer_response}",
+            "timestamp": round(time.time()),
+          }
+          f.write(json.dumps(data) + "\n")
+
+        if os.path.exists(f"{BASE_DATA_PATH}/{image_filename}"):
+          os.remove(f"{BASE_DATA_PATH}/{image_filename}")
+        continue
 
       if not json_text:
         logger.error(
@@ -198,7 +230,7 @@ def process():
 
   dataset = load_dataset(
     "json", data_files=f"{BASE_DATA_PATH}/flattened_keywords.jsonl"
-  ).shuffle(seed=190589)["train"]
+  ).shuffle(seed=903)["train"]
 
   dataset.map(
     _process,

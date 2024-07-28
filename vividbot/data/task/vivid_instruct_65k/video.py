@@ -155,7 +155,7 @@ def _process(batch: dict):
 
       elif video_file and video_file.state.name == "ACTIVE":
         describer = genai.GenerativeModel(
-          "models/gemini-1.5-flash",
+          "models/gemini-1.5-pro",
           generation_config={
             "temperature": 0.5,
             "max_output_tokens": 2048,
@@ -327,9 +327,7 @@ def _process(batch: dict):
           )
 
     except Exception as e:
-      logger.error(
-        f"Error generating metadata for video {video_id_with_chunk_id}: {e} - Response: {describer_response}"
-      )
+      logger.error(f"Error generating metadata for video {video_id_with_chunk_id}: {e}")
       with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
         data = {
           "id": video_id_with_chunk_id,
@@ -371,6 +369,31 @@ def process(shard_file_name: str):
 
   if hf_processor.check_file_exists(
     repo_id="Vividbot/vividbot_video",
+    path_in_repo=f"metadata/{shard}.jsonl",
+    repo_type="dataset",
+  ) and not os.path.exists(f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl"):
+    logger.info(f"Downloading metadata for shard {shard} from Hugging Face...")
+    hf_processor.download_file(
+      repo_id="Vividbot/vividbot_video",
+      filename=f"metadata/{shard}.jsonl",
+      local_dir=f"{BASE_DATA_PATH}/output",
+    )
+  metadata = load_dataset(
+    "json", data_files=f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl"
+  )["train"]
+
+  # if shard has 500 records, skip processing
+  if metadata.num_rows == 500:
+    logger.info(
+      f"Shard {shard} already has {metadata.num_rows} records. Skipping processing..."
+    )
+    send_process_shard_success_message(
+      shard, round(time.time() - start_time, 2), count=500
+    )
+    return
+
+  if hf_processor.check_file_exists(
+    repo_id="Vividbot/vividbot_video",
     path_in_repo=f"videos/{shard}.zip",
     repo_type="dataset",
   ) and not os.path.exists(f"{BASE_DATA_PATH}/output/videos/{shard}"):
@@ -383,18 +406,6 @@ def process(shard_file_name: str):
     )
   else:
     os.makedirs(f"{BASE_DATA_PATH}/output/videos/{shard}", exist_ok=True)
-
-  if hf_processor.check_file_exists(
-    repo_id="Vividbot/vividbot_video",
-    path_in_repo=f"metadata/{shard}.jsonl",
-    repo_type="dataset",
-  ) and not os.path.exists(f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl"):
-    logger.info(f"Downloading metadata for shard {shard} from Hugging Face...")
-    hf_processor.download_file(
-      repo_id="Vividbot/vividbot_video",
-      filename=f"metadata/{shard}.jsonl",
-      local_dir=f"{BASE_DATA_PATH}/output",
-    )
 
   # if hf_processor.check_file_exists(
   #   repo_id="Vividbot/vividbot_video",
@@ -505,7 +516,7 @@ def main():
     key=lambda x: int(x.split(".")[0].split("_")[1]),
   )
 
-  last_successful_shard = 32
+  last_successful_shard = 75
   # only process shards after the last successful shard
   shard_files = shard_files[last_successful_shard + 1 :]
 
