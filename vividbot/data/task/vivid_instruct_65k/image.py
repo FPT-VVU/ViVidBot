@@ -106,9 +106,11 @@ def _process(batch: dict):
       json_text = (
         describer_response.text
         if describer_response.text
-        else str(describer_response.parts[0].text)
+        else str(describer_response.parts[0].text).encode("utf-8").decode("utf-8")
         if describer_response.parts and len(describer_response.parts) > 0
         else str(describer_response.candidates[0].content.parts[0].text)
+        .encode("utf-8")
+        .decode("utf-8")
         if describer_response.candidates
         and len(describer_response.candidates) > 0
         and len(describer_response.candidates[0].content.parts) > 0
