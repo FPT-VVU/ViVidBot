@@ -325,7 +325,9 @@ def _process(batch: dict):
           )
 
     except Exception as e:
-      logger.error(f"Error generating metadata for video {video_id_with_chunk_id}: {e}")
+      logger.error(
+        f"Error generating metadata for video {video_id_with_chunk_id}: {e} - Response: {describer_response}"
+      )
       with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
         data = {
           "id": video_id_with_chunk_id,
@@ -501,7 +503,7 @@ def main():
     key=lambda x: int(x.split(".")[0].split("_")[1]),
   )
 
-  last_successful_shard = 31
+  last_successful_shard = 32
   # only process shards after the last successful shard
   shard_files = shard_files[last_successful_shard + 1 :]
 
