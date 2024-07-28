@@ -174,6 +174,39 @@ def _process(batch: dict):
             "timeout": 60,
           },
         )
+
+        json_text = (
+          describer_response.text
+          if describer_response.text
+          else str(describer_response.parts[0].text)
+          if describer_response.parts and len(describer_response.parts) > 0
+          else str(describer_response.candidates[0].content.parts[0].text)
+          if describer_response.candidates
+          and len(describer_response.candidates) > 0
+          and len(describer_response.candidates[0].content.parts) > 0
+          else None
+        )
+
+        if not json_text:
+          logger.error(
+            f"Couldn't generate QA pairs for video {video_id_with_chunk_id}: {describer_response}"
+          )
+          with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
+            data = {
+              "id": video_id_with_chunk_id,
+              "reason": f"Couldn't generate QA pairs - Response: {describer_response}",
+              "timestamp": round(time.time()),
+            }
+            f.write(json.dumps(data) + "\n")
+
+          if os.path.exists(
+            f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+          ):
+            os.remove(
+              f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+            )
+          continue
+
         try:
           langfuse_handler = CallbackHandler(
             secret_key="sk-lf-bfa7365e-2871-4669-bda2-4818fcab68de",
@@ -186,7 +219,7 @@ def _process(batch: dict):
           GENERATE_QA_PAIRS_CHAIN = get_generate_qa_pairs_chain()
 
           qa_pairs: List = GENERATE_QA_PAIRS_CHAIN.invoke(
-            {"message": describer_response.text.strip()},
+            {"message": json_text.strip()},
             {"callbacks": [langfuse_handler]},
           )
 
@@ -239,7 +272,7 @@ def _process(batch: dict):
               "timestamp": round(time.time()),
               "start": start,
               "end": end,
-              "description": describer_response.text.strip(),
+              "description": json_text.strip(),
               "conversations": conversations,
             }
 
@@ -468,7 +501,7 @@ def main():
     key=lambda x: int(x.split(".")[0].split("_")[1]),
   )
 
-  last_successful_shard = -1
+  last_successful_shard = 31
   # only process shards after the last successful shard
   shard_files = shard_files[last_successful_shard + 1 :]
 

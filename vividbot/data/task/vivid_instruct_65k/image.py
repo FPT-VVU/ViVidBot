@@ -83,7 +83,7 @@ def _process(batch: dict):
         )
 
       describer = genai.GenerativeModel(
-        "models/gemini-1.5-pro",
+        "models/gemini-1.5-flash",
         generation_config={
           "temperature": 0.5,
           "max_output_tokens": 2048,
@@ -106,9 +106,9 @@ def _process(batch: dict):
       json_text = (
         describer_response.text
         if describer_response.text
-        else describer_response.parts[0].text
+        else str(describer_response.parts[0].text)
         if describer_response.parts and len(describer_response.parts) > 0
-        else describer_response.candidates[0].content.parts[0].text
+        else str(describer_response.candidates[0].content.parts[0].text)
         if describer_response.candidates
         and len(describer_response.candidates) > 0
         and len(describer_response.candidates[0].content.parts) > 0
@@ -196,7 +196,7 @@ def process():
 
   dataset = load_dataset(
     "json", data_files=f"{BASE_DATA_PATH}/flattened_keywords.jsonl"
-  ).shuffle(seed=2103)["train"]
+  ).shuffle(seed=300475)["train"]
 
   dataset.map(
     _process,
