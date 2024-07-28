@@ -108,7 +108,7 @@ Examples of questions (do not need to follow the same as these are just examples
 And more questions that can be asked about the image content (what, where, when, why, how, etc.) with varying levels of complexity and logic. Harder questions that require more logical thinking are encouraged.
 The answer should be descriptive, informative and correct in the form of complete sentences or complete phrases with proper grammar and punctuation.
 Only return the list of pair of questions and answers in the following JSON list format without any additional information:
-[{{"question":"Q1","answer":"A1"}},{{"question":"Q2","answer":"A2"}},...]""",
+[{"question":"Q1","answer":"A1"},{"question":"Q2","answer":"A2"},...]""",
   """Infer the content of the image and generate 3 to 10 pairs of questions and answers in JSON format based on the image in Vietnamese language.
 The question should be relevant to the image content and the answer should be correct.
 Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
@@ -125,7 +125,7 @@ Examples of questions (do not need to follow the same as these are just examples
 And more questions that can be asked about the image content (what, where, when, why, how, etc.) with varying levels of complexity and logic. Harder questions that require more logical thinking are encouraged.
 The answer should be descriptive, informative and correct in the form of complete sentences or complete phrases with proper grammar and punctuation.
 Only return the list of pair of questions and answers in the following JSON list format without any additional information:
-[{{"question":"Q1","answer":"A1"}},{{"question":"Q2","answer":"A2"}},...]""",
+[{"question":"Q1","answer":"A1"},{"question":"Q2","answer":"A2"},...]""",
 ]
 
 
