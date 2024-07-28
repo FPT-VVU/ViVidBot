@@ -1785,6 +1785,24 @@ openai = ">=1.10.0,<2.0.0"
 requests = ">=2,<3"
 
 [[package]]
+name = "langchain-google-genai"
+version = "1.0.8"
+description = "An integration package connecting Google's genai package and LangChain"
+optional = false
+python-versions = "<4.0,>=3.9"
+files = [
+    {file = "langchain_google_genai-1.0.8-py3-none-any.whl", hash = "sha256:675dab1afa8f165c6169512dae984c90fd9fe2e8a54bdf7d0a0ccd826ee719d4"},
+    {file = "langchain_google_genai-1.0.8.tar.gz", hash = "sha256:4b5b074476f073f4f6f0d1e74c811bb66e4caaf2d6b57b14bf6a1eab36de8c4e"},
+]
+
+[package.dependencies]
+google-generativeai = ">=0.7.0,<0.8.0"
+langchain-core = ">=0.2.17,<0.3"
+
+[package.extras]
+images = ["pillow (>=10.1.0,<11.0.0)"]
+
+[[package]]
 name = "langchain-groq"
 version = "0.1.6"
 description = "An integration package connecting Groq and LangChain"
@@ -4401,4 +4419,4 @@ test = ["pytest (>=8.1,<9.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "0769d8d4fa3cc8858193656b4164ea61e3433f1e1029c517cbe8364118568e55"
+content-hash = "e4b18d403e3c7f9eacf1739daff4b4ba138f0c98c094c935c80890c39b4061a8"

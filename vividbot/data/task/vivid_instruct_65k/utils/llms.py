@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from langchain_anthropic import ChatAnthropic
 from langchain_community.chat_models import ChatDeepInfra
 from langchain_fireworks import ChatFireworks
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
 from langchain_together import ChatTogether
@@ -65,11 +66,18 @@ GPT_4O_MINI = ChatOpenAI(
   temperature=1,
   streaming=False,
 )
+GEMINI_1_5_FLASH = ChatGoogleGenerativeAI(
+  model="gemini-1.5-flash",
+  max_retries=0,
+  temperature=1,
+  streaming=False,
+)
 
 LLM = FIREWORKS_LLAMA3_1_405B.with_fallbacks(
   [
     LEPTON_LLAMA3_1_405B,
     DEEPINFRA_LLAMA3_1_405B,
+    GEMINI_1_5_FLASH,
     FIREWORKS_LLAMA3_1_70B,
     DEEPINFRA_LLAMA3_1_70B,
     TOGETHER_LLAMA3_1_70B,
