@@ -72,12 +72,19 @@ GEMINI_1_5_FLASH = ChatGoogleGenerativeAI(
   temperature=1,
   streaming=False,
 )
+GEMINI_1_5_PRO = ChatGoogleGenerativeAI(
+  model="gemini-1.5-pro",
+  max_retries=0,
+  temperature=1,
+  streaming=False,
+)
 
-LLM = FIREWORKS_LLAMA3_1_405B.with_fallbacks(
+LLM = GEMINI_1_5_PRO.with_fallbacks(
   [
+    GEMINI_1_5_FLASH,
     LEPTON_LLAMA3_1_405B,
     DEEPINFRA_LLAMA3_1_405B,
-    GEMINI_1_5_FLASH,
+    FIREWORKS_LLAMA3_1_405B,
     FIREWORKS_LLAMA3_1_70B,
     DEEPINFRA_LLAMA3_1_70B,
     TOGETHER_LLAMA3_1_70B,
