@@ -25,27 +25,27 @@ class HybridDataset(Dataset):
                  multimodal_cfg: dict, **kwargs):
         super(HybridDataset, self).__init__()
         logging.warning("Loading data...")
+        list_data_dict = []
+        list_video_dict = []
+        list_fashion_dict = []
         if multimodal_cfg['fast_epoch']:
             if data_path is not None:
-                list_data_dict = json.load(open(data_path, "r"))[0:10]
-            else:
-                list_data_dict=[]
+                for path in data_path:
+                    list_data_dict.extend(json.load(open(path, "r"))[0:10])
+
             if video_path is not None:
-                list_video_dict = json.load(open(video_path, 'r'))[0:10]
-            else:
-                list_video_dict = []
+                for path in video_path:
+                    list_video_dict.extend(json.load(open(path, 'r'))[0:10])
             if multimodal_cfg['use_fashion']:
                 list_fashion_dict = json.load(
                     open(kwargs['fashion_data_path']))[0:100]
         else:
             if data_path is not None:
-                list_data_dict = json.load(open(data_path, "r"))
-            else:
-                list_data_dict = []
+                for path in data_path:
+                    list_data_dict.extend(json.load(open(path, "r")))
             if video_path is not None:
-                list_video_dict = json.load(open(video_path, 'r'))
-            else:
-                list_video_dict = []
+                for path in video_path:
+                    list_video_dict.extend(json.load(open(path, 'r')))
             if multimodal_cfg['use_fashion']:
                 list_fashion_dict = json.load(
                     open(kwargs['fashion_data_path']))
@@ -97,7 +97,12 @@ class HybridDataset(Dataset):
                     else:
                         if self.multimodal_cfg["hf_repo_image"] is None:
                             raise ValueError("Please specify the HF repo where the image is stored")
-                        image = load_image_hf(repo_id=self.multimodal_cfg["hf_repo_image"], hf_image_path=image_file)
+                        for repo_id in self.multimodal_cfg["hf_repo_image"]:
+                            try:
+                                image = load_image_hf(repo_id=repo_id, hf_image_path=image_file)
+                                break
+                            except Exception as e:
+                                continue
 
                     if self.multimodal_cfg['image_aspect_ratio'] == 'keep':
                         max_hw, min_hw = max(image.size), min(image.size)
@@ -139,7 +144,12 @@ class HybridDataset(Dataset):
                 else:
                     if self.multimodal_cfg["hf_repo_video"] is None:
                         raise ValueError("Please specify the HF repo where the video is stored")
-                    video = load_video_hf(repo_id=self.multimodal_cfg["hf_repo_video"], hf_video_path=video_file)
+                    for repo_id in self.multimodal_cfg["hf_repo_video"]:
+                        try:
+                            video = load_video_hf(repo_id=repo_id, hf_video_path=video_file)
+                            break
+                        except Exception as e:
+                            continue
                 # print(video.shape)
                 video = video.permute(1, 0, 2, 3)
                 # FIXME: 14 is hardcoded patch size

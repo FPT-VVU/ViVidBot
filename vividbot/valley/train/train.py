@@ -36,11 +36,11 @@ class ModelArguments:
 
 @dataclass
 class DataArguments:
-    data_path: str = field(default=None,
+    data_path: Optional[str] = field(default=None,
                            metadata={"help": "Path to the training data."})
     fashion_data_path: str = field(default = None,
                             metadata={"help": "Path to the new construct training data."})
-    video_data_path:str = field(default = None,
+    video_data_path: Optional[str] = field(default = None,
                             metadata={"help": "Path to the video training data."})
     lazy_preprocess: bool = False
     is_multimodal: bool = False
@@ -59,8 +59,8 @@ class DataArguments:
     conv_mode:str = field(default = 'v1')
     only_mask_system: str = field(default= True)
     project_name: str = field(default='valley')
-    hf_repo_video: str = field(default=None)
-    hf_repo_image: str = field(default=None)
+    hf_repo_video: Optional[str] = field(default=None)
+    hf_repo_image: Optional[str] = field(default=None)
 
 @dataclass
 class TrainingArguments(transformers.Seq2SeqTrainingArguments):

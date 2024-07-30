@@ -1,6 +1,6 @@
 model_name_or_path:  /content/model_pretrain/vividbot-pretrained
 data_path:  
-image_folder:  
+image_folder: 
 hf_repo_image: Vividbot/instruct500k_vi
 video_data_path: /content/videoinstruck100_vi_all.json
 video_folder:  /content
