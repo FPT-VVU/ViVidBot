@@ -20,15 +20,30 @@ notifier = DiscordNotifier(
 )
 
 
-def send_process_shard_success_message(shard: str, duration: float):
+def send_process_shard_success_message(shard: str, duration: float, count: int):
   logger.info(f"Processed shard {shard} in {duration}(s).")
   notifier.send(
     body={
       "embeds": [
         {
           "title": f"✅ ViVid Instruct 65k: Processed shard {shard}!",
-          "description": f"Processed shard {shard} \
-in {duration}(s). \
+          "description": f"Processed shard {shard} of {count} items \
+in {duration}(s).",
+          "color": 2278494,
+          "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
+        }
+      ]
+    }
+  )
+
+
+def send_completion_message():
+  notifier.send(
+    body={
+      "embeds": [
+        {
+          "title": "✅ ViVid Instruct 65k: Completed!",
+          "description": "Completed processing all shards of videos. \
 Visit at https://huggingface.co/datasets/Vividbot/vividbot_video/tree/main/videos.",
           "color": 2278494,
           "timestamp": datetime.datetime.now(timezone.utc).isoformat(),

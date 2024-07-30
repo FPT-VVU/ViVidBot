@@ -113,7 +113,11 @@ class HuggingFaceProcessor(BaseProcessor):
     :param repo_type:       Repository type.
     """
     self.api.hf_hub_download(
-      repo_id=repo_id, filename=filename, repo_type=repo_type, local_dir=local_dir
+      repo_id=repo_id,
+      filename=filename,
+      repo_type=repo_type,
+      local_dir=local_dir,
+      token=self.TOKEN,
     )
 
   def download_and_unzip_file(

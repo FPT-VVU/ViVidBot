@@ -17,21 +17,20 @@ class YoutubeDownloader(BaseProcessor):
     self,
   ):
     self.opts = {
-      "format": "best[ext=mp4]/best",
+      "format": "best[ext=mp4]/bestvideo[ext=mp4]+bestaudio*/best",
       "quiet": True,
       "fixup": "never",
       "no_warnings": True,
       "force_keyframes_at_cuts": True,
-      "downloader": "aria2c",
-      "geo_bypass_country": "VN",
+      # "downloader": "aria2c",
     }
 
   def process(
     self,
     video_id: str | None,
     video_id_with_chunk_id: str | None,
-    start: str | int = None,  # if int, it is the start time
-    end: str | int = None,  # if int, it is the end time
+    start: str | int | None = None,  # if int, it is the start time
+    end: str | int | None = None,  # if int, it is the end time
     path: str = "",
   ):
     if not os.path.exists(path):
