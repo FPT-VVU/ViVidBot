@@ -105,13 +105,25 @@ def process(shard_filename: str):
 
   if os.path.exists(f"{BASE_DATA_PATH}/images/{shard}"):
     logger.info(f"Zipping and uploading images for shard {shard}...")
-    hf_processor.zip_and_upload_dir(
-      dir_path=f"{BASE_DATA_PATH}/images/{shard}",
-      repo_id="Vividbot/llava-instruct-150k-vi",
-      path_in_repo=f"images/{shard}.zip",
-      repo_type="dataset",
-      overwrite=True,
+    thread = threading.Thread(
+      target=hf_processor.zip_and_upload_dir,
+      args=(
+        f"{BASE_DATA_PATH}/images/{shard}",
+        "Vividbot/llava-instruct-150k-vi",
+        f"images/{shard}.zip",
+        "dataset",
+        True,
+      ),
     )
+    thread.start()
+    thread.join()
+    # hf_processor.zip_and_upload_dir(
+    #   dir_path=f"{BASE_DATA_PATH}/images/{shard}",
+    #   repo_id="Vividbot/llava-instruct-150k-vi",
+    #   path_in_repo=f"images/{shard}.zip",
+    #   repo_type="dataset",
+    #   overwrite=True,
+    # )
 
   end_time = time.time()
   duration = round(end_time - start_time, 2)
