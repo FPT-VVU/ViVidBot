@@ -11,6 +11,7 @@ from tqdm import tqdm
 from vividbot.data.processor.huggingface import HuggingFaceProcessor
 from vividbot.data.task.vivid_instruct_65k.utils.notifications import (
   send_completion_message,
+  send_process_shard_success_message,
 )
 
 load_dotenv()
@@ -30,12 +31,15 @@ hf_processor = HuggingFaceProcessor()
 
 
 def _process(batch: dict):
-  for id, image in zip(batch["id"], batch["image"]):
+  for id, image in tqdm(zip(batch["id"], batch["image"])):
     # image: str = "shard_0/000000000000.jpg"
     # id: str = "000000000000"
 
     if os.path.exists(f"{BASE_DATA_PATH}/images/{image}"):
+      logger.info(f"Image {image} already exists, skipping...")
       continue
+
+    logger.info(f"Downloading image {image}...")
 
     image_url = f"{COCO_BASE_URL}{id}.jpg"
 
@@ -80,7 +84,11 @@ def process(shard_filename: str):
   end_time = time.time()
   duration = round(end_time - start_time, 2)
 
-  logger.info(f"Processed shard {shard} in {duration} seconds")
+  logger.info(f"Processed shard {shard} in {duration} seconds.")
+
+  send_process_shard_success_message(
+    shard, duration, len(os.listdir(f"{BASE_DATA_PATH}/images/{shard}"))
+  )
 
 
 def prepare():
@@ -106,7 +114,6 @@ def main():
     desc="Processing shards",
     unit="shard",
     unit_scale=True,
-    unit_divisor=1024,
   ):
     process(shard)
 
