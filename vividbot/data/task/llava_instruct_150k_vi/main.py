@@ -42,12 +42,15 @@ def download_image(image_url: str, image: str):
   max_retries = 3
   while max_retries > 0:
     max_retries -= 1
-    response = requests.get(image_url)
-    if response.status_code == 200:
-      with open(f"{BASE_DATA_PATH}/images/{image}", "wb") as f:
-        f.write(response.content)
+    try:
+      response = requests.get(image_url)
+      if response.status_code == 200:
+        with open(f"{BASE_DATA_PATH}/images/{image}", "wb") as f:
+          f.write(response.content)
 
-      break
+        break
+    except Exception as e:
+      logger.error(f"Failed to download image {image}: {e} - Retrying...")
 
   if not os.path.exists(f"{BASE_DATA_PATH}/images/{image}"):
     logger.error(f"Failed to download image {image}.")
