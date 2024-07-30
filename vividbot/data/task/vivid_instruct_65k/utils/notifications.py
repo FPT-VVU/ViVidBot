@@ -27,9 +27,8 @@ def send_process_shard_success_message(shard: str, duration: float, count: int):
       "embeds": [
         {
           "title": f"✅ ViVid Instruct 65k: Processed shard {shard}!",
-          "description": f"Processed shard {shard} of {count} videos \
-in {duration}(s). \
-Visit at https://huggingface.co/datasets/Vividbot/vividbot_video/tree/main/videos.",
+          "description": f"Processed shard {shard} of {count} items \
+in {duration}(s).",
           "color": 2278494,
           "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
         }
