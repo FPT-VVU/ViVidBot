@@ -81,9 +81,10 @@ def process(shard_filename: str):
   start_time = time.time()
 
   shard = shard_filename.split(".")[0]
-  if (
-    os.path.exists(f"{BASE_DATA_PATH}/images/{shard}")
-    and len(os.listdir(f"{BASE_DATA_PATH}/images/{shard}")) == 5000
+  if hf_processor.check_file_exists(
+    repo_id="Vividbot/llava-instruct-150k-vi",
+    path_in_repo=f"images/{shard}.zip",
+    repo_type="dataset",
   ):
     logger.info(f"Images for shard {shard} already processed, skipping...")
     return
@@ -150,10 +151,10 @@ def main():
     unit="shard",
     unit_scale=True,
   ):
-    thread = threading.Thread(target=process, args=(shard,))
-    thread.start()
-    thread.join()
-    # process(shard)
+    # thread = threading.Thread(target=process, args=(shard,))
+    # thread.start()
+    # thread.join()
+    process(shard)
 
   send_completion_message()
 
