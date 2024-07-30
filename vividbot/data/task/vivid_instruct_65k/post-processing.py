@@ -51,8 +51,6 @@ def process(shard_files: List[str]):
   # 2. combine all json files into one
   # finally, upload to huggingface
 
-  combined_data = []
-
   for shard_filename in tqdm(shard_files):
     shard = shard_filename.split(".")[0]
 
@@ -130,8 +128,6 @@ def process(shard_files: List[str]):
         "video": video,
         "conversations": conversations,
       }
-
-    combined_data.extend(data)
 
     # sort data by id
     data = sorted(data, key=lambda x: x["id"])
