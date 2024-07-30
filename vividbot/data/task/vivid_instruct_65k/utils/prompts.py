@@ -1,11 +1,6 @@
 import numpy as np
 
 DESCRIBE_VIDEO_PROMPTS = [
-  #   """Describe only the visual content of the video without using the audio or transcript so that a normal person without visibility can interpret what happens in the video.
-  # Don't use the audio or transcript of the video to describe the video content. Use only the visual content and chain the logical sequence of events in the video. Things described should show the correlation among them if they are related.
-  # The description should first introduce the general overview of the video. Then describe the main objects, actions, and interactions in the video through time.
-  # Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
-  # Remember to use Vietnamese language to describe the video.""",
   """Paint a vivid picture of the video's content through a descriptive explanation in Vietnamese language.
 Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.""",
   """Write a complete and exhaustive depiction of the video, capturing its essence and key moments in Vietnamese language.
@@ -20,6 +15,17 @@ Remember to avoid harmful, inappropriate, or offensive content in the questions 
 Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.""",
   """Delve into the details of the video, including its setting, characters, and events in Vietnamese language.
 Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.""",
+]
+
+
+DESCRIBE_VIDEO_PROMPTS_VI = [
+  """Mô tả sinh động nội dung của video.""",
+  """Viết mô tả toàn diện về video, nắm bắt bản chất và những khoảnh khắc quan trọng.""",
+  """Phân tích chi tiết video, bao gồm các chủ đề và yếu tố chính.""",
+  """Diễn đạt chính xác nội dung video, tập trung vào cốt truyện và hình ảnh.""",
+  """Trình bày phân tích chi tiết về các thành phần chính của video.""",
+  """Mô tả chi tiết các hành động, nhân vật và bối cảnh trong video.""",
+  """Trình bày chi tiết về bối cảnh, nhân vật và sự kiện trong video.""",
 ]
 
 GENERATE_QA_PROMPTS = [
@@ -132,6 +138,11 @@ Only return the list of pair of questions and answers in the following JSON list
 def get_describe_video_prompt():
   # pick a random prompt
   return np.random.choice(DESCRIBE_VIDEO_PROMPTS)
+
+
+def get_describe_video_prompt_vi():
+  # pick a random prompt
+  return np.random.choice(DESCRIBE_VIDEO_PROMPTS_VI)
 
 
 def get_generate_qa_prompt():

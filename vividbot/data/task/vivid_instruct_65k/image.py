@@ -82,8 +82,8 @@ def _process(batch: dict):
             name=google_filename,
             display_name=image_id,
           )
-        except:
-          pass
+        except Exception as e:
+          logger.error(f"Couldn't upload file {google_filename}: {str(e)}")
 
       if not image_file:
         logger.error(f"Couldn't upload file {google_filename}")

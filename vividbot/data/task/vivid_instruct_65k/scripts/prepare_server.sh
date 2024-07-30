@@ -12,6 +12,7 @@ cd ~/ && mkdir data && cd data && wget https://vividbot.s3.ap-southeast-1.amazon
 unzip vivid_instruct_65k.zip -d vivid_instruct_65k && \
 cd ~/ViVidBot
 
+# copy .env file to ViVidBot folder
 export $(grep -v '^#' .env | xargs)
 
 poetry run python3 vividbot/data/task/vivid_instruct_65k/video.py
