@@ -77,14 +77,14 @@ def process(shard_files: List[str]):
       logger.info(f"Processing video: {video}")
 
       if description:
-        if len(description) > 30000:
+        if len(description) > 10000:
           logger.info(f"Found malformed description: {description[:1000]}...")
 
           dedup_chain = get_dedup_description_chain()
 
           description = dedup_chain.invoke(
             {
-              "message": description[:5000],
+              "message": description[:10000],
             }
           )
 
