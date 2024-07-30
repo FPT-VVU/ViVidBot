@@ -49,7 +49,7 @@ If the description is not in Vietnamese, please translate it to Vietnamese after
         ("system", DEDUP_DESCRIPTION_PROMPT),
         (
           "human",
-          "Description:\n\n{message}\n\nDeduplicated description:",
+          "Description:\n\n{message}\n\nDeduplicated description in Vietnamese:",
         ),
       ]
     )
@@ -62,7 +62,7 @@ If the description is not in Vietnamese, please translate it to Vietnamese after
           ("system", DEDUP_DESCRIPTION_PROMPT),
           (
             "human",
-            "Description:\n\n{message}\n\nDeduplicated description:",
+            "Description:\n\n{message}\n\nDeduplicated description in Vietnamese:",
           ),
         ]
       )

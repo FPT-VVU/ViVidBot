@@ -80,7 +80,7 @@ def process(shard_files: List[str]):
 
       if description:
         if len(description) > 30000:
-          logger.info(f"Found malformed description: {description[:1000]}")
+          logger.info(f"Found malformed description: {description[:1000]}...")
 
           dedup_chain = get_dedup_description_chain()
 
