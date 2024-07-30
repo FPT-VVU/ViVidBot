@@ -75,19 +75,21 @@ def process(shard_files: List[str]):
       conversations = []
       description = d.get("description", None)
 
+      logger.info(f"Processing video: {video}")
+
       if description:
         if len(description) > 30000:
           logger.info(f"Found malformed description: {description}")
 
-        dedup_chain = get_dedup_description_chain()
+          dedup_chain = get_dedup_description_chain()
 
-        description = dedup_chain.invoke(
-          {
-            "message": description,
-          }
-        )
+          description = dedup_chain.invoke(
+            {
+              "message": description,
+            }
+          )
 
-        logger.info(f"Deduped description: {description}")
+          logger.info(f"Deduped description: {description}")
 
         human_value = get_describe_video_prompt_vi()
         if np.random.rand() < 0.5:
