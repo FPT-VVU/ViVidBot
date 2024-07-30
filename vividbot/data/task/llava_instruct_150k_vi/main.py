@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import threading
@@ -47,6 +48,11 @@ def download_image(image_url: str, image: str):
         f.write(response.content)
 
       break
+
+  if not os.path.exists(f"{BASE_DATA_PATH}/images/{image}"):
+    logger.error(f"Failed to download image {image}.")
+    with open(f"{BASE_DATA_PATH}/errors.json", "a") as f:
+      f.write(json.dumps({"image": image, "url": image_url}) + "\n")
 
 
 def _process(batch: dict):
