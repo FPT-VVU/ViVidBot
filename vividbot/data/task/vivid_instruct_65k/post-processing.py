@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import List
 
 import google.generativeai as genai
+import numpy as np
 from dotenv import load_dotenv
 
 from vividbot.data.processor.download import YoutubeDownloader
@@ -69,13 +70,18 @@ def process(shard_files: List[str]):
       description = d.get("description", None)
 
       if description:
+        human_value = get_describe_video_prompt_vi()
+        if np.random.rand() < 0.5:
+          human_value = f"{human_value}\n<video>"
+        else:
+          human_value = f"<video>\n{human_value}"
+
         conversations.append(
           {
             "from": "human",
-            "value": get_describe_video_prompt_vi(),
+            "value": human_value,
           }
         )
-
         conversations.append(
           {
             "from": "gpt",
@@ -83,12 +89,19 @@ def process(shard_files: List[str]):
           }
         )
 
-      for j, c in enumerate(d["conversations"]):
-        if j > 0 and j % 2 == 0:
-          # remove the strings "<video>\n" or "\n<video>" from the value
-          c["value"] = c["value"].replace("\n<video>", "").replace("<video>\n", "")
+        for j, c in enumerate(d["conversations"]):
+          if j % 2 == 0:
+            # remove the strings "<video>\n" or "\n<video>" from the value
+            c["value"] = c["value"].replace("\n<video>", "").replace("<video>\n", "")
 
-        conversations.append(c)
+          conversations.append(c)
+      else:
+        for j, c in enumerate(d["conversations"]):
+          if j > 0 and j % 2 == 0:
+            # remove the strings "<video>\n" or "\n<video>" from the value
+            c["value"] = c["value"].replace("\n<video>", "").replace("<video>\n", "")
+
+          conversations.append(c)
 
       data[i] = {
         "id": id,
