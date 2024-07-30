@@ -116,6 +116,8 @@ def process(shard_filename: str):
 
 def prepare():
   os.makedirs(f"{BASE_DATA_PATH}/images", exist_ok=True)
+  with open(f"{BASE_DATA_PATH}/errors.json", "w") as f:
+    f.write("")
 
 
 def main():
