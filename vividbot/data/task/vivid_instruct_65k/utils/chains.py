@@ -40,7 +40,8 @@ def get_generate_qa_pairs_chain():
 def get_dedup_description_chain():
   DEDUP_DESCRIPTION_PROMPT = """Identify and remove the duplicated part (usually at the end) of the following description in Vietnamese language.
 Only keep the unique part of the description. If there is no duplicated part, please leave the description as is.
-Return only the deduplicated description (or the original description if no deduplicated part was found) without any additional information."""
+Return only the deduplicated description (or the original description if no deduplicated part was found) without any additional information.
+If the description is not in Vietnamese, please translate it to Vietnamese after deduplication."""
 
   return (
     ChatPromptTemplate.from_messages(
