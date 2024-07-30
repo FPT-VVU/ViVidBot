@@ -179,9 +179,11 @@ def main():
     key=lambda x: int(x.split(".")[0].split("_")[1]),
   )
 
+  last_successful_shard = 7
+
   logger.info(f"Processing shards: {shard_files}")
 
-  process(shard_files)
+  process(shard_files[last_successful_shard + 1 :])
 
   send_completion_message()
 
