@@ -50,13 +50,13 @@ def download_image(image_url: str, image: str):
 
 
 def _process(batch: dict):
-  threads = {}
+  threads: dict = {}
   for id, image in tqdm(zip(batch["id"], batch["image"])):
     # image: str = "shard_0/000000000000.jpg"
     # id: str = "000000000000"
 
     image_url = f"{COCO_BASE_URL}{id}.jpg"
-    threads[id] = threading.Thread(target=download_image, args=(image_url, image))
+    threads[image] = threading.Thread(target=download_image, args=(image_url, image))
 
   for thread in threads.values():
     thread.start()
