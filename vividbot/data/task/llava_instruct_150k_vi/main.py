@@ -1,5 +1,6 @@
 import logging
 import os
+import threading
 import time
 from pathlib import Path
 
@@ -30,31 +31,38 @@ logging.basicConfig(
 hf_processor = HuggingFaceProcessor()
 
 
+def download_image(image_url: str, image: str):
+  if os.path.exists(f"{BASE_DATA_PATH}/images/{image}"):
+    logger.info(f"Image {image} already exists, skipping...")
+    return
+
+  logger.info(f"Downloading image {image}...")
+
+  max_retries = 3
+  while max_retries > 0:
+    max_retries -= 1
+    response = requests.get(image_url)
+    if response.status_code == 200:
+      with open(f"{BASE_DATA_PATH}/images/{image}", "wb") as f:
+        f.write(response.content)
+
+      break
+
+
 def _process(batch: dict):
+  threads = {}
   for id, image in tqdm(zip(batch["id"], batch["image"])):
     # image: str = "shard_0/000000000000.jpg"
     # id: str = "000000000000"
 
-    if os.path.exists(f"{BASE_DATA_PATH}/images/{image}"):
-      logger.info(f"Image {image} already exists, skipping...")
-      continue
-
-    logger.info(f"Downloading image {image}...")
-
     image_url = f"{COCO_BASE_URL}{id}.jpg"
+    threads[id] = threading.Thread(target=download_image, args=(image_url, image))
 
-    max_retries = 3
-    while max_retries > 0:
-      max_retries -= 1
-      response = requests.get(image_url)
-      if response.status_code == 200:
-        with open(f"{BASE_DATA_PATH}/images/{image}", "wb") as f:
-          f.write(response.content)
+  for thread in threads.values():
+    thread.start()
 
-        break
-
-    if not os.path.exists(f"{BASE_DATA_PATH}/images/{image}"):
-      logger.error(f"Failed to download image {image}.")
+  for thread in threads.values():
+    thread.join()
 
 
 def process(shard_filename: str):
