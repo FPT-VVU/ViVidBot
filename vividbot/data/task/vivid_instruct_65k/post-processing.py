@@ -135,7 +135,7 @@ def process(shard_files: List[str]):
     data = sorted(data, key=lambda x: x["id"])
 
     with open(
-      f"{BASE_DATA_PATH}/post-processing/metadata-training/{shard}.json", "a"
+      f"{BASE_DATA_PATH}/post-processing/metadata-training/{shard}.json", "w"
     ) as f:
       for d in data:
         f.write(json.dumps(d, ensure_ascii=False) + "\n")
@@ -153,9 +153,9 @@ def process(shard_files: List[str]):
       overwrite=True,
     )
 
-    # wait for 5 seconds to avoid rate limit
-    logger.info("Waiting for 5 seconds...")
-    time.sleep(5)
+    # wait for 30 seconds to avoid rate limit
+    logger.info("Waiting for 30 seconds...")
+    time.sleep(30)
 
   # upload to huggingface
   hf_processor.upload_file(
@@ -181,7 +181,7 @@ def main():
     key=lambda x: int(x.split(".")[0].split("_")[1]),
   )
 
-  last_successful_shard = 7
+  last_successful_shard = 124
 
   logger.info(f"Processing shards: {shard_files}")
 
