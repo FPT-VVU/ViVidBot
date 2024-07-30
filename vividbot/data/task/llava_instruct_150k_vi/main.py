@@ -78,6 +78,12 @@ def process(shard_filename: str):
   start_time = time.time()
 
   shard = shard_filename.split(".")[0]
+  if (
+    os.path.exists(f"{BASE_DATA_PATH}/images/{shard}")
+    and len(f"{BASE_DATA_PATH}/images/{shard}") == 5000
+  ):
+    logger.info(f"Images for shard {shard} already processed, skipping...")
+    return
 
   os.makedirs(f"{BASE_DATA_PATH}/images/{shard}", exist_ok=True)
 
