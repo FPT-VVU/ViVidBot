@@ -7,7 +7,7 @@ sys.path.append(os.getcwd())
 from vividbot.data.processor.upload_hf import Uploader
 
 uploader = Uploader()
-path = "/home/duytran/Downloads/output_ds/videoinstruck100_vi.json"
+path = "/home/duytran/Downloads/vividbot_video_65k.json"
 
 # uploader.upload_dir(dir_path=path, 
 #                     repo_id="Vividbot/vast2m_vi", 
@@ -15,8 +15,8 @@ path = "/home/duytran/Downloads/output_ds/videoinstruck100_vi.json"
 #                     repo_type="dataset", overwrite=True)
 
 uploader.upload_file(file_path=path,
-                     repo_id= "Vividbot/videoinstruck100k",
-                     path_in_repo= "videoinstruck100_vi.json",
+                     repo_id= "Vividbot/vividbot_video",
+                     path_in_repo= "vividbot_video_65k_all.json",
                      repo_type= "dataset",
                      overwrite= True)
 

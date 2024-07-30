@@ -339,16 +339,13 @@ def extract_frames(video_bytes, num_frames=8):
             break
     
     return np.array(frames_array)
-def load_video_hf(repo_id,
+def load_video_hf(repo_path,
                   hf_video_path,     
-                  image_processer = None, 
                   frame_mode='fixed', 
-                  fixed_frame_number=8, 
-                  fps_number=0.5, 
-                  frame_process_method='centercrop'):
+                  fixed_frame_number=8):
     # hf_path = "datasets/Vividbot/vast2m_vi/video/shard_0/video_mp4"
     fs = HfFileSystem()
-    zip_path = f"datasets/{repo_id}/video/{hf_video_path.split('/')[0]}.zip"
+    zip_path = f"datasets/{repo_path}/{hf_video_path.split('/')[0]}.zip"
     zip_folder = fs.open(zip_path)
     zip_ref = zipfile.ZipFile(zip_folder, 'r')
     video = zip_ref.read(hf_video_path)
@@ -374,9 +371,9 @@ def load_video_hf(repo_id,
     video = trans(video)
     return video
     
-def load_image_hf(repo_id, hf_image_path):
+def load_image_hf(repo_path, hf_image_path):
     fs = HfFileSystem()
-    zip_path = f"datasets/{repo_id}/images/{hf_image_path.split('/')[0]}.zip"
+    zip_path = f"datasets/{repo_path}/{hf_image_path.split('/')[0]}.zip"
     zip_folder = fs.open(zip_path)
     zip_ref = zipfile.ZipFile(zip_folder, 'r')
     image = zip_ref.read(hf_image_path)

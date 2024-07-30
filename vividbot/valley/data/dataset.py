@@ -99,7 +99,7 @@ class HybridDataset(Dataset):
                             raise ValueError("Please specify the HF repo where the image is stored")
                         for repo_id in self.multimodal_cfg["hf_repo_image"]:
                             try:
-                                image = load_image_hf(repo_id=repo_id, hf_image_path=image_file)
+                                image = load_image_hf(repo_path=repo_id, hf_image_path=image_file)
                                 break
                             except Exception as e:
                                 continue
@@ -146,7 +146,7 @@ class HybridDataset(Dataset):
                         raise ValueError("Please specify the HF repo where the video is stored")
                     for repo_id in self.multimodal_cfg["hf_repo_video"]:
                         try:
-                            video = load_video_hf(repo_id=repo_id, hf_video_path=video_file)
+                            video = load_video_hf(repo_path=repo_id, hf_video_path=video_file)
                             break
                         except Exception as e:
                             continue

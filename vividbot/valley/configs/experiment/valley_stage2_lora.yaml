@@ -1,10 +1,10 @@
 model_name_or_path:  /content/model_pretrain/vividbot-pretrained
-data_path:  
+data_path:  [/content/vividbot_image_10k_all.json]
 image_folder: 
-hf_repo_image: Vividbot/instruct500k_vi
-video_data_path: /content/videoinstruck100_vi_all.json
+hf_repo_image: [Vividbot/vividbot_image/images, Vividbot/llava-instruct-150k-vi/images]
+video_data_path: [/content/videoinstruck100_vi_all.json, /content/vividbot_video_65k_all.json]
 video_folder:  /content
-hf_repo_video: Vividbot/videoinstruck100k
+hf_repo_video: [Vividbot/videoinstruck100k/video, Vividbot/vividbot_video/videos]
 output_dir: model/output/stage2
 prediction_file_name: model/output/stage2/eval_result.jsonl # evaluation file output path
 # experiment name
