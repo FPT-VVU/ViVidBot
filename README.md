@@ -20,7 +20,7 @@ unzip /content/output/vividbot-pretrained.zip -d /content/model_pretrain
 hf_hub_download(repo_id="Vividbot/videoinstruck100k", filename="videoinstruck100_vi_all.json", repo_type="dataset", local_dir="/content")
 hf_hub_download(repo_id="Vividbot/vividbot_video", filename="vividbot_video_65k_all.json", repo_type="dataset", local_dir="/content")
 hf_hub_download(repo_id="Vividbot/vividbot_image", filename="vividbot_image_10k_all.json", repo_type="dataset", local_dir="/content")
-hf_hub_download(repo_id="Vividbot/llava-instruct-150k-vi", filename="videoinstruck100_vi_all.json", repo_type="dataset", local_dir="/content")
+hf_hub_download(repo_id="Vividbot/llava-instruct-150k-vi", filename="llava_instruck_150k_all.json", repo_type="dataset", local_dir="/content")
 
 # run pretrained
 bash valley/train/train.sh valley/configs/experiment/valley_stage1.yaml
