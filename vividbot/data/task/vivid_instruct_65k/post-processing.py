@@ -137,8 +137,12 @@ def process(shard_files: List[str]):
     data = sorted(data, key=lambda x: x["id"])
 
     with open(
-      f"{BASE_DATA_PATH}/post-processing/metadata-training/{shard}.json", "w"
+      f"{BASE_DATA_PATH}/post-processing/metadata-training/{shard}.json", "a"
     ) as f:
+      for d in data:
+        f.write(json.dumps(d, ensure_ascii=False) + "\n")
+
+    with open(f"{BASE_DATA_PATH}/post-processing/metadata-training.json", "a") as f:
       for d in data:
         f.write(json.dumps(d, ensure_ascii=False) + "\n")
 
@@ -151,20 +155,9 @@ def process(shard_files: List[str]):
       overwrite=True,
     )
 
-    # wait for 120 seconds
+    # wait for 120 seconds to avoid rate limit
     logger.info("Waiting for 120 seconds...")
     time.sleep(120)
-
-  # sort combined data by video, id
-  combined_data = sorted(
-    combined_data,
-    key=lambda x: (x["video"], x["id"]),
-  )
-
-  # save combined data
-  with open(f"{BASE_DATA_PATH}/post-processing/metadata-training.json", "w") as f:
-    for d in combined_data:
-      f.write(json.dumps(d, ensure_ascii=False) + "\n")
 
   # upload to huggingface
   hf_processor.upload_file(
