@@ -59,7 +59,7 @@ def process(shard_files: List[str]):
     # remove all fields except those fields: id, video, conversations
 
     data = []
-    with open(f"{BASE_DATA_PATH}/post-processing/{shard}.jsonl", "r") as f:
+    with open(f"{BASE_DATA_PATH}/post-processing/metadata/{shard}.jsonl", "r") as f:
       for line in f:
         data.append(json.loads(line))
 
@@ -114,7 +114,9 @@ def process(shard_files: List[str]):
     # sort data by id
     data = sorted(data, key=lambda x: x["id"])
 
-    with open(f"{BASE_DATA_PATH}/post-processing/{shard}.json", "w") as f:
+    with open(
+      f"{BASE_DATA_PATH}/post-processing/metadata-training/{shard}.json", "w"
+    ) as f:
       for d in data:
         f.write(json.dumps(d) + "\n")
 
@@ -147,6 +149,7 @@ def process(shard_files: List[str]):
 def prepare():
   os.makedirs(f"{BASE_DATA_PATH}/post-processing", exist_ok=True)
   os.makedirs(f"{BASE_DATA_PATH}/post-processing/metadata", exist_ok=True)
+  os.makedirs(f"{BASE_DATA_PATH}/post-processing/metadata-training", exist_ok=True)
 
 
 def main():
