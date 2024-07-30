@@ -86,7 +86,7 @@ def process(shard_files: List[str]):
 
           description = dedup_chain.invoke(
             {
-              "message": description,
+              "message": description[:5000],
             }
           )
 
