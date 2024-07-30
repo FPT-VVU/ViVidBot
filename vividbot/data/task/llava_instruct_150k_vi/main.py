@@ -43,9 +43,18 @@ def _process(batch: dict):
 
     image_url = f"{COCO_BASE_URL}{id}.jpg"
 
-    response = requests.get(image_url)
-    with open(f"{BASE_DATA_PATH}/images/{image}", "wb") as f:
-      f.write(response.content)
+    max_retries = 3
+    while max_retries > 0:
+      max_retries -= 1
+      response = requests.get(image_url)
+      if response.status_code == 200:
+        with open(f"{BASE_DATA_PATH}/images/{image}", "wb") as f:
+          f.write(response.content)
+
+        break
+
+    if not os.path.exists(f"{BASE_DATA_PATH}/images/{image}"):
+      logger.error(f"Failed to download image {image}.")
 
 
 def process(shard_filename: str):
