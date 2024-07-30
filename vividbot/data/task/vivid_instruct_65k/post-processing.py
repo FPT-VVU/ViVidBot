@@ -54,6 +54,8 @@ def process(shard_files: List[str]):
   for shard_filename in tqdm(shard_files):
     shard = shard_filename.split(".")[0]
 
+    logger.info(f"Processing shard: {shard}")
+
     if not os.path.exists(f"{BASE_DATA_PATH}/post-processing/metadata/{shard}.jsonl"):
       hf_processor.download_file(
         repo_id="Vividbot/vividbot_video",
@@ -151,9 +153,9 @@ def process(shard_files: List[str]):
       overwrite=True,
     )
 
-    # wait for 120 seconds to avoid rate limit
-    logger.info("Waiting for 120 seconds...")
-    time.sleep(120)
+    # wait for 5 seconds to avoid rate limit
+    logger.info("Waiting for 5 seconds...")
+    time.sleep(5)
 
   # upload to huggingface
   hf_processor.upload_file(
