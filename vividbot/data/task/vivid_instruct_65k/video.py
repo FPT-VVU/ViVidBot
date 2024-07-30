@@ -1,31 +1,30 @@
 import json
 import logging
 import os
-import sys
 import time
-
-from tqdm import tqdm
-
-from vividbot.data.task.vivid_instruct_65k.utils.chains import GENERATE_QA_PAIRS_CHAIN
-from vividbot.data.task.vivid_instruct_65k.utils.common import (
-  find_first_list_from_response,
-)
-from vividbot.data.task.vivid_instruct_65k.utils.notifications import (
-  send_process_shard_success_message,
-)
-from vividbot.data.task.vivid_instruct_65k.utils.prompts import DESCRIBE_VIDEO_PROMPT
-
-sys.path.append(os.getcwd())
-
 from pathlib import Path
+from typing import List
 
 import google.generativeai as genai
 import numpy as np
 from datasets import load_dataset
 from dotenv import load_dotenv
+from google.generativeai.types import HarmBlockThreshold, HarmCategory
+from langfuse.callback import CallbackHandler
+from tqdm import tqdm
 
 from vividbot.data.processor.download import YoutubeDownloader
 from vividbot.data.processor.huggingface import HuggingFaceProcessor
+from vividbot.data.task.vivid_instruct_65k.utils.chains import (
+  get_generate_qa_pairs_chain,
+)
+from vividbot.data.task.vivid_instruct_65k.utils.notifications import (
+  send_completion_message,
+  send_process_shard_success_message,
+)
+from vividbot.data.task.vivid_instruct_65k.utils.prompts import (
+  get_describe_video_prompt,
+)
 
 load_dotenv()
 BASE_DATA_PATH = f"{Path.home()}/data"
@@ -47,10 +46,15 @@ yt_downloader = YoutubeDownloader()
 
 
 def _process(batch: dict):
-  processed_dataset = load_dataset(
-    "json",
-    data_files=f"{BASE_DATA_PATH}/output/metadata/shard_{batch['shard_id'][0]}.jsonl",
-  )["train"]
+  processed_dataset = None
+
+  if os.path.exists(
+    f"{BASE_DATA_PATH}/output/metadata/shard_{batch['shard_id'][0]}.jsonl"
+  ):
+    processed_dataset = load_dataset(
+      "json",
+      data_files=f"{BASE_DATA_PATH}/output/metadata/shard_{batch['shard_id'][0]}.jsonl",
+    )["train"]
 
   for start, end, video_id_with_chunk_id, shard_id in tqdm(
     zip(batch["start"], batch["end"], batch["id"], batch["shard_id"])
@@ -58,7 +62,9 @@ def _process(batch: dict):
     video_id, chunk_id = video_id_with_chunk_id.split(".")
 
     if (
-      processed_dataset.filter(lambda x: x["id"] == video_id_with_chunk_id).num_rows > 0
+      processed_dataset is not None
+      and processed_dataset.filter(lambda x: x["id"] == video_id_with_chunk_id).num_rows
+      > 0
     ):
       logger.info(f"Video {video_id_with_chunk_id} already processed. Skipping...")
       continue
@@ -88,6 +94,20 @@ def _process(batch: dict):
 
         continue
 
+    if not os.path.exists(
+      f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+    ):
+      logger.error(f"Error downloading video {video_id_with_chunk_id}.")
+      with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
+        data = {
+          "id": video_id_with_chunk_id,
+          "reason": "Video not found after download.",
+          "timestamp": round(time.time()),
+        }
+        f.write(json.dumps(data) + "\n")
+
+      continue
+
     try:
       logger.info(f"Generating metadata for video {video_id_with_chunk_id}...")
 
@@ -98,7 +118,7 @@ def _process(batch: dict):
       try:
         video_file = genai.get_file(name=google_file_name)
       except Exception as e:
-        logger.warn(f"Couldn't get video file {google_file_name}: {e}")
+        logger.warning(f"Couldn't get video file {google_file_name}: {e}")
 
       if video_file is None or not video_file.state.name == "ACTIVE":
         if video_file and not video_file.state.name == "ACTIVE":
@@ -111,7 +131,7 @@ def _process(batch: dict):
         )
 
       while video_file and video_file.state.name == "PROCESSING":
-        time.sleep(5)
+        time.sleep(10)
         video_file = genai.get_file(video_file.name)
 
       if video_file and video_file.state.name == "FAILED":
@@ -135,35 +155,112 @@ def _process(batch: dict):
 
       elif video_file and video_file.state.name == "ACTIVE":
         describer = genai.GenerativeModel(
-          "models/gemini-1.5-flash",
+          "models/gemini-1.5-pro",
           generation_config={
-            "temperature": 0.2,
-            "max_output_tokens": 512,
+            "temperature": 0.5,
+            "max_output_tokens": 2048,
           },
+          safety_settings={
+            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+          },
+          system_instruction=get_describe_video_prompt(),
         )
         describer_response = describer.generate_content(
-          [video_file, DESCRIBE_VIDEO_PROMPT],
+          [video_file, "Describe the video as instructed."],
           request_options={
             "timeout": 60,
           },
         )
-        try:
-          response: str = GENERATE_QA_PAIRS_CHAIN.invoke(
-            {"message": describer_response.text.strip()}
-          )
-          if not response.startswith("["):
-            response = find_first_list_from_response(response)
 
-          qa_pairs = json.loads(response)
+        json_text = (
+          describer_response.text
+          if describer_response.text
+          else str(describer_response.parts[0].text).encode("utf-8").decode("utf-8")
+          if describer_response.parts and len(describer_response.parts) > 0
+          else str(describer_response.candidates[0].content.parts[0].text)
+          .encode("utf-8")
+          .decode("utf-8")
+          if describer_response.candidates
+          and len(describer_response.candidates) > 0
+          and len(describer_response.candidates[0].content.parts) > 0
+          else None
+        )
+
+        if not json_text:
+          logger.error(
+            f"Couldn't generate QA pairs for video {video_id_with_chunk_id}: {describer_response}"
+          )
+          with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
+            data = {
+              "id": video_id_with_chunk_id,
+              "reason": f"Couldn't generate QA pairs - Response: {describer_response}",
+              "timestamp": round(time.time()),
+            }
+            f.write(json.dumps(data) + "\n")
+
+          if os.path.exists(
+            f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+          ):
+            os.remove(
+              f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+            )
+          continue
+
+        try:
+          langfuse_handler = CallbackHandler(
+            secret_key="sk-lf-bfa7365e-2871-4669-bda2-4818fcab68de",
+            public_key="pk-lf-b6e63d27-8f4b-4911-acd2-5838400c1dfb",
+            host="https://langfuse.formularizer.com",
+            tags=["vividbot"],
+            session_id=video_id_with_chunk_id,
+          )
+
+          GENERATE_QA_PAIRS_CHAIN = get_generate_qa_pairs_chain()
+
+          qa_pairs: List = GENERATE_QA_PAIRS_CHAIN.invoke(
+            {"message": json_text.strip()},
+            {"callbacks": [langfuse_handler]},
+          )
+
+          if not qa_pairs:
+            logger.error(
+              f"Couldn't generate QA pairs for video {video_id_with_chunk_id}: QA pairs could not be generated."
+            )
+            with open(
+              f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a"
+            ) as f:
+              data = {
+                "id": video_id_with_chunk_id,
+                "reason": "QA pairs could not be generated.",
+                "timestamp": round(time.time()),
+              }
+              f.write(json.dumps(data) + "\n")
+
+            if os.path.exists(
+              f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+            ):
+              os.remove(
+                f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+              )
+
+            continue
+
           conversations = []
 
           for qa in qa_pairs:
-            human_value = qa["question"]
-            gpt_value = qa["answer"]
+            if not qa.get("question") or not qa.get("answer"):
+              continue
+
+            human_value = str(qa["question"]).strip()
+            gpt_value = str(qa["answer"]).strip()
             if np.random.random() < 0.5:
               human_value = human_value + "\n<video>"
             else:
               human_value = "<video>\n" + human_value
+
             conversations.append({"from": "human", "value": human_value})
             conversations.append({"from": "gpt", "value": gpt_value})
 
@@ -177,7 +274,7 @@ def _process(batch: dict):
               "timestamp": round(time.time()),
               "start": start,
               "end": end,
-              "description": describer_response.text.strip(),
+              "description": json_text.strip(),
               "conversations": conversations,
             }
 
@@ -189,17 +286,29 @@ def _process(batch: dict):
               + "\n"
             )
 
+            logger.info(
+              f"Generated metadata for video {video_id_with_chunk_id}: {json.dumps(data, ensure_ascii=False)}"
+            )
+
         except Exception as e:
           logger.error(
-            f"Couldn't generate QA pairs for video {video_id_with_chunk_id}: {str(e)}."
+            f"Couldn't generate QA pairs for video {video_id_with_chunk_id}: {str(e)} - Response: {describer_response}"
           )
           with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
             data = {
               "id": video_id_with_chunk_id,
-              "reason": str(e),
+              "reason": f"{str(e)} - Response: {describer_response}",
               "timestamp": round(time.time()),
             }
             f.write(json.dumps(data) + "\n")
+
+          if os.path.exists(
+            f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+          ):
+            os.remove(
+              f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+            )
+
       else:
         logger.error(f"Error uploading video {video_id_with_chunk_id}: {video_file}")
         with open(f"{BASE_DATA_PATH}/output/errors/shard_{shard_id}.jsonl", "a") as f:
@@ -209,6 +318,13 @@ def _process(batch: dict):
             "timestamp": round(time.time()),
           }
           f.write(json.dumps(data) + "\n")
+
+        if os.path.exists(
+          f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+        ):
+          os.remove(
+            f"{BASE_DATA_PATH}/output/videos/shard_{shard_id}/{video_id_with_chunk_id}.mp4"
+          )
 
     except Exception as e:
       logger.error(f"Error generating metadata for video {video_id_with_chunk_id}: {e}")
@@ -241,19 +357,47 @@ def _delete_video(batch: dict):
       logger.error(f"Error deleting video {video_id_with_chunk_id}: {e}")
 
 
-def process(shard: str):
+def process(shard_file_name: str):
   """
-  shard: str = "shard_0.json"
+  shard_file_name: str = "shard_0.jsonl"
   """
   start_time = time.time()
+
+  shard = shard_file_name.split(".")[0]
 
   logger.info(f"Processing videos for shard {shard}...")
 
   if hf_processor.check_file_exists(
     repo_id="Vividbot/vividbot_video",
+    path_in_repo=f"metadata/{shard}.jsonl",
+    repo_type="dataset",
+  ) and not os.path.exists(f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl"):
+    logger.info(f"Downloading metadata for shard {shard} from Hugging Face...")
+    hf_processor.download_file(
+      repo_id="Vividbot/vividbot_video",
+      filename=f"metadata/{shard}.jsonl",
+      local_dir=f"{BASE_DATA_PATH}/output",
+    )
+  metadata = load_dataset(
+    "json", data_files=f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl"
+  )["train"]
+
+  # if shard has 500 records, skip processing
+  if metadata.num_rows == 500:
+    logger.info(
+      f"Shard {shard} already has {metadata.num_rows} records. Skipping processing..."
+    )
+    send_process_shard_success_message(
+      shard, round(time.time() - start_time, 2), count=500
+    )
+    return
+
+  if hf_processor.check_file_exists(
+    repo_id="Vividbot/vividbot_video",
     path_in_repo=f"videos/{shard}.zip",
     repo_type="dataset",
-  ):
+  ) and not os.path.exists(f"{BASE_DATA_PATH}/output/videos/{shard}"):
+    logger.info(f"Downloading videos for shard {shard} from Hugging Face...")
     hf_processor.download_and_unzip_file(
       repo_id="Vividbot/vividbot_video",
       filename=f"videos/{shard}.zip",
@@ -263,30 +407,19 @@ def process(shard: str):
   else:
     os.makedirs(f"{BASE_DATA_PATH}/output/videos/{shard}", exist_ok=True)
 
-  if hf_processor.check_file_exists(
-    repo_id="Vividbot/vividbot_video",
-    path_in_repo=f"metadata/{shard}.jsonl",
-    repo_type="dataset",
-  ):
-    hf_processor.download_file(
-      repo_id="Vividbot/vividbot_video",
-      filename=f"metadata/{shard}.jsonl",
-      local_dir=f"{BASE_DATA_PATH}/output",
-    )
-
-  if hf_processor.check_file_exists(
-    repo_id="Vividbot/vividbot_video",
-    path_in_repo=f"errors/{shard}.jsonl",
-    repo_type="dataset",
-  ):
-    hf_processor.download_file(
-      repo_id="Vividbot/vividbot_video",
-      filename=f"errors/{shard}.jsonl",
-      local_dir=f"{BASE_DATA_PATH}/output",
-    )
+  # if hf_processor.check_file_exists(
+  #   repo_id="Vividbot/vividbot_video",
+  #   path_in_repo=f"errors/{shard}.jsonl",
+  #   repo_type="dataset",
+  # ) and not os.path.exists(f"{BASE_DATA_PATH}/output/errors/{shard}.jsonl"):
+  #   hf_processor.download_file(
+  #     repo_id="Vividbot/vividbot_video",
+  #     filename=f"errors/{shard}.jsonl",
+  #     local_dir=f"{BASE_DATA_PATH}/output",
+  #   )
 
   dataset = load_dataset(
-    "json", data_files=f"{BASE_DATA_PATH}/vivid_instruct_65k/{shard}"
+    "json", data_files=f"{BASE_DATA_PATH}/vivid_instruct_65k/{shard_file_name}"
   )["train"]
 
   dataset.map(
@@ -296,33 +429,63 @@ def process(shard: str):
     num_proc=os.cpu_count(),
   )
 
-  hf_processor.zip_and_upload_dir(
-    dir_path=f"{BASE_DATA_PATH}/output/videos/{shard}",
-    repo_id="Vividbot/vividbot_video",
-    path_in_repo=f"videos/{shard}.zip",
-    repo_type="dataset",
-    overwrite=True,
-  )
+  if os.path.exists(f"{BASE_DATA_PATH}/output/videos/{shard}"):
+    # remove partial video files *.part
+    logger.info(f"Removing partially downloaded video files for shard {shard}...")
+    for file in os.listdir(f"{BASE_DATA_PATH}/output/videos/{shard}"):
+      if file.endswith(".part"):
+        os.remove(f"{BASE_DATA_PATH}/output/videos/{shard}/{file}")
 
-  hf_processor.upload_file(
-    file_path=f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl",
-    repo_id="Vividbot/vividbot_video",
-    path_in_repo=f"metadata/{shard}.jsonl",
-    repo_type="dataset",
-    overwrite=True,
-  )
+    logger.info(f"Zipping and uploading videos for shard {shard}...")
+    hf_processor.zip_and_upload_dir(
+      dir_path=f"{BASE_DATA_PATH}/output/videos/{shard}",
+      repo_id="Vividbot/vividbot_video",
+      path_in_repo=f"videos/{shard}.zip",
+      repo_type="dataset",
+      overwrite=True,
+    )
 
-  hf_processor.upload_file(
-    file_path=f"{BASE_DATA_PATH}/output/errors/{shard}.jsonl",
-    repo_id="Vividbot/vividbot_video",
-    path_in_repo=f"errors/{shard}.jsonl",
-    repo_type="dataset",
-    overwrite=True,
-  )
+  final_datas = []
+  ids = set()
+  if os.path.exists(f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl"):
+    logger.info(f"Filtering out duplicate videos for shard {shard}...")
+    # filter out duplicate ids by taking only the last occurrence
+    with open(f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl", "r") as f:
+      lines = f.readlines()
+      for line in reversed(lines):
+        data = json.loads(line)
+        if data["id"] not in ids:
+          ids.add(data["id"])
+          final_datas.append(data)
+
+    with open(f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl", "w") as f:
+      for data in reversed(final_datas):
+        f.write(json.dumps(data, ensure_ascii=False) + "\n")
+
+    logger.info(f"Found {len(final_datas)} unique videos for shard {shard}.")
+
+    logger.info(f"Uploading metadata for shard {shard}...")
+    hf_processor.upload_file(
+      file_path=f"{BASE_DATA_PATH}/output/metadata/{shard}.jsonl",
+      repo_id="Vividbot/vividbot_video",
+      path_in_repo=f"metadata/{shard}.jsonl",
+      repo_type="dataset",
+      overwrite=True,
+    )
+
+  if os.path.exists(f"{BASE_DATA_PATH}/output/errors/{shard}.jsonl"):
+    logger.info(f"Uploading errors for shard {shard}...")
+    hf_processor.upload_file(
+      file_path=f"{BASE_DATA_PATH}/output/errors/{shard}.jsonl",
+      repo_id="Vividbot/vividbot_video",
+      path_in_repo=f"errors/{shard}.jsonl",
+      repo_type="dataset",
+      overwrite=True,
+    )
 
   # remove video file from google cloud
-  logger.info(f"Cleaning up shard {shard}...")
   try:
+    logger.info(f"Cleaning up shard {shard}...")
     dataset.map(
       _delete_video,
       batched=True,
@@ -335,7 +498,7 @@ def process(shard: str):
   end_time = time.time()
   duration = round(end_time - start_time, 2)
 
-  send_process_shard_success_message(shard, duration)
+  send_process_shard_success_message(shard, duration, count=len(final_datas))
 
 
 def prepare():
@@ -347,14 +510,28 @@ def prepare():
 
 def main():
   prepare()
+  shard_files = os.listdir(f"{BASE_DATA_PATH}/vivid_instruct_65k")
+  shard_files = sorted(
+    shard_files,
+    key=lambda x: int(x.split(".")[0].split("_")[1]),
+  )
+
+  last_successful_shard = 75
+  # only process shards after the last successful shard
+  shard_files = shard_files[last_successful_shard + 1 :]
+
+  logger.info(f"Processing shards: {shard_files}")
 
   for shard in tqdm(
-    sorted(
-      os.listdir(f"{BASE_DATA_PATH}/vivid_instruct_65k"),
-      key=lambda x: int(x.split(".")[0].split("_")[1]),
-    )
+    shard_files,
+    desc="Processing shards",
+    unit="shard",
+    unit_scale=True,
+    unit_divisor=1024,
   ):
     process(shard)
+
+  send_completion_message()
 
 
 if __name__ == "__main__":
