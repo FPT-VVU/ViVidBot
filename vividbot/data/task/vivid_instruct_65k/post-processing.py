@@ -8,6 +8,7 @@ from typing import List
 import google.generativeai as genai
 import numpy as np
 from dotenv import load_dotenv
+from tqdm import tqdm
 
 from vividbot.data.processor.download import YoutubeDownloader
 from vividbot.data.processor.huggingface import HuggingFaceProcessor
@@ -52,7 +53,7 @@ def process(shard_files: List[str]):
 
   combined_data = []
 
-  for shard_filename in shard_files:
+  for shard_filename in tqdm(shard_files):
     shard = shard_filename.split(".")[0]
 
     if not os.path.exists(f"{BASE_DATA_PATH}/post-processing/metadata/{shard}.jsonl"):
@@ -69,7 +70,7 @@ def process(shard_files: List[str]):
       for line in f:
         data.append(json.loads(line))
 
-    for i, d in enumerate(data):
+    for i, d in tqdm(enumerate(data)):
       id = d["id"]
       video = d["video"]
       conversations = []
