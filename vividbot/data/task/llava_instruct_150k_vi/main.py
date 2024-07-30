@@ -99,7 +99,7 @@ def process(shard_filename: str):
   dataset.map(
     _process,
     batched=True,
-    batch_size=256,
+    batch_size=32,
     num_proc=os.cpu_count(),
   )
 
