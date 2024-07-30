@@ -122,9 +122,11 @@ def process(shard_files: List[str]):
 
     # upload to huggingface
     hf_processor.upload_file(
+      file_path=f"{BASE_DATA_PATH}/post-processing/metadata-training/{shard}.json",
       repo_id="Vividbot/vividbot_video",
-      filename=f"metadata-training/{shard}.json",
-      local_dir=f"{BASE_DATA_PATH}/post-processing",
+      path_in_repo=f"metadata-training/{shard}.json",
+      repo_type="dataset",
+      overwrite=True,
     )
 
   # sort combined data by video, id
@@ -140,9 +142,11 @@ def process(shard_files: List[str]):
 
   # upload to huggingface
   hf_processor.upload_file(
+    file_path=f"{BASE_DATA_PATH}/output/post-processing/metadata-training.json",
     repo_id="Vividbot/vividbot_video",
-    filename="metadata-training.json",
-    local_dir=f"{BASE_DATA_PATH}/post-processing",
+    path_in_repo="metadata-training.json",
+    repo_type="dataset",
+    overwrite=True,
   )
 
 
