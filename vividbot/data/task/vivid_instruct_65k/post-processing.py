@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import time
 from pathlib import Path
 from typing import List
 
@@ -10,6 +11,9 @@ from dotenv import load_dotenv
 
 from vividbot.data.processor.download import YoutubeDownloader
 from vividbot.data.processor.huggingface import HuggingFaceProcessor
+from vividbot.data.task.vivid_instruct_65k.utils.chains import (
+  get_dedup_description_chain,
+)
 from vividbot.data.task.vivid_instruct_65k.utils.notifications import (
   send_completion_message,
 )
@@ -50,11 +54,13 @@ def process(shard_files: List[str]):
 
   for shard_filename in shard_files:
     shard = shard_filename.split(".")[0]
-    hf_processor.download_file(
-      repo_id="Vividbot/vividbot_video",
-      filename=f"metadata/{shard}.jsonl",
-      local_dir=f"{BASE_DATA_PATH}/post-processing",
-    )
+
+    if not os.path.exists(f"{BASE_DATA_PATH}/post-processing/metadata/{shard}.jsonl"):
+      hf_processor.download_file(
+        repo_id="Vividbot/vividbot_video",
+        filename=f"metadata/{shard}.jsonl",
+        local_dir=f"{BASE_DATA_PATH}/post-processing",
+      )
 
     # remove all fields except those fields: id, video, conversations
 
@@ -70,6 +76,19 @@ def process(shard_files: List[str]):
       description = d.get("description", None)
 
       if description:
+        if len(description) > 30000:
+          logger.info(f"Found malformed description: {description}")
+
+        dedup_chain = get_dedup_description_chain()
+
+        description = dedup_chain.invoke(
+          {
+            "message": description,
+          }
+        )
+
+        logger.info(f"Deduped description: {description}")
+
         human_value = get_describe_video_prompt_vi()
         if np.random.rand() < 0.5:
           human_value = f"{human_value}\n<video>"
@@ -128,6 +147,10 @@ def process(shard_files: List[str]):
       repo_type="dataset",
       overwrite=True,
     )
+
+    # wait for 120 seconds
+    logger.info("Waiting for 120 seconds...")
+    time.sleep(120)
 
   # sort combined data by video, id
   combined_data = sorted(
