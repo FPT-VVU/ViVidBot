@@ -118,7 +118,7 @@ def process(shard_files: List[str]):
       f"{BASE_DATA_PATH}/post-processing/metadata-training/{shard}.json", "w"
     ) as f:
       for d in data:
-        f.write(json.dumps(d) + "\n")
+        f.write(json.dumps(d, ensure_ascii=False) + "\n")
 
     # upload to huggingface
     hf_processor.upload_file(
@@ -138,7 +138,7 @@ def process(shard_files: List[str]):
   # save combined data
   with open(f"{BASE_DATA_PATH}/post-processing/metadata-training.json", "w") as f:
     for d in combined_data:
-      f.write(json.dumps(d) + "\n")
+      f.write(json.dumps(d, ensure_ascii=False) + "\n")
 
   # upload to huggingface
   hf_processor.upload_file(
