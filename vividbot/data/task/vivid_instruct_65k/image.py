@@ -37,24 +37,28 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 hf_processor = HuggingFaceProcessor()
 
+PROMPT_TYPE = "conversation"
+
 
 def _process(batch: dict):
   processed_dataset = None
 
-  if os.path.exists(f"{BASE_DATA_PATH}/metadata.json"):
+  if os.path.exists(f"{BASE_DATA_PATH}/metadata_{PROMPT_TYPE}.json"):
     processed_dataset = load_dataset(
-      "json", data_files=f"{BASE_DATA_PATH}/metadata.json"
+      "json", data_files=f"{BASE_DATA_PATH}/metadata_{PROMPT_TYPE}.json"
     )["train"]
 
   for keyword, category in tqdm(zip(batch["keyword"], batch["category"])):
     logger.info(f"Processing images for keyword {keyword}...")
     details = pinscrape.scraper.scrape(
-      keyword, f"{BASE_DATA_PATH}/output/images", {}, 12, 50
+      keyword, f"{BASE_DATA_PATH}/output/images_extended", {}, 12, 100
     )
 
     for url in tqdm(details.get("urls_list", [])):
       image_filename = url.split("/")[-1]
-      if not os.path.exists(f"{BASE_DATA_PATH}/output/images/{image_filename}"):
+      if not os.path.exists(
+        f"{BASE_DATA_PATH}/output/images_extended/{image_filename}"
+      ):
         continue
 
       image_id = image_filename.split(".")[0]
@@ -78,7 +82,7 @@ def _process(batch: dict):
       if not image_file:
         try:
           image_file = genai.upload_file(
-            path=f"{BASE_DATA_PATH}/output/images/{image_filename}",
+            path=f"{BASE_DATA_PATH}/output/images_extended/{image_filename}",
             name=google_filename,
             display_name=image_id,
           )
@@ -99,8 +103,8 @@ def _process(batch: dict):
       describer = genai.GenerativeModel(
         "models/gemini-1.5-flash",
         generation_config={
-          "temperature": 0.5,
-          "max_output_tokens": 2048,
+          "temperature": 0.45,
+          "max_output_tokens": 1024,
           "top_p": 0.7,
         },
         safety_settings={
@@ -109,7 +113,7 @@ def _process(batch: dict):
           HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
           HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
         },
-        system_instruction=get_generate_qa_from_image_prompt(),
+        system_instruction=get_generate_qa_from_image_prompt(type=PROMPT_TYPE),
       )
       describer_response = describer.generate_content(
         [image_file, "Generate QA pairs as instructed."],
@@ -146,8 +150,8 @@ def _process(batch: dict):
           }
           f.write(json.dumps(data) + "\n")
 
-        if os.path.exists(f"{BASE_DATA_PATH}/{image_filename}"):
-          os.remove(f"{BASE_DATA_PATH}/{image_filename}")
+        # if os.path.exists(f"{BASE_DATA_PATH}/{image_filename}"):
+        #   os.remove(f"{BASE_DATA_PATH}/{image_filename}")
         continue
 
       if not json_text:
@@ -162,8 +166,8 @@ def _process(batch: dict):
           }
           f.write(json.dumps(data) + "\n")
 
-        if os.path.exists(f"{BASE_DATA_PATH}/{image_filename}"):
-          os.remove(f"{BASE_DATA_PATH}/{image_filename}")
+        # if os.path.exists(f"{BASE_DATA_PATH}/{image_filename}"):
+        #   os.remove(f"{BASE_DATA_PATH}/{image_filename}")
         continue
 
       try:
@@ -176,21 +180,22 @@ def _process(batch: dict):
 
           human_value = str(qa["question"]).strip()
           gpt_value = str(qa["answer"]).strip()
-          if np.random.random() < 0.5:
-            human_value = human_value + "\n<image>"
-          else:
-            human_value = "<image>\n" + human_value
+          if len(conversations) == 0:
+            if np.random.random() < 0.5:
+              human_value = human_value + "\n<image>"
+            else:
+              human_value = "<image>\n" + human_value
 
           conversations.append({"from": "human", "value": human_value})
           conversations.append({"from": "gpt", "value": gpt_value})
 
         with open(
-          f"{BASE_DATA_PATH}/metadata.json",
+          f"{BASE_DATA_PATH}/metadata_{PROMPT_TYPE}.json",
           "a",
         ) as f:
           data = {
             "id": image_id,
-            "image": image_filename,
+            "image": f"images_extended/{image_filename}",
             "conversations": conversations,
             "timestamp": round(time.time()),
             "keyword": keyword,
@@ -229,31 +234,6 @@ def process():
 
   logger.info("Processing images...")
 
-  if hf_processor.check_file_exists(
-    repo_id="Vividbot/vividbot_image",
-    path_in_repo="images.zip",
-    repo_type="dataset",
-  ):
-    hf_processor.download_and_unzip_file(
-      repo_id="Vividbot/vividbot_image",
-      filename="images.zip",
-      local_dir=f"{BASE_DATA_PATH}/output",
-      extract_dir=f"{BASE_DATA_PATH}/output",
-      repo_type="dataset",
-    )
-
-  if hf_processor.check_file_exists(
-    repo_id="Vividbot/vividbot_image",
-    path_in_repo="metadata.json",
-    repo_type="dataset",
-  ):
-    hf_processor.download_file(
-      repo_id="Vividbot/vividbot_image",
-      filename="metadata.json",
-      local_dir=BASE_DATA_PATH,
-      repo_type="dataset",
-    )
-
   dataset = load_dataset(
     "json", data_files=f"{BASE_DATA_PATH}/image_flattened_keywords.json"
   ).shuffle(seed=903)["train"]
@@ -266,39 +246,39 @@ def process():
   )
 
   # remove files in output/images that are not in metadata
-  processed_dataset = load_dataset(
-    "json", data_files=f"{BASE_DATA_PATH}/metadata.json"
-  )["train"]
+  # processed_dataset = load_dataset(
+  #   "json", data_files=f"{BASE_DATA_PATH}/metadata_{PROMPT_TYPE}.json"
+  # )["train"]
 
-  processed_image_ids = [item["id"] for item in processed_dataset]
-  for image_filename in os.listdir(f"{BASE_DATA_PATH}/output/images"):
-    image_id = image_filename.split(".")[0]
-    if image_id not in processed_image_ids:
-      os.remove(f"{BASE_DATA_PATH}/output/images/{image_filename}")
+  # processed_image_ids = [item["id"] for item in processed_dataset]
+  # for image_filename in os.listdir(f"{BASE_DATA_PATH}/output/images_exte"):
+  #   image_id = image_filename.split(".")[0]
+  #   if image_id not in processed_image_ids:
+  #     os.remove(f"{BASE_DATA_PATH}/output/images/{image_filename}")
 
   hf_processor.zip_and_upload_dir(
-    dir_path=f"{BASE_DATA_PATH}/output/images",
+    dir_path=f"{BASE_DATA_PATH}/output/images_extended",
     repo_id="Vividbot/vividbot_image",
-    path_in_repo="images.zip",
+    path_in_repo="images_extended.zip",
     repo_type="dataset",
     overwrite=True,
   )
 
   hf_processor.upload_file(
-    file_path=f"{BASE_DATA_PATH}/metadata.json",
+    file_path=f"{BASE_DATA_PATH}/metadata_{PROMPT_TYPE}.json",
     repo_id="Vividbot/vividbot_image",
-    path_in_repo="metadata.json",
+    path_in_repo=f"metadata_{PROMPT_TYPE}.json",
     repo_type="dataset",
     overwrite=True,
   )
 
-  hf_processor.upload_file(
-    file_path=f"{BASE_DATA_PATH}/errors.json",
-    repo_id="Vividbot/vividbot_image",
-    path_in_repo="errors.json",
-    repo_type="dataset",
-    overwrite=True,
-  )
+  # hf_processor.upload_file(
+  #   file_path=f"{BASE_DATA_PATH}/errors.json",
+  #   repo_id="Vividbot/vividbot_image",
+  #   path_in_repo="errors.json",
+  #   repo_type="dataset",
+  #   overwrite=True,
+  # )
 
   end_time = time.time()
   duration = round(end_time - start_time, 2)
@@ -309,7 +289,7 @@ def process():
 def prepare():
   os.makedirs(BASE_DATA_PATH, exist_ok=True)
   os.makedirs(f"{BASE_DATA_PATH}/output", exist_ok=True)
-  os.makedirs(f"{BASE_DATA_PATH}/output/images", exist_ok=True)
+  os.makedirs(f"{BASE_DATA_PATH}/output/images_extended", exist_ok=True)
 
   # create run.log file
   with open(f"{BASE_DATA_PATH}/run.log", "w") as f:

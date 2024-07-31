@@ -16,3 +16,4 @@ cd ~/ViVidBot
 export $(grep -v '^#' .env | xargs)
 
 poetry run python3 vividbot/data/task/vivid_instruct_65k/video.py
+poetry run python3 vividbot/data/task/vivid_instruct_65k/image.py

@@ -1,3 +1,5 @@
+from typing import Literal, Union
+
 import numpy as np
 
 DESCRIBE_VIDEO_PROMPTS = [
@@ -91,8 +93,8 @@ Only return the list of pair of questions and answers in the following JSON list
 [{{"question":"Q1","answer":"A1"}},{{"question":"Q2","answer":"A2"}},...]""",
 ]
 
-GENERATE_QA_FROM_IMAGE_PROMPTS = [
-  """Infer the content of the image and generate 1 to 3 pairs of questions and answers in JSON format based on the image in Vietnamese language.
+GENERATE_QA_FROM_IMAGE_PROMPTS = {
+  "reasoning": """Infer the content of the image and generate 1 to 3 pairs of questions and answers in JSON format based on the image in Vietnamese language.
 The question should be relevant to the image content and the answer should be correct.
 Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
 Examples of questions (do not need to follow the same as these are just examples, you must generate your own questions based on the image content):
@@ -115,7 +117,7 @@ And more questions that can be asked about the image content (what, where, when,
 The answer should be descriptive, informative and correct in the form of complete sentences or complete phrases with proper grammar and punctuation.
 Only return the list of pair of questions and answers in the following JSON list format without any additional information:
 [{"question":"Q1","answer":"A1"},{"question":"Q2","answer":"A2"},...]""",
-  """Infer the content of the image and generate 3 to 10 pairs of questions and answers in JSON format based on the image in Vietnamese language.
+  "conversation": """Infer the content of the image and generate 5 to 10 pairs of questions and answers in JSON format based on the image in Vietnamese language.
 The question should be relevant to the image content and the answer should be correct.
 Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
 Examples of questions (do not need to follow the same as these are just examples, you must generate your own questions based on the image content):
@@ -132,7 +134,25 @@ And more questions that can be asked about the image content (what, where, when,
 The answer should be descriptive, informative and correct in the form of complete sentences or complete phrases with proper grammar and punctuation.
 Only return the list of pair of questions and answers in the following JSON list format without any additional information:
 [{"question":"Q1","answer":"A1"},{"question":"Q2","answer":"A2"},...]""",
-]
+  "detail": """Infer the content of the image and generate 1 pair of questions and answers in JSON format based on the image in Vietnamese language.
+The question should be something to ask about the image content.
+Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
+Examples of questions (do not need to follow the same as these are just examples, you must generate your own questions based on the image content):
+1.
+- Question: What do you see happening in this image?
+- Answer: The scene depicts a lively plaza area with several people walking and enjoying their time. A man is standing in the plaza with his legs crossed, holding a kite in his hand. The kite has multiple sections attached to it, spread out in various directions as if ready for flight.\n\nNumerous people are scattered throughout the plaza, walking and interacting with others. Some of these individuals are carrying handbags, and others have backpacks. The image captures the casual, social atmosphere of a bustling plaza on a nice day.
+2.
+- Question: Can you describe the main features of this image for me?
+- Answer: The image shows a lively beach scene where various beach-goers are enjoying a sunny day. People, some wearing bathing suits, are sitting and relaxing on the beach, working on their tans. There are couples and individuals scattered throughout the scene, relaxing on beach towels.\n\nMultiple beach umbrellas can be observed providing shade for some of the people, while a frisbee is visible, suggesting fun and games are taking place. A person can be seen reading a book, indicating that they are taking advantage of the relaxing atmosphere.\n\nThere are also a few handbags placed on the beach, likely holding beach-goers' belongings. The overall scene depicts a typical, enjoyable day at the beach for everyone involved.
+3.
+- Question: Explain the visual content of the image in great detail.
+- This image captures several colorful kites flying in a field near a picturesque bay with a small lake. The kites come in a variety of shapes and sizes, with some featuring red, white, and blue streamers trailing from them. \n\nBy the scenic waterfront, there are several boats of different sizes docked or floating on the water. A group of people can be seen enjoying the outdoor atmosphere, walking along the river with their dogs. Some individuals have also parked their bicycles nearby, perhaps taking a break from a leisurely ride to appreciate the kites and the surrounding natural beauty. \n\nA bench located close to the edge of the field offers a perfect seating spot for onlookers, while others interact with each other, creating a peaceful and communal atmosphere in the area.
+
+And more questions that can be asked about the image content (what, where, when, why, how, etc.) with varying levels of complexity and logic. Harder questions that require more logical thinking are encouraged.
+The answer should be descriptive, informative and correct in the form of complete sentences or complete phrases with proper grammar and punctuation.
+Only return the list of pair of questions and answers in the following JSON list format without any additional information:
+[{"question":"Q1","answer":"A1"},{"question":"Q2","answer":"A2"},...]""",
+}
 
 
 def get_describe_video_prompt():
@@ -150,6 +170,9 @@ def get_generate_qa_prompt():
   return np.random.choice(GENERATE_QA_PROMPTS)
 
 
-def get_generate_qa_from_image_prompt():
-  # pick a random prompt
-  return np.random.choice(GENERATE_QA_FROM_IMAGE_PROMPTS)
+def get_generate_qa_from_image_prompt(
+  type: Union[
+    Literal["conversation"], Literal["reasoning"], Literal["detail"]
+  ] = "conversation",
+):
+  return GENERATE_QA_FROM_IMAGE_PROMPTS.get(type)
