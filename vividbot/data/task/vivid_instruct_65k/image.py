@@ -39,6 +39,8 @@ hf_processor = HuggingFaceProcessor()
 
 PROMPT_TYPE = "conversation"
 
+logger.info(f"Processing images for prompt type: {PROMPT_TYPE}")
+
 
 def _process(batch: dict):
   processed_dataset = None
@@ -241,7 +243,7 @@ def process():
 
   dataset = load_dataset(
     "json", data_files=f"{BASE_DATA_PATH}/image_flattened_keywords.json"
-  ).shuffle(seed=903)["train"]
+  ).shuffle(seed=2103)["train"]
 
   dataset.map(
     _process,
