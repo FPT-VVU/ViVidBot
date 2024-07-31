@@ -94,7 +94,7 @@ Only return the list of pair of questions and answers in the following JSON list
 ]
 
 GENERATE_QA_FROM_IMAGE_PROMPTS = {
-  "reasoning": """Infer the content of the image and generate 1 to 3 pairs of questions focusing on REASONING ability and answers in JSON format based on the image in Vietnamese language.
+  "reasoning": """Infer the content of the image and generate 1 to 3 pairs of questions focusing on mathematical reasoning, logical reasoning, causal reasoning, visual reasoning abilities and more, and answers in JSON format based on the image in Vietnamese language.
 The question should be relevant to the image content and the answer should be correct.
 Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
 Examples of questions (do not need to follow the same as these are just examples, you must generate your own questions based on the image content):

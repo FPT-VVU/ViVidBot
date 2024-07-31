@@ -3,6 +3,7 @@ import logging
 import os
 import time
 from pathlib import Path
+from typing import Literal, Union
 
 import google.generativeai as genai
 import numpy as np
@@ -37,9 +38,9 @@ genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 hf_processor = HuggingFaceProcessor()
 
-PROMPT_TYPE = "conversation"
-
-logger.info(f"Processing images for prompt type: {PROMPT_TYPE}")
+PROMPT_TYPE: Union[Literal["conversation"], Literal["reasoning"], Literal["detail"]] = (
+  "detail"
+)
 
 
 def _process(batch: dict):
@@ -239,11 +240,11 @@ def _process(batch: dict):
 def process():
   start_time = time.time()
 
-  logger.info("Processing images...")
+  logger.info(f"Processing images for prompt type: {PROMPT_TYPE}")
 
   dataset = load_dataset(
     "json", data_files=f"{BASE_DATA_PATH}/image_flattened_keywords.json"
-  ).shuffle(seed=2103)["train"]
+  ).shuffle(seed=2024)["train"]
 
   dataset.map(
     _process,
