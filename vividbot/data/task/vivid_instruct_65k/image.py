@@ -243,7 +243,7 @@ def process():
   logger.info(f"Processing images for prompt type: {PROMPT_TYPE}")
 
   dataset = load_dataset(
-    "json", data_files=f"{BASE_DATA_PATH}/image_flattened_keywords.json"
+    "json", data_files=f"{BASE_DATA_PATH}/flattened_keywords_extended.json"
   ).shuffle(seed=2024)["train"]
 
   dataset.map(
