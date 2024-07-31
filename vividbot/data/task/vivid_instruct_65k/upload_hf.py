@@ -21,7 +21,7 @@ def main():
     ).readlines()
     detail_lines = open(f"{BASE_DATA_PATH}/metadata_detail.json").readlines()
     reasoning_lines = open(f"{BASE_DATA_PATH}/metadata_reasoning.json").readlines()
-    with open(f"{BASE_DATA_PATH}/metadata_extended.json", "w") as f:
+    with open(f"{BASE_DATA_PATH}/metadata_extended_2.json", "w") as f:
       for conversation_line in conversation_lines:
         f.write(conversation_line)
       for detail_line in detail_lines:
@@ -30,9 +30,9 @@ def main():
         f.write(reasoning_line)
 
     hf_processor.upload_file(
-      file_path=f"{BASE_DATA_PATH}/metadata_extended.json",
+      file_path=f"{BASE_DATA_PATH}/metadata_extended_2.json",
       repo_id="Vividbot/vividbot_image",
-      path_in_repo="metadata_extended.json",
+      path_in_repo="metadata_extended_2.json",
       repo_type="dataset",
       overwrite=True,
     )
@@ -62,18 +62,12 @@ def main():
     # )
 
     hf_processor.zip_and_upload_dir(
-      dir_path=f"{BASE_DATA_PATH}/output/images_extended",
+      dir_path=f"{BASE_DATA_PATH}/output/images_extended_2",
       repo_id="Vividbot/vividbot_image",
-      path_in_repo="images_extended/images_extended.zip",
+      path_in_repo="images_extended_2/images_extended_2.zip",
       repo_type="dataset",
       overwrite=True,
     )
-
-    # remove zip file
-    try:
-      os.remove(f"{BASE_DATA_PATH}/output/images/images_extended.zip")
-    except Exception as e:
-      print(e)
 
     for _ in tqdm(range(60)):
       time.sleep(1)

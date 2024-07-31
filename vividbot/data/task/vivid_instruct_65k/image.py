@@ -53,13 +53,13 @@ def _process(batch: dict):
   for keyword, category in tqdm(zip(batch["keyword"], batch["category"])):
     logger.info(f"Processing images for keyword {keyword}...")
     details = pinscrape.scraper.scrape(
-      keyword, f"{BASE_DATA_PATH}/output/images_extended", {}, 12, 100
+      keyword, f"{BASE_DATA_PATH}/output/images_extended_2", {}, 12, 100
     )
 
     for url in tqdm(details.get("urls_list", [])):
       image_filename = url.split("/")[-1]
       if not os.path.exists(
-        f"{BASE_DATA_PATH}/output/images_extended/{image_filename}"
+        f"{BASE_DATA_PATH}/output/images_extended_2/{image_filename}"
       ):
         continue
 
@@ -73,7 +73,7 @@ def _process(batch: dict):
         logger.info(f"Image {image_id} already processed. Skipping...")
         continue
 
-      google_filename = f"files/{image_id}".lower().replace("_", "-")
+      google_filename = f"files/vivid-{image_id}".lower().replace("_", "-")
 
       image_file = None
       try:
@@ -84,9 +84,8 @@ def _process(batch: dict):
       if not image_file:
         try:
           image_file = genai.upload_file(
-            path=f"{BASE_DATA_PATH}/output/images_extended/{image_filename}",
+            path=f"{BASE_DATA_PATH}/output/images_extended_2/{image_filename}",
             name=google_filename,
-            display_name=image_id,
           )
         except Exception as e:
           logger.error(f"Couldn't upload file {google_filename}: {str(e)}")
@@ -105,9 +104,9 @@ def _process(batch: dict):
       describer = genai.GenerativeModel(
         "models/gemini-1.5-flash",
         generation_config={
-          "temperature": 0.45,
+          "temperature": 0.4,
           "max_output_tokens": 1024,
-          "top_p": 0.7,
+          "top_p": 0.65,
         },
         safety_settings={
           HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
@@ -138,8 +137,6 @@ def _process(batch: dict):
             json.loads(describer_response.candidates[0].content.parts[0].text),
             ensure_ascii=False,
           )
-          .encode("utf-8")
-          .decode("utf-8")
           if describer_response.candidates
           and len(describer_response.candidates) > 0
           and len(describer_response.candidates[0].content.parts) > 0
@@ -202,7 +199,7 @@ def _process(batch: dict):
         ) as f:
           data = {
             "id": image_id,
-            "image": f"images_extended/{image_filename}",
+            "image": f"images_extended_2/{image_filename}",
             "conversations": conversations,
             "timestamp": round(time.time()),
             "keyword": keyword,
@@ -243,7 +240,7 @@ def process():
 
   dataset = load_dataset(
     "json", data_files=f"{BASE_DATA_PATH}/flattened_keywords_extended.json"
-  ).shuffle(seed=2026)["train"]
+  ).shuffle(seed=2028)["train"]
 
   dataset.map(
     _process,
@@ -296,7 +293,7 @@ def process():
 def prepare():
   os.makedirs(BASE_DATA_PATH, exist_ok=True)
   os.makedirs(f"{BASE_DATA_PATH}/output", exist_ok=True)
-  os.makedirs(f"{BASE_DATA_PATH}/output/images_extended", exist_ok=True)
+  os.makedirs(f"{BASE_DATA_PATH}/output/images_extended_2", exist_ok=True)
 
   # create run.log file
   with open(f"{BASE_DATA_PATH}/run.log", "w") as f:
