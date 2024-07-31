@@ -37,29 +37,29 @@ def main():
       overwrite=True,
     )
 
-    hf_processor.upload_file(
-      file_path=f"{BASE_DATA_PATH}/metadata_conversation.json",
-      repo_id="Vividbot/vividbot_image",
-      path_in_repo="metadata_conversation.json",
-      repo_type="dataset",
-      overwrite=True,
-    )
+    # hf_processor.upload_file(
+    #   file_path=f"{BASE_DATA_PATH}/metadata_conversation.json",
+    #   repo_id="Vividbot/vividbot_image",
+    #   path_in_repo="metadata_conversation.json",
+    #   repo_type="dataset",
+    #   overwrite=True,
+    # )
 
-    hf_processor.upload_file(
-      file_path=f"{BASE_DATA_PATH}/metadata_detail.json",
-      repo_id="Vividbot/vividbot_image",
-      path_in_repo="metadata_detail.json",
-      repo_type="dataset",
-      overwrite=True,
-    )
+    # hf_processor.upload_file(
+    #   file_path=f"{BASE_DATA_PATH}/metadata_detail.json",
+    #   repo_id="Vividbot/vividbot_image",
+    #   path_in_repo="metadata_detail.json",
+    #   repo_type="dataset",
+    #   overwrite=True,
+    # )
 
-    hf_processor.upload_file(
-      file_path=f"{BASE_DATA_PATH}/metadata_reasoning.json",
-      repo_id="Vividbot/vividbot_image",
-      path_in_repo="metadata_reasoning.json",
-      repo_type="dataset",
-      overwrite=True,
-    )
+    # hf_processor.upload_file(
+    #   file_path=f"{BASE_DATA_PATH}/metadata_reasoning.json",
+    #   repo_id="Vividbot/vividbot_image",
+    #   path_in_repo="metadata_reasoning.json",
+    #   repo_type="dataset",
+    #   overwrite=True,
+    # )
 
     hf_processor.zip_and_upload_dir(
       dir_path=f"{BASE_DATA_PATH}/output/images_extended",
