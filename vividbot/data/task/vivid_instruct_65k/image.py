@@ -41,9 +41,9 @@ hf_processor = HuggingFaceProcessor()
 def _process(batch: dict):
   processed_dataset = None
 
-  if os.path.exists(f"{BASE_DATA_PATH}/metadata.jsonl"):
+  if os.path.exists(f"{BASE_DATA_PATH}/metadata.json"):
     processed_dataset = load_dataset(
-      "json", data_files=f"{BASE_DATA_PATH}/metadata.jsonl"
+      "json", data_files=f"{BASE_DATA_PATH}/metadata.json"
     )["train"]
 
   for keyword, category in tqdm(zip(batch["keyword"], batch["category"])):
@@ -87,7 +87,7 @@ def _process(batch: dict):
 
       if not image_file:
         logger.error(f"Couldn't upload file {google_filename}")
-        with open(f"{BASE_DATA_PATH}/errors.jsonl", "a") as f:
+        with open(f"{BASE_DATA_PATH}/errors.json", "a") as f:
           data = {
             "id": image_id,
             "reason": "Couldn't upload file",
@@ -101,6 +101,7 @@ def _process(batch: dict):
         generation_config={
           "temperature": 0.5,
           "max_output_tokens": 2048,
+          "top_p": 0.7,
         },
         safety_settings={
           HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
@@ -137,7 +138,7 @@ def _process(batch: dict):
         logger.error(
           f"Couldn't generate QA pairs for image {image_id}: {str(e)} - Response: {describer_response}"
         )
-        with open(f"{BASE_DATA_PATH}/errors.jsonl", "a") as f:
+        with open(f"{BASE_DATA_PATH}/errors.json", "a") as f:
           data = {
             "id": image_id,
             "reason": f"{str(e)} - Response: {describer_response}",
@@ -153,7 +154,7 @@ def _process(batch: dict):
         logger.error(
           f"Couldn't generate QA pairs for image {image_id}: {describer_response}"
         )
-        with open(f"{BASE_DATA_PATH}/errors.jsonl", "a") as f:
+        with open(f"{BASE_DATA_PATH}/errors.json", "a") as f:
           data = {
             "id": image_id,
             "reason": f"Couldn't generate QA pairs - Response: {describer_response}",
@@ -184,7 +185,7 @@ def _process(batch: dict):
           conversations.append({"from": "gpt", "value": gpt_value})
 
         with open(
-          f"{BASE_DATA_PATH}/metadata.jsonl",
+          f"{BASE_DATA_PATH}/metadata.json",
           "a",
         ) as f:
           data = {
@@ -211,7 +212,7 @@ def _process(batch: dict):
         logger.error(
           f"Couldn't generate QA pairs for image {image_id}: {str(e)} - Response: {describer_response}"
         )
-        with open(f"{BASE_DATA_PATH}/errors.jsonl", "a") as f:
+        with open(f"{BASE_DATA_PATH}/errors.json", "a") as f:
           data = {
             "id": image_id,
             "reason": f"{str(e)} - Response: {describer_response}",
@@ -228,8 +229,33 @@ def process():
 
   logger.info("Processing images...")
 
+  if hf_processor.check_file_exists(
+    repo_id="Vividbot/vividbot_image",
+    path_in_repo="images.zip",
+    repo_type="dataset",
+  ):
+    hf_processor.download_and_unzip_file(
+      repo_id="Vividbot/vividbot_image",
+      filename="images.zip",
+      local_dir=f"{BASE_DATA_PATH}/output",
+      extract_dir=f"{BASE_DATA_PATH}/output",
+      repo_type="dataset",
+    )
+
+  if hf_processor.check_file_exists(
+    repo_id="Vividbot/vividbot_image",
+    path_in_repo="metadata.json",
+    repo_type="dataset",
+  ):
+    hf_processor.download_file(
+      repo_id="Vividbot/vividbot_image",
+      filename="metadata.json",
+      local_dir=BASE_DATA_PATH,
+      repo_type="dataset",
+    )
+
   dataset = load_dataset(
-    "json", data_files=f"{BASE_DATA_PATH}/flattened_keywords.jsonl"
+    "json", data_files=f"{BASE_DATA_PATH}/image_flattened_keywords.json"
   ).shuffle(seed=903)["train"]
 
   dataset.map(
@@ -241,7 +267,7 @@ def process():
 
   # remove files in output/images that are not in metadata
   processed_dataset = load_dataset(
-    "json", data_files=f"{BASE_DATA_PATH}/metadata.jsonl"
+    "json", data_files=f"{BASE_DATA_PATH}/metadata.json"
   )["train"]
 
   processed_image_ids = [item["id"] for item in processed_dataset]
@@ -259,17 +285,17 @@ def process():
   )
 
   hf_processor.upload_file(
-    file_path=f"{BASE_DATA_PATH}/metadata.jsonl",
+    file_path=f"{BASE_DATA_PATH}/metadata.json",
     repo_id="Vividbot/vividbot_image",
-    path_in_repo="metadata.jsonl",
+    path_in_repo="metadata.json",
     repo_type="dataset",
     overwrite=True,
   )
 
   hf_processor.upload_file(
-    file_path=f"{BASE_DATA_PATH}/errors.jsonl",
+    file_path=f"{BASE_DATA_PATH}/errors.json",
     repo_id="Vividbot/vividbot_image",
-    path_in_repo="errors.jsonl",
+    path_in_repo="errors.json",
     repo_type="dataset",
     overwrite=True,
   )
