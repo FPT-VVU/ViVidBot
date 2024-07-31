@@ -1,3 +1,4 @@
+import os
 import time
 from pathlib import Path
 
@@ -67,6 +68,9 @@ def main():
       repo_type="dataset",
       overwrite=True,
     )
+
+    # remove zip file
+    os.remove(f"{BASE_DATA_PATH}/output/images_extended/images_extended.zip")
 
     for _ in tqdm(range(60 * 2)):
       time.sleep(1)
