@@ -24,7 +24,6 @@ from vividbot.data.task.vivid_instruct_65k.utils.prompts import (
 load_dotenv()
 BASE_DATA_PATH = f"{Path.home()}/data/images"
 
-
 logger = logging.getLogger(__name__)
 logging.basicConfig(
   filename=f"{BASE_DATA_PATH}/run.log",
@@ -244,7 +243,7 @@ def process():
 
   dataset = load_dataset(
     "json", data_files=f"{BASE_DATA_PATH}/flattened_keywords_extended.json"
-  ).shuffle(seed=2025)["train"]
+  ).shuffle(seed=2026)["train"]
 
   dataset.map(
     _process,
