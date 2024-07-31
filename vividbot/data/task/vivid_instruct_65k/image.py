@@ -54,7 +54,7 @@ def _process(batch: dict):
   for keyword, category in tqdm(zip(batch["keyword"], batch["category"])):
     logger.info(f"Processing images for keyword {keyword}...")
     details = pinscrape.scraper.scrape(
-      keyword, f"{BASE_DATA_PATH}/output/images_extended", {}, 12, 100
+      keyword, f"{BASE_DATA_PATH}/output/images_extended", {}, 12, 50
     )
 
     for url in tqdm(details.get("urls_list", [])):
@@ -244,7 +244,7 @@ def process():
 
   dataset = load_dataset(
     "json", data_files=f"{BASE_DATA_PATH}/flattened_keywords_extended.json"
-  ).shuffle(seed=2024)["train"]
+  ).shuffle(seed=2025)["train"]
 
   dataset.map(
     _process,
@@ -264,13 +264,13 @@ def process():
   #   if image_id not in processed_image_ids:
   #     os.remove(f"{BASE_DATA_PATH}/output/images/{image_filename}")
 
-  hf_processor.zip_and_upload_dir(
-    dir_path=f"{BASE_DATA_PATH}/output/images_extended",
-    repo_id="Vividbot/vividbot_image",
-    path_in_repo="images_extended.zip",
-    repo_type="dataset",
-    overwrite=True,
-  )
+  # hf_processor.zip_and_upload_dir(
+  #   dir_path=f"{BASE_DATA_PATH}/output/images_extended",
+  #   repo_id="Vividbot/vividbot_image",
+  #   path_in_repo="images_extended.zip",
+  #   repo_type="dataset",
+  #   overwrite=True,
+  # )
 
   hf_processor.upload_file(
     file_path=f"{BASE_DATA_PATH}/metadata_{PROMPT_TYPE}.json",
