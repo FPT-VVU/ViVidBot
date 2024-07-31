@@ -13,7 +13,7 @@ BASE_DATA_PATH = f"{Path.home()}/data/images"
 
 def main():
   while True:
-    print("Uploading metadata files to Hugging Face every 2 minutes...")
+    print("Uploading metadata files to Hugging Face every 1 minutes...")
 
     # merge 3 files into 1
     conversation_lines = open(
@@ -75,7 +75,7 @@ def main():
     except Exception as e:
       print(e)
 
-    for _ in tqdm(range(60 * 2)):
+    for _ in tqdm(range(60)):
       time.sleep(1)
 
 
