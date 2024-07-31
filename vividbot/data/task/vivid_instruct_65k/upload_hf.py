@@ -70,7 +70,10 @@ def main():
     )
 
     # remove zip file
-    os.remove(f"{BASE_DATA_PATH}/output/images_extended/images_extended.zip")
+    try:
+      os.remove(f"{BASE_DATA_PATH}/output/images/images_extended.zip")
+    except Exception as e:
+      print(e)
 
     for _ in tqdm(range(60 * 2)):
       time.sleep(1)

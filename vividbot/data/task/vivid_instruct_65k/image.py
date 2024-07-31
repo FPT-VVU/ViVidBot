@@ -53,7 +53,7 @@ def _process(batch: dict):
   for keyword, category in tqdm(zip(batch["keyword"], batch["category"])):
     logger.info(f"Processing images for keyword {keyword}...")
     details = pinscrape.scraper.scrape(
-      keyword, f"{BASE_DATA_PATH}/output/images_extended", {}, 12, 50
+      keyword, f"{BASE_DATA_PATH}/output/images_extended", {}, 12, 100
     )
 
     for url in tqdm(details.get("urls_list", [])):
