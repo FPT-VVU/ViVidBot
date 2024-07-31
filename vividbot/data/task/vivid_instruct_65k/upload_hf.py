@@ -12,7 +12,7 @@ BASE_DATA_PATH = f"{Path.home()}/data/images"
 
 def main():
   while True:
-    print("Uploading metadata files to Hugging Face every 10 minutes...")
+    print("Uploading metadata files to Hugging Face every 2 minutes...")
 
     # merge 3 files into 1
     conversation_lines = open(
@@ -36,6 +36,30 @@ def main():
       overwrite=True,
     )
 
+    hf_processor.upload_file(
+      file_path=f"{BASE_DATA_PATH}/metadata_conversation.json",
+      repo_id="Vividbot/vividbot_image",
+      path_in_repo="metadata_conversation.json",
+      repo_type="dataset",
+      overwrite=True,
+    )
+
+    hf_processor.upload_file(
+      file_path=f"{BASE_DATA_PATH}/metadata_detail.json",
+      repo_id="Vividbot/vividbot_image",
+      path_in_repo="metadata_detail.json",
+      repo_type="dataset",
+      overwrite=True,
+    )
+
+    hf_processor.upload_file(
+      file_path=f"{BASE_DATA_PATH}/metadata_reasoning.json",
+      repo_id="Vividbot/vividbot_image",
+      path_in_repo="metadata_reasoning.json",
+      repo_type="dataset",
+      overwrite=True,
+    )
+
     hf_processor.zip_and_upload_dir(
       dir_path=f"{BASE_DATA_PATH}/output/images_extended",
       repo_id="Vividbot/vividbot_image",
@@ -44,7 +68,7 @@ def main():
       overwrite=True,
     )
 
-    for _ in tqdm(range(60 * 10)):
+    for _ in tqdm(range(60 * 2)):
       time.sleep(1)
 
 
