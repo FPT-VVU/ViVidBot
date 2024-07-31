@@ -1,6 +1,8 @@
 import time
 from pathlib import Path
 
+from tqdm import tqdm
+
 from vividbot.data.processor.huggingface import HuggingFaceProcessor
 
 hf_processor = HuggingFaceProcessor()
@@ -59,8 +61,9 @@ def main():
 
       break
     else:
-      print("Waiting for metadata files to be uploaded...")
-      time.sleep(60 * 5)
+      print("Waiting 120s for metadata files to be uploaded...")
+      for i in tqdm(range(60 * 2)):
+        time.sleep(1)
 
 
 if __name__ == "__main__":
