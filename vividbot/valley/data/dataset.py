@@ -10,8 +10,8 @@ import torch
 import transformers
 from PIL import Image
 from torch.utils.data import Dataset
-from valley.util.config import IGNORE_INDEX
-from valley.util.data_util import (
+from vividbot.valley.util.config import IGNORE_INDEX
+from vividbot.valley.util.data_util import (
   load_image_hf,
   load_video,
   load_video_hf,

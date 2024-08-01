@@ -7,7 +7,7 @@ import sys
 import requests
 import torch.distributed as dist
 from prettytable import PrettyTable
-from valley.constants import LOGDIR
+from vividbot.valley.constants import LOGDIR
 
 server_error_msg = (
   "**NETWORK ERROR DUE TO HIGH TRAFFIC. PLEASE REGENERATE OR REFRESH THIS PAGE.**"

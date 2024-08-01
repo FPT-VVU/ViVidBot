@@ -14,9 +14,9 @@ from huggingface_hub import HfFileSystem
 from PIL import Image
 from torchvision import transforms
 from transformers import StoppingCriteria
-from valley import conversation as conversation_lib
-from valley.data import video_transform
-from valley.util.config import (
+from vividbot.valley import conversation as conversation_lib
+from vividbot.valley.data import video_transform
+from vividbot.valley.util.config import (
   DEFAULT_IM_END_TOKEN,
   DEFAULT_IM_START_TOKEN,
   DEFAULT_IMAGE_PATCH_TOKEN,

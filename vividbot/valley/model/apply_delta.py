@@ -8,7 +8,7 @@ import argparse
 import torch
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from valley.model.valley_model import VividGPTForCausalLM
+from vividbot.valley.model.valley_model import VividGPTForCausalLM
 
 
 def apply_delta(base_model_path, target_model_path, delta_path):

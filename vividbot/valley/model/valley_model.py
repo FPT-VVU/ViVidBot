@@ -16,7 +16,7 @@ from transformers.modeling_outputs import (
   BaseModelOutputWithPast,
   CausalLMOutputWithPast,
 )
-from valley.util.config import (
+from vividbot.valley.util.config import (
   DEFAULT_IM_END_TOKEN,
   DEFAULT_IM_START_TOKEN,
   DEFAULT_IMAGE_PATCH_TOKEN,
@@ -24,7 +24,7 @@ from valley.util.config import (
   DEFAULT_VI_START_TOKEN,
   DEFAULT_VIDEO_FRAME_TOKEN,
 )
-from valley.util.data_util import KeywordsStoppingCriteria, load_video
+from vividbot.valley.util.data_util import KeywordsStoppingCriteria, load_video
 
 
 class VividConfig(LlamaConfig):

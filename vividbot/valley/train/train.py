@@ -12,20 +12,20 @@ import torch
 import transformers
 from peft import LoraConfig, TaskType, get_peft_model
 from transformers import Trainer, TrainerCallback
-from valley.data.dataset import make_video_supervised_data_module
-from valley.model.valley_model import VividGPTForCausalLM
-from valley.train.trainner import LLMCallback
-from valley.util.config import (
+from vividbot.valley.data.dataset import make_video_supervised_data_module
+from vividbot.valley.model.valley_model import VividGPTForCausalLM
+from vividbot.valley.train.trainner import LLMCallback
+from vividbot.valley.util.config import (
   DEFAULT_PAD_TOKEN,
   DEFAULT_VI_END_TOKEN,
   DEFAULT_VI_START_TOKEN,
   DEFAULT_VIDEO_FRAME_TOKEN,
 )
-from valley.util.data_util import (
+from vividbot.valley.util.data_util import (
   safe_save_model_for_hf_trainer,
   smart_tokenizer_and_embedding_resize,
 )
-from valley.utils import print_trainable_params
+from vividbot.valley.utils import print_trainable_params
 
 os.environ["NCCL_DEBUG"] = ""
 

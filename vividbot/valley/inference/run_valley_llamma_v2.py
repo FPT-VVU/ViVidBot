@@ -3,8 +3,8 @@ from enum import Enum
 
 import torch
 from transformers import AutoTokenizer
-from valley.model.valley_model import ValleyLlamaForCausalLM
-from valley.util.config import (
+from vividbot.valley.model.valley_model import ValleyLlamaForCausalLM
+from vividbot.valley.util.config import (
   DEFAULT_IM_END_TOKEN,
   DEFAULT_IM_START_TOKEN,
   DEFAULT_IMAGE_PATCH_TOKEN,

@@ -4,8 +4,8 @@ import os
 import torch
 from peft import PeftConfig, PeftModel
 from transformers import AutoTokenizer
-from valley.model.valley_model import VividGPTForCausalLM
-from valley.util.config import (
+from vividbot.valley.model.valley_model import VividGPTForCausalLM
+from vividbot.valley.util.config import (
   DEFAULT_IM_END_TOKEN,
   DEFAULT_IM_START_TOKEN,
   DEFAULT_IMAGE_PATCH_TOKEN,
@@ -13,7 +13,7 @@ from valley.util.config import (
   DEFAULT_VI_START_TOKEN,
   DEFAULT_VIDEO_FRAME_TOKEN,
 )
-from valley.utils import disable_torch_init
+from vividbot.valley.utils import disable_torch_init
 
 DEFAULT_SYSTEM = """Bạn là VividBot, một mô hình trí tuệ nhân tạo thông minh được huấn luyện bởi các sinh viên Đại học FPT. Bạn có khả năng hiểu và xử lý dữ liệu hình ảnh và video một cách vô cùng chính xác để giúp ích cho người dùng. Hãy làm theo hướng dẫn sau một cách chính xác và chi tiết."""
 

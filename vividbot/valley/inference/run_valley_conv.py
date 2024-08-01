@@ -25,8 +25,8 @@ from util.config import (
   DEFAULT_VIDEO_FRAME_TOKEN,
 )
 from util.data_util import KeywordsStoppingCriteria
-from valley.model.valley_model import ValleyLlamaForCausalLM
-from valley.utils import disable_torch_init
+from vividbot.valley.model.valley_model import ValleyLlamaForCausalLM
+from vividbot.valley.utils import disable_torch_init
 
 
 def load_video(path, image_processor):

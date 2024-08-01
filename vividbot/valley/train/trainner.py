@@ -19,8 +19,8 @@ from transformers.tokenization_utils_base import PreTrainedTokenizerBase
 from transformers.trainer_callback import TrainerControl, TrainerState
 from transformers.trainer_utils import EvalPrediction
 from transformers.training_args import TrainingArguments
-from valley.util.data_util import KeywordsStoppingCriteria
-from valley.utils import get_logger
+from vividbot.valley.util.data_util import KeywordsStoppingCriteria
+from vividbot.valley.utils import get_logger
 
 logger = get_logger("Trainer")
 
