@@ -103,12 +103,15 @@ class HybridDataset(Dataset):
           else:
             if self.multimodal_cfg["hf_repo_image"] is None:
               raise ValueError("Please specify the HF repo where the image is stored")
+            image = None
             for repo_id in self.multimodal_cfg["hf_repo_image"]:
               try:
                 image = load_image_hf(repo_path=repo_id, hf_image_path=image_file)
                 break
               except Exception:
                 continue
+            if image is None:
+              raise ValueError(f"Image {image_file} not found")
 
           if self.multimodal_cfg["image_aspect_ratio"] == "keep":
             max_hw, min_hw = max(image.size), min(image.size)
@@ -154,12 +157,15 @@ class HybridDataset(Dataset):
         else:
           if self.multimodal_cfg["hf_repo_video"] is None:
             raise ValueError("Please specify the HF repo where the video is stored")
+          video = None
           for repo_id in self.multimodal_cfg["hf_repo_video"]:
             try:
               video = load_video_hf(repo_path=repo_id, hf_video_path=video_file)
               break
             except Exception:
               continue
+          if video is None:
+            raise ValueError(f"Video {video_file} not found")
         # print(video.shape)
         video = video.permute(1, 0, 2, 3)
         # FIXME: 14 is hardcoded patch size
