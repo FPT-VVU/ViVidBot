@@ -1,0 +1,59 @@
+model_name_or_path:  /content/model_pretrain/vividbot-pretrained
+data_path:  
+image_folder:  
+hf_repo_image: Vividbot/instruct500k_vi
+hf_repo_image: Vividbot/instruct500k_vi
+video_data_path: /content/videoinstruck100_vi_all.json
+video_folder:  /content
+hf_repo_video: Vividbot/videoinstruck100k
+output_dir: model/output/stage2
+prediction_file_name: model/output/stage2/eval_result.jsonl # evaluation file output path
+# experiment name
+project_name: valley
+run_name: valley_stage2
+# Whether to make the system prompt a mask in the label, and others do not mask
+only_mask_system: False
+# system prompt style
+conv_mode: v1
+# wether freeze backbone
+freeze_backbone: False
+# wether tune multimodal projection layer
+tune_mm_mlp_adapter: True
+# wether lora
+lora: False
+# wether multimodal
+is_multimodal: True
+
+num_train_epochs: 3
+per_device_train_batch_size: 1
+per_device_eval_batch_size: 1 # must 1
+save_strategy: steps
+save_steps: 3000
+evaluation_strategy: 'no'
+eval_steps: 3000
+eval_num: 600
+use_legacy_prediction_loop: True
+predict_with_generate: True
+prediction_loss_only: False
+generation_max_length: 1536
+learning_rate: 2e-5
+gradient_checkpointing: True
+
+# wether do fast epoch
+fast_epoch: False
+
+vision_tower: openai/clip-vit-large-patch14
+mm_vision_select_layer: -2
+mm_use_im_start_end: True
+lazy_preprocess: True
+bf16: True
+fp16: False
+tf32: False
+gradient_accumulation_steps: 1
+weight_decay: 0.
+warmup_ratio: 0.03 
+lr_scheduler_type: cosine
+logging_steps: 1 
+model_max_length: 2048 
+deepspeed: valley/configs/deepspeed/config_zero2.json
+report_to: wandb
