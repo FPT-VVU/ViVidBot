@@ -1,16 +1,17 @@
 import os
 import shutil
-import tqdm
 from typing import Callable
 
+import tqdm
 from datasets import (
-    load_dataset,
-    load_from_disk,
     concatenate_datasets,
     disable_progress_bar,
+    load_dataset,
+    load_from_disk,
 )
+
 from vividbot.data.processor.base import BaseProcessor
-from vividbot.data.processor.upload_hf import Uploader
+from vividbot.data.processor.huggingface import HuggingFaceProcessor
 
 
 class Executor(BaseProcessor):
@@ -49,7 +50,7 @@ class Executor(BaseProcessor):
             if self.num_file_temp == 0 and self.num_file_result == 0
             else None
         )
-        self.uploader = Uploader()
+        self.uploader = HuggingFaceProcessor()
 
     def load_dataset(self):
         if (

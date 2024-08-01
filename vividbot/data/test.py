@@ -1,24 +1,26 @@
 import os
 import sys
-from datasets import load_dataset
 
 sys.path.append(os.getcwd())
 
-from vividbot.data.processor.upload_hf import Uploader
+from vividbot.data.processor.huggingface import HuggingFaceProcessor
 
-uploader = Uploader()
+
+uploader = HuggingFaceProcessor()
 path = "/home/duytran/Downloads/llava_instruck_150k.json"
 
-# uploader.upload_dir(dir_path=path, 
-#                     repo_id="Vividbot/vast2m_vi", 
-#                     path_in_repo="metadata", 
+# uploader.upload_dir(dir_path=path,
+#                     repo_id="Vividbot/vast2m_vi",
+#                     path_in_repo="metadata",
 #                     repo_type="dataset", overwrite=True)
 
-uploader.upload_file(file_path=path,
-                     repo_id= "Vividbot/llava-instruct-150k-vi",
-                     path_in_repo= "llava_instruck_150k_all.json",
-                     repo_type= "dataset",
-                     overwrite= True)
+uploader.upload_file(
+  file_path=path,
+  repo_id="Vividbot/llava-instruct-150k-vi",
+  path_in_repo="llava_instruck_150k_all.json",
+  repo_type="dataset",
+  overwrite=True,
+)
 
 # for folder in os.listdir(path):
 #     uploader.zip_and_upload_dir(
@@ -28,7 +30,6 @@ uploader.upload_file(file_path=path,
 #         repo_type="dataset",
 #         overwrite=False,
 #     )
-
 
 
 # from huggingface_hub import HfFileSystem
@@ -65,7 +66,7 @@ uploader.upload_file(file_path=path,
 # def extract_frames(video_bytes, num_frames=8):
 #     # Create a memory-mapped file from the bytes
 #     container = av.open(io.BytesIO(video_bytes))
-    
+
 #     # Find the video stream
 #     visual_stream = next(iter(container.streams.video), None)
 #     if not visual_stream:
@@ -95,7 +96,7 @@ uploader.upload_file(file_path=path,
 #             frame_counter += 1
 #         if len(frames_array) >= num_frames:
 #             break
-    
+
 #     return np.array(frames_array)
 # import cv2
 # with zipfile.ZipFile(temp, 'r') as zip_ref:
@@ -111,6 +112,3 @@ uploader.upload_file(file_path=path,
 #         cv2.waitKey(0)
 #         # if cv2.waitKey(1) & 0xFF == ord('q'):
 #         #     break
-    
-
-        

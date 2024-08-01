@@ -1,7 +1,7 @@
 import os
+
 import datasets
 from huggingface_hub import HfFileSystem
-
 
 logger = datasets.logging.get_logger(__name__)
 fs = HfFileSystem()
@@ -21,11 +21,14 @@ _URLS = {
 
 _CONFIGS = ["all"]
 if fs.exists(_REPO_ID + "/images"):
-    _CONFIGS.extend([
-        os.path.basename(file_name).split(".")[0]
-        for file_name in fs.listdir(_REPO_ID + "/images", detail=False)
-        if file_name.endswith(".zip")
-    ])
+    _CONFIGS.extend(
+        [
+            os.path.basename(file_name).split(".")[0]
+            for file_name in fs.listdir(_REPO_ID + "/images", detail=False)
+            if file_name.endswith(".zip")
+        ]
+    )
+
 
 class Instruct500k_ViConfig(datasets.BuilderConfig):
     """BuilderConfig for Instruct500k_ViConfig."""
@@ -45,6 +48,7 @@ class Instruct500k_ViConfig(datasets.BuilderConfig):
 
 class Instruck500k_Vi(datasets.GeneratorBasedBuilder):
     """Instruct500k Vi dataset."""
+
     BUILDER_CONFIGS = [Instruct500k_ViConfig(name) for name in _CONFIGS]
 
     def _info(self) -> datasets.DatasetInfo:
@@ -52,7 +56,12 @@ class Instruck500k_Vi(datasets.GeneratorBasedBuilder):
             {
                 "id": datasets.Value("string"),
                 "image": datasets.Value("binary"),
-                "conversations": [{'from': datasets.Value("string"), 'value': datasets.Value("string")}],
+                "conversations": [
+                    {
+                        "from": datasets.Value("string"),
+                        "value": datasets.Value("string"),
+                    }
+                ],
             }
         )
 
@@ -95,8 +104,7 @@ class Instruck500k_Vi(datasets.GeneratorBasedBuilder):
             [_URLS["image"].format(shard=shard) for shard in config_names]
         )
         image_dict = {
-            shard: image_dir
-            for shard, image_dir in zip(config_names, image_dirs)
+            shard: image_dir for shard, image_dir in zip(config_names, image_dirs)
         }
 
         return [

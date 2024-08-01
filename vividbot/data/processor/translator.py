@@ -1,5 +1,7 @@
-from typing import Union, List
+from typing import List, Union
+
 from googletrans import Translator
+
 from vividbot.data.processor.base import BaseProcessor
 
 
