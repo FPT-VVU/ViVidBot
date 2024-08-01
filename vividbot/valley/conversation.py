@@ -214,7 +214,7 @@ simple_conv_video = Conversation(
            "Hãy làm theo hướng dẫn sau một cách chính xác và chi tiết.",
     roles=("Human", "Assistant"),
     messages=(
-        ("Human", "Chà bạn!"),
+        ("Human", "Chào bạn!"),
         ("Assistant", "Xin chào! Tôi có thể giúp gì cho bạn?\n")
     ),
     offset=2,

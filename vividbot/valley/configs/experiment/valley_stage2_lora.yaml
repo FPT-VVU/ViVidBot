@@ -24,7 +24,7 @@ lora: True
 is_multimodal: True
 
 num_train_epochs: 3
-per_device_train_batch_size: 2
+per_device_train_batch_size: 1
 save_strategy: 'no'
 lora_save_strategy: steps # if do lora training, turn on this button, to only save lora weight. support ['steps','epochs','no']
 save_steps: 5000
