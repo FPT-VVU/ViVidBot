@@ -52,5 +52,5 @@ logging_steps: 1
 model_max_length: 2048 
 adam_beta1: 0.9 
 adam_beta2: 0.95 
-deepspeed: valley/configs/deepspeed/config_zero2.json
+deepspeed: vividbot/valley/configs/deepspeed/config_zero2.json
 report_to: wandb
