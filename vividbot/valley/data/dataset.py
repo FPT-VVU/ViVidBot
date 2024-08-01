@@ -103,6 +103,7 @@ class HybridDataset(Dataset):
           else:
             if self.multimodal_cfg["hf_repo_image"] is None:
               raise ValueError("Please specify the HF repo where the image is stored")
+            image = None
             for repo_id in self.multimodal_cfg["hf_repo_image"]:
               try:
                 image = load_image_hf(repo_path=repo_id, hf_image_path=image_file)
@@ -156,6 +157,7 @@ class HybridDataset(Dataset):
         else:
           if self.multimodal_cfg["hf_repo_video"] is None:
             raise ValueError("Please specify the HF repo where the video is stored")
+          video = None
           for repo_id in self.multimodal_cfg["hf_repo_video"]:
             try:
               video = load_video_hf(repo_path=repo_id, hf_video_path=video_file)
