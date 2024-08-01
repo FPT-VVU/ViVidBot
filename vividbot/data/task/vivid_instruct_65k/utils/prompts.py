@@ -1,3 +1,5 @@
+from typing import Literal, Union
+
 import numpy as np
 
 DESCRIBE_VIDEO_PROMPTS = [
@@ -91,8 +93,8 @@ Only return the list of pair of questions and answers in the following JSON list
 [{{"question":"Q1","answer":"A1"}},{{"question":"Q2","answer":"A2"}},...]""",
 ]
 
-GENERATE_QA_FROM_IMAGE_PROMPTS = [
-  """Infer the content of the image and generate 1 to 3 pairs of questions and answers in JSON format based on the image in Vietnamese language.
+GENERATE_QA_FROM_IMAGE_PROMPTS = {
+  "reasoning": """Infer the content of the image and generate 1 to 3 pairs of questions focusing on mathematical reasoning, logical reasoning, causal reasoning, visual reasoning abilities and more, and answers in JSON format based on the image in Vietnamese language.
 The question should be relevant to the image content and the answer should be correct.
 Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
 Examples of questions (do not need to follow the same as these are just examples, you must generate your own questions based on the image content):
@@ -106,16 +108,16 @@ Examples of questions (do not need to follow the same as these are just examples
 - Question: Why might someone enjoy pairing pizza with wine in this setting?
 - In the image, a large piece of specialty thin-crust pizza with very little sauce, shaved meat, and goat cheese is served on a white plate next to a glass of wine. Pairing pizza with wine in this setting might be appealing for several reasons. Firstly, the combination of the unique flavors of the specialty pizza ingredients and the wine can create a pleasurable dining experience. It highlights the various tastes and textures of the pizza while allowing the wine to complement and enhance those flavors, creating a harmonious and satisfying meal. Additionally, the wine may elevate the casual nature of pizza, making the dining occasion feel more sophisticated and enjoyable. Lastly, the presentation of the meal, with a neatly set dining table, white plate, and wine glass, suggests an inviting atmosphere that allows diners to savor their meal in a relaxed and pleasurable setting.
 4.
-- Question: What is unusual about this situation when the man is tying the tie?
-- Answer: The unusual aspect of this situation is that the man is attempting to tie a tie over a polo shirt. Typically, ties are worn with button-up shirts and are considered a more formal accessory. Polo shirts are generally more casual, and it is unconventional to pair them with a tie. This combination gives the scene an unusual and unconventional appearance.
+- Question: How many birds are the in the image and what happen if one bird flies away?
+- Answer: There are three birds in the image. If one bird flies away, there will be two birds left in the image. The number of birds will decrease by one if one bird flies away.
 5.
-- Question: What potential risks are associated with the cat's proximity to electronic devices?
-- Answer: With the cat lying next to mobile devices and other electronic equipment, there might be some potential risks such as knocking over the devices, causing damage to the devices, or accidentally activating buttons or sensitive touchscreens on the smartphones, resulting in unintended calls or messages. Additionally, if the cat were to chew on cables or cords associated with the electronic devices, it could pose a hazard to both the devices and the cat itself. In order to minimize these risks, it is advisable to keep smaller, fragile electronic devices away from pets or store them in places where pets cannot easily access them.
+- Question: What could be the result of the question in the image?
+- Answer: Based on the image, the question is to calculate the result of the equation 4 * 5 + 100. We can compute the final result by first multiplying 4 by 5, which equals 20. Then, we add 100 to the result, which gives us a final answer of 120. Therefore, the result of the equation 4 * 5 + 100 is 120.
 And more questions that can be asked about the image content (what, where, when, why, how, etc.) with varying levels of complexity and logic. Harder questions that require more logical thinking are encouraged.
 The answer should be descriptive, informative and correct in the form of complete sentences or complete phrases with proper grammar and punctuation.
 Only return the list of pair of questions and answers in the following JSON list format without any additional information:
 [{"question":"Q1","answer":"A1"},{"question":"Q2","answer":"A2"},...]""",
-  """Infer the content of the image and generate 3 to 10 pairs of questions and answers in JSON format based on the image in Vietnamese language.
+  "conversation": """Infer the content of the image and generate 5 to 10 pairs of CONVERSATIONAL questions and answers in JSON format based on the image in Vietnamese language.
 The question should be relevant to the image content and the answer should be correct.
 Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
 Examples of questions (do not need to follow the same as these are just examples, you must generate your own questions based on the image content):
@@ -124,15 +126,41 @@ Examples of questions (do not need to follow the same as these are just examples
 - Answer: The bus in the image is white and red.
 2.
 - Question: Where is the cat positioned in the image?
-- The cat is positioned on top of the back of the couch in the living room.
+- Answer: The cat is positioned on top of the back of the couch in the living room.
 3.
 - Question: How many people are in the image?
-- There are two people in the image, both on skis in the snow.
+- Answer: There are two people in the image, both on skis in the snow.
+4.
+- Question: Is the dog walking alone or with a person in the image?
+- Answer: The dog is walking alone on the beach, with no person visible in the image.
+5.
+- Question: What is the physical appearance of the surfer?
+- Answer: The surfer appears to be a muscular man in good physical shape.
 And more questions that can be asked about the image content (what, where, when, why, how, etc.) with varying levels of complexity and logic. Harder questions that require more logical thinking are encouraged.
 The answer should be descriptive, informative and correct in the form of complete sentences or complete phrases with proper grammar and punctuation.
 Only return the list of pair of questions and answers in the following JSON list format without any additional information:
 [{"question":"Q1","answer":"A1"},{"question":"Q2","answer":"A2"},...]""",
-]
+  "detail": """Infer the content of the image and generate 1 pair of questions and answers focusing on the DETAILS of the image in JSON format based on the image in Vietnamese language.
+The question should be something to ask about the image content.
+Remember to avoid harmful, inappropriate, or offensive content in the questions and answers.
+Examples of questions (do not need to follow the same as these are just examples, you must generate your own questions based on the image content):
+1.
+- Question: What do you see happening in this image?
+- Answer: The scene depicts a lively plaza area with several people walking and enjoying their time. A man is standing in the plaza with his legs crossed, holding a kite in his hand. The kite has multiple sections attached to it, spread out in various directions as if ready for flight.\n\nNumerous people are scattered throughout the plaza, walking and interacting with others. Some of these individuals are carrying handbags, and others have backpacks. The image captures the casual, social atmosphere of a bustling plaza on a nice day.
+2.
+- Question: Can you describe the main features of this image for me?
+- Answer: The image shows a lively beach scene where various beach-goers are enjoying a sunny day. People, some wearing bathing suits, are sitting and relaxing on the beach, working on their tans. There are couples and individuals scattered throughout the scene, relaxing on beach towels.\n\nMultiple beach umbrellas can be observed providing shade for some of the people, while a frisbee is visible, suggesting fun and games are taking place. A person can be seen reading a book, indicating that they are taking advantage of the relaxing atmosphere.\n\nThere are also a few handbags placed on the beach, likely holding beach-goers' belongings. The overall scene depicts a typical, enjoyable day at the beach for everyone involved.
+3.
+- Question: Explain the visual content of the image in great detail.
+- This image captures several colorful kites flying in a field near a picturesque bay with a small lake. The kites come in a variety of shapes and sizes, with some featuring red, white, and blue streamers trailing from them. \n\nBy the scenic waterfront, there are several boats of different sizes docked or floating on the water. A group of people can be seen enjoying the outdoor atmosphere, walking along the river with their dogs. Some individuals have also parked their bicycles nearby, perhaps taking a break from a leisurely ride to appreciate the kites and the surrounding natural beauty. \n\nA bench located close to the edge of the field offers a perfect seating spot for onlookers, while others interact with each other, creating a peaceful and communal atmosphere in the area.
+4.
+- Question: Write a detailed description of the given image.
+- Answer: The image shows a man standing on a street corner with a cart, selling unique umbrella-style hats. There are colorful umbrellas attached to poles sticking out of a basket next to the man, drawing the attention of passersby. Five umbrellas of varying sizes can be seen displayed, with one large umbrella placed in the foreground.\n\nBehind the man, two cars are parked along the side of the street, and another person is visible walking near the center of the scene. The man selling umbrella-style hats appears to be attracting interest or potentially waiting for customers to approach his makeshift street shop.
+And more questions that can be asked about the image content (what, where, when, why, how, etc.) with varying levels of complexity and logic. Harder questions that require more logical thinking are encouraged.
+The answer should be descriptive, informative and correct in the form of complete sentences or complete phrases with proper grammar and punctuation.
+Only return the list of pair of questions and answers in the following JSON list format without any additional information:
+[{"question":"Q1","answer":"A1"},{"question":"Q2","answer":"A2"},...]""",
+}
 
 
 def get_describe_video_prompt():
@@ -150,6 +178,9 @@ def get_generate_qa_prompt():
   return np.random.choice(GENERATE_QA_PROMPTS)
 
 
-def get_generate_qa_from_image_prompt():
-  # pick a random prompt
-  return np.random.choice(GENERATE_QA_FROM_IMAGE_PROMPTS)
+def get_generate_qa_from_image_prompt(
+  type: Union[
+    Literal["conversation"], Literal["reasoning"], Literal["detail"]
+  ] = "conversation",
+):
+  return GENERATE_QA_FROM_IMAGE_PROMPTS.get(type)
