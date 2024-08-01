@@ -16,6 +16,7 @@ from transformers.modeling_outputs import (
   BaseModelOutputWithPast,
   CausalLMOutputWithPast,
 )
+
 from vividbot.valley.util.config import (
   DEFAULT_IM_END_TOKEN,
   DEFAULT_IM_START_TOKEN,
