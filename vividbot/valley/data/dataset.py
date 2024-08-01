@@ -109,6 +109,8 @@ class HybridDataset(Dataset):
                 break
               except Exception:
                 continue
+            if image is None:
+              raise ValueError(f"Image {image_file} not found")
 
           if self.multimodal_cfg["image_aspect_ratio"] == "keep":
             max_hw, min_hw = max(image.size), min(image.size)
@@ -160,6 +162,8 @@ class HybridDataset(Dataset):
               break
             except Exception:
               continue
+          if video is None:
+            raise ValueError(f"Video {video_file} not found")
         # print(video.shape)
         video = video.permute(1, 0, 2, 3)
         # FIXME: 14 is hardcoded patch size
