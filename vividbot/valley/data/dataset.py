@@ -84,6 +84,8 @@ class HybridDataset(Dataset):
 
   def __getitem__(self, i) -> Dict[str, torch.Tensor]:
     sources = self.list_data_dict[i]
+    if isinstance(i, int):
+        sources = [sources]
     data_type: Union[Literal["image", "video"], None] = (
       "image" if "image" in sources[0] else "video" if "video" in sources[0] else None
     )
@@ -91,8 +93,7 @@ class HybridDataset(Dataset):
     video = None
 
     try:
-      if isinstance(i, int):
-        sources = [sources]
+      
       assert len(sources) == 1, "Don't know why it is wrapped to a list"  # FIXME
       if data_type == "image":
         processor = self.multimodal_cfg["image_processor"]
