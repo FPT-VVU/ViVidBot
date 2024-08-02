@@ -100,6 +100,7 @@ class TrainingArguments(transformers.Seq2SeqTrainingArguments):
     },
   )
   deepspeed: str = field(default=None)
+  should_save: bool = field(default=False)
   output_dir: str = field(default="./checkpoints")
   lora: str = field(default=False)
   dataloader_num_workers: int = field(default=8)

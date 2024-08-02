@@ -96,7 +96,6 @@ def safe_save_model_for_hf_trainer(trainer: transformers.Trainer, output_dir: st
   if trainer.args.lora:
     if trainer.args.should_save:
       trainer.model.save_pretrained(output_dir)
-
   else:
     if trainer.deepspeed:
       print("saving deepspeed model...")
