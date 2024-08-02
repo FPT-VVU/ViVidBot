@@ -7,7 +7,6 @@ import os
 import pathlib
 from dataclasses import dataclass, field
 from typing import Optional
-import wandb
 
 import torch
 import transformers
@@ -30,7 +29,7 @@ from vividbot.valley.util.data_util import (
 from vividbot.valley.utils import print_trainable_params
 
 os.environ["NCCL_DEBUG"] = ""
-wandb.init()
+
 
 @dataclass
 class ModelArguments:
