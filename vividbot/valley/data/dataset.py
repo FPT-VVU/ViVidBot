@@ -53,7 +53,6 @@ class HybridDataset(Dataset):
       if data_path is not None:
         for path in data_path:
           list_data_dict.extend(json.load(open(path, "r"))[0:10])
-
       if video_path is not None:
         for path in video_path:
           list_video_dict.extend(json.load(open(path, "r"))[0:10])
@@ -99,7 +98,7 @@ class HybridDataset(Dataset):
         processor = self.multimodal_cfg["image_processor"]
         # multi image preprocess
         if isinstance(self.list_data_dict[i]["image"], list):
-          image_file_lsit = self.list_data_dict[i]["image"]  # 全部图片
+          image_file_lsit = self.list_data_dict[i]["image"] 
           image = [Image.open(image_file) for image_file in image_file_lsit]
           image = processor.preprocess(image, return_tensors="pt")["pixel_values"]
           # FIXME: 14 is hardcoded patch size
@@ -277,6 +276,7 @@ class HybridDataset(Dataset):
                 cur_token_len,
                 image.shape[0],
               )
+              break
             except Exception as e:
               logger.error(f"Couldn't process fallback image {image_file}: {e}")
               continue
@@ -302,7 +302,7 @@ class HybridDataset(Dataset):
 
               # create fallback_sources containing one item in which the list is read from "/content/vividbot_video_65k_all.json" and filtered by "video" == video_file
               fallback_sources = json.load(
-                open("/content/vividbot_video_65k_all.json", "r")
+                open("/content/vivid_video_instruct_128k_all.json", "r")
               )
               fallback_sources = [
                 e for e in fallback_sources if "video" in e and e["video"] == video_file
@@ -317,6 +317,7 @@ class HybridDataset(Dataset):
                 cur_token_len,
                 video.shape[0],
               )
+              break
             except Exception as e:
               logger.error(f"Couldn't process fallback video {video_file}: {e}")
               continue
