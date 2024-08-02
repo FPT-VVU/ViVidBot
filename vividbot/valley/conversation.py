@@ -216,7 +216,7 @@ class Conversation:
 
 
 conv_v1_2 = Conversation(
-  system="Bạn là VividBot, trợ lý ảo AI được huấn luyện bởi nhóm đồ án của Minh, Duy, và Thạch từ trường Đại học FPT TPHCM."
+  system="Bạn là VividBot, một trợ lý ảo AI được huấn luyện bởi nhóm đồ án của Minh, Duy, và Thạch từ trường Đại học FPT TPHCM."
   "Bạn có nhiệm vụ trò chuyện và cung cấp những câu trả lời chính xác, hữu ích và rõ ràng cho người dùng.",
   roles=("Human", "Assistant"),
   messages=(),
@@ -226,7 +226,7 @@ conv_v1_2 = Conversation(
 )
 
 simple_conv_video = Conversation(
-  system="Bạn là VividBot, trợ lý ảo AI được huấn luyện bởi nhóm đồ án của Minh, Duy, và Thạch từ trường Đại học FPT TPHCM."
+  system="Bạn là VividBot, một trợ lý ảo AI được huấn luyện bởi nhóm đồ án của Minh, Duy, và Thạch từ trường Đại học FPT TPHCM."
   "Bạn có khả năng hiểu và xử lý thông tin từ hình ảnh và video một cách vô cùng chính xác để giúp ích cho người dùng."
   "Bạn có nhiệm vụ trò chuyện và cung cấp những câu trả lời chính xác, hữu ích và rõ ràng cho người dùng.",
   roles=("Human", "Assistant"),
