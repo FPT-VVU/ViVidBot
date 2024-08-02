@@ -1,13 +1,13 @@
 import json
 import logging
 import os
-import time
 from pathlib import Path
 from typing import List
 
 import google.generativeai as genai
 import numpy as np
 from dotenv import load_dotenv
+from langfuse.callback import CallbackHandler
 from tqdm import tqdm
 
 from vividbot.data.processor.download import YoutubeDownloader
@@ -29,7 +29,7 @@ BASE_DATA_PATH = f"{Path.home()}/data"
 logger = logging.getLogger(__name__)
 logging.basicConfig(
   filename=f"{BASE_DATA_PATH}/run.log",
-  filemode="w",
+  filemode="a",
   level=logging.INFO,
   format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
@@ -55,6 +55,12 @@ def process(shard_files: List[str]):
     shard = shard_filename.split(".")[0]
 
     logger.info(f"Processing shard: {shard}")
+
+    if os.path.exists(
+      f"{BASE_DATA_PATH}/post-processing/metadata-training/{shard}.json"
+    ):
+      logger.info(f"Shard {shard} already processed. Skipping...")
+      continue
 
     if not os.path.exists(f"{BASE_DATA_PATH}/post-processing/metadata/{shard}.jsonl"):
       hf_processor.download_file(
@@ -103,14 +109,24 @@ def process(shard_files: List[str]):
       logger.info(f"Processing video: {video}")
 
       if description:
-        if len(description) >= 1000:
-          logger.info(f"Found probably malformed description: {description[:1000]}...")
+        if len(description) >= 1500:
+          logger.info(f"Found probably malformed description: {description}")
 
+          langfuse_handler = CallbackHandler(
+            secret_key="sk-lf-bfa7365e-2871-4669-bda2-4818fcab68de",
+            public_key="pk-lf-b6e63d27-8f4b-4911-acd2-5838400c1dfb",
+            host="https://langfuse.formularizer.com",
+            tags=["vividbot"],
+            session_id=id,
+          )
           dedup_chain = get_dedup_description_chain()
           description = dedup_chain.invoke(
             {
               "message": description[:2000],
-            }
+            },
+            {
+              "callbacks": [langfuse_handler],
+            },
           )
 
           logger.info(f"Deduped description: {description}")
@@ -170,17 +186,15 @@ def process(shard_files: List[str]):
         f.write(json.dumps(d, ensure_ascii=False) + "\n")
 
     # upload to huggingface
-    hf_processor.upload_file(
-      file_path=f"{BASE_DATA_PATH}/post-processing/metadata-training/{shard}.json",
-      repo_id="Vividbot/vividbot_video",
-      path_in_repo=f"metadata-training/{shard}.json",
-      repo_type="dataset",
-      overwrite=True,
-    )
+    # hf_processor.upload_file(
+    #   file_path=f"{BASE_DATA_PATH}/post-processing/metadata-training/{shard}.json",
+    #   repo_id="Vividbot/vividbot_video",
+    #   path_in_repo=f"metadata-training/{shard}.json",
+    #   repo_type="dataset",
+    #   overwrite=True,
+    # )
 
     # wait for 30 seconds to avoid rate limit
-    logger.info("Waiting for 30 seconds...")
-    time.sleep(30)
 
   # upload to huggingface
   hf_processor.upload_file(
@@ -228,6 +242,9 @@ def process(shard_files: List[str]):
     overwrite=True,
   )
 
+  # logger.info("Waiting for 30 seconds...")
+  # time.sleep(30)
+
 
 def prepare():
   os.makedirs(f"{BASE_DATA_PATH}/post-processing", exist_ok=True)
@@ -245,11 +262,12 @@ def main():
 
   shard_files = [f"shard_{i}.jsonl" for i in range(0, 130)]
 
-  last_successful_shard = -1
+  last_successful_shard = 60
 
   logger.info(f"Processing shards: {shard_files}")
 
   process(shard_files[last_successful_shard + 1 :])
+  # process(reversed(shard_files[:last_successful_shard]))
 
   send_completion_message()
 

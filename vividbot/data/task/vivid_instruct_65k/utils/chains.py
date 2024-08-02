@@ -46,10 +46,11 @@ def get_generate_qa_pairs_chain():
 
 
 def get_dedup_description_chain():
-  DEDUP_DESCRIPTION_PROMPT = """Identify and remove the duplicated part (usually at the end) of the following description in Vietnamese language.
-Only keep the unique part of the description. If there is no duplicated part, please leave the description as is.
-Return only the deduplicated description (or the original description if no deduplicated part was found) without any additional information.
-If the description is not in Vietnamese, please translate it to Vietnamese after deduplication."""
+  DEDUP_DESCRIPTION_PROMPT = """Rewrite the text below by removing the duplicated or repeated parts (usually at the end) of the following text in Vietnamese language.
+Only keep the unique part and the first occurence of the duplicated/repeated parts of the text. If there is no duplicated or repeated parts, please leave the text *AS IS*.
+Also, remove the incomplete sentences or phrases at the end of the text.
+Return only the deduplicated text (or the original text if no duplicated or repeated part was found) without any additional information.
+If the text is not in Vietnamese, please translate it to Vietnamese after deduplication."""
 
   return (
     ChatPromptTemplate.from_messages(
@@ -57,7 +58,7 @@ If the description is not in Vietnamese, please translate it to Vietnamese after
         ("system", DEDUP_DESCRIPTION_PROMPT),
         (
           "human",
-          "Description:\n\n{message}\n\nDeduplicated description in Vietnamese:",
+          "Text:\n\n{message}\n\nDeduplicated text in Vietnamese:",
         ),
       ]
     )
@@ -70,7 +71,7 @@ If the description is not in Vietnamese, please translate it to Vietnamese after
           ("system", DEDUP_DESCRIPTION_PROMPT),
           (
             "human",
-            "Description:\n\n{message}\n\nDeduplicated description in Vietnamese:",
+            "Text:\n\n{message}\n\nDeduplicated text in Vietnamese:",
           ),
         ]
       )
