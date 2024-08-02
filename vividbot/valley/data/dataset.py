@@ -4,7 +4,7 @@ import logging
 import os
 import random
 from dataclasses import dataclass
-from typing import Dict, Sequence
+from typing import Dict, Literal, Sequence, Union
 
 import torch
 import transformers
@@ -12,12 +12,24 @@ from PIL import Image
 from torch.utils.data import Dataset
 
 from vividbot.valley.util.config import IGNORE_INDEX
+from vividbot.valley.util.constants import (
+  FALLBACK_HF_IMAGE_PATHS,
+  FALLBACK_HF_VIDEO_PATHS,
+)
 from vividbot.valley.util.data_util import (
   load_image_hf,
   load_video,
-  load_video_hf_with_fallback,
+  load_video_hf,
   preprocess,
   preprocess_multimodal_multiimage,
+)
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+  filename="model/output/stage2/trainer.log",
+  filemode="a",
+  level=logging.INFO,
+  format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 
 
@@ -73,12 +85,17 @@ class HybridDataset(Dataset):
 
   def __getitem__(self, i) -> Dict[str, torch.Tensor]:
     sources = self.list_data_dict[i]
+    data_type: Union[Literal["image", "video"], None] = (
+      "image" if "image" in sources[0] else "video" if "video" in sources[0] else None
+    )
+    image = None
+    video = None
 
     try:
       if isinstance(i, int):
         sources = [sources]
       assert len(sources) == 1, "Don't know why it is wrapped to a list"  # FIXME
-      if "image" in sources[0]:
+      if data_type == "image":
         processor = self.multimodal_cfg["image_processor"]
         # multi image preprocess
         if isinstance(self.list_data_dict[i]["image"], list):
@@ -141,7 +158,7 @@ class HybridDataset(Dataset):
             cur_token_len,
             image.shape[0],
           )
-      elif "video" in sources[0]:
+      elif data_type == "video":
         video_file = (
           self.list_data_dict[i]["video"]
           if ".mp4" in self.list_data_dict[i]["video"]
@@ -161,9 +178,7 @@ class HybridDataset(Dataset):
           video = None
           for repo_id in self.multimodal_cfg["hf_repo_video"]:
             try:
-              video = load_video_hf_with_fallback(
-                repo_path=repo_id, hf_video_path=video_file
-              )
+              video = load_video_hf(repo_path=repo_id, hf_video_path=video_file)
               break
             except Exception:
               continue
@@ -188,9 +203,9 @@ class HybridDataset(Dataset):
         )
 
       # image exist in the data
-      if "image" in self.list_data_dict[i]:
+      if data_type == "image":
         data_dict["image"] = image
-      elif "video" in self.list_data_dict[i]:
+      elif data_type == "video":
         data_dict["image"] = video
       elif self.multimodal_cfg["is_multimodal"]:
         # image does not exist in the data, but the model is multimodal
@@ -198,9 +213,143 @@ class HybridDataset(Dataset):
         data_dict["image"] = torch.zeros(3, crop_size["height"], crop_size["width"])
       return data_dict
     except Exception as e:
-      print(e)
-      print(self.list_data_dict[i]["id"])
-      return ("fail", sources)
+      try:
+        logger.error(
+          f"Error processing data {self.list_data_dict[i]}: {e} - Retrying with fallbacks..."
+        )
+
+        fallback_sources = None
+
+        if data_type == "image":
+          processor = self.multimodal_cfg["image_processor"]
+          # multi image preprocess
+          for image_file in random.sample(
+            FALLBACK_HF_IMAGE_PATHS, len(FALLBACK_HF_IMAGE_PATHS)
+          ):
+            try:
+              if self.multimodal_cfg["hf_repo_image"] is None:
+                raise ValueError("Please specify the HF repo where the image is stored")
+
+              image = load_image_hf(
+                repo_path="Vividbot/vividbot_image/images", hf_image_path=image_file
+              )
+
+              if image is None:
+                raise ValueError(f"Image {image_file} not found")
+
+              if self.multimodal_cfg["image_aspect_ratio"] == "keep":
+                max_hw, min_hw = max(image.size), min(image.size)
+                aspect_ratio = max_hw / min_hw
+                max_len, min_len = 448, 224
+                shortest_edge = int(min(max_len / aspect_ratio, min_len))
+                image = processor.preprocess(
+                  image,
+                  return_tensors="pt",
+                  do_center_crop=False,
+                  size={"shortest_edge": shortest_edge},
+                )["pixel_values"][0]
+              else:
+                image = processor.preprocess(image, return_tensors="pt")[
+                  "pixel_values"
+                ][0]
+              if self.multimodal_cfg["multi_image"]:
+                image = image.unsqueeze(0)
+              if len(image.shape) == 3:
+                # FIXME: 14 is hardcoded patch size
+                cur_token_len = (image.shape[1] // 14) * (image.shape[2] // 14)
+              elif len(image.shape) == 4:
+                # FIXME: 14 is hardcoded patch size
+                cur_token_len = (image.shape[2] // 14) * (image.shape[3] // 14)
+
+              fallback_sources = json.load(
+                open("/content/vividbot_image_56k_all.json", "r")
+              )
+              fallback_sources = [
+                e for e in fallback_sources if "image" in e and e["image"] == image_file
+              ]
+              if len(fallback_sources) == 0:
+                raise ValueError(f"Image {image_file} not found in fallback source.")
+
+              fallback_sources = random.sample(fallback_sources, 1)
+              fallback_sources = preprocess_multimodal_multiimage(
+                copy.deepcopy([e["conversations"] for e in fallback_sources]),
+                self.multimodal_cfg,
+                cur_token_len,
+                image.shape[0],
+              )
+            except Exception as e:
+              logger.error(f"Couldn't process fallback image {image_file}: {e}")
+              continue
+        elif data_type == "video":
+          # repo: Vividbot/vividbot_video/videos
+          for video_file in random.sample(
+            FALLBACK_HF_VIDEO_PATHS, len(FALLBACK_HF_VIDEO_PATHS)
+          ):
+            try:
+              if self.multimodal_cfg["hf_repo_video"] is None:
+                raise ValueError("Please specify the HF repo where the video is stored")
+
+              video = load_video_hf(
+                repo_path="Vividbot/vividbot_video/videos", hf_video_path=video_file
+              )
+
+              if video is None:
+                raise ValueError(f"Video {video_file} not found")
+
+              video = video.permute(1, 0, 2, 3)
+              # FIXME: 14 is hardcoded patch size
+              cur_token_len = (video[0].shape[1] // 14) * (video[0].shape[2] // 14)
+
+              # create fallback_sources containing one item in which the list is read from "/content/vividbot_video_65k_all.json" and filtered by "video" == video_file
+              fallback_sources = json.load(
+                open("/content/vividbot_video_65k_all.json", "r")
+              )
+              fallback_sources = [
+                e for e in fallback_sources if "video" in e and e["video"] == video_file
+              ]
+              if len(fallback_sources) == 0:
+                raise ValueError(f"Video {video_file} not found in fallback source.")
+
+              fallback_sources = random.sample(fallback_sources, 1)
+              fallback_sources = preprocess_multimodal_multiimage(
+                copy.deepcopy([e["conversations"] for e in fallback_sources]),
+                self.multimodal_cfg,
+                cur_token_len,
+                video.shape[0],
+              )
+            except Exception as e:
+              logger.error(f"Couldn't process fallback video {video_file}: {e}")
+              continue
+        else:
+          fallback_sources = json.load(
+            open("/content/vividbot_image_56k_all.json", "r")
+          )
+          fallback_sources = random.sample(fallback_sources, 1)
+          fallback_sources = copy.deepcopy(
+            [e["conversations"] for e in fallback_sources]
+          )
+
+        data_dict = preprocess(fallback_sources, self.tokenizer, self.header_mode)
+        if isinstance(i, int):
+          data_dict = dict(
+            input_ids=data_dict["input_ids"][0], labels=data_dict["labels"][0]
+          )
+
+        # image exist in the data
+        if data_type == "image":
+          data_dict["image"] = image
+        elif data_type == "video":
+          data_dict["image"] = video
+        elif self.multimodal_cfg["is_multimodal"]:
+          # image does not exist in the data, but the model is multimodal
+          crop_size = self.multimodal_cfg["image_processor"].crop_size
+          data_dict["image"] = torch.zeros(3, crop_size["height"], crop_size["width"])
+        return data_dict
+      except Exception as e:
+        logger.error(
+          f"Error processing fallback data for {self.list_data_dict[i]}: {e}"
+        )
+        return ("fail", sources)
 
 
 @dataclass
