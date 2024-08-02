@@ -2,7 +2,7 @@ model_name_or_path:  /content/model_pretrain/vividbot-pretrained
 data_path:  [/content/vividbot_image_56k_all.json, /content/llava_instruck_150k_all.json]
 image_folder: /content
 hf_repo_image: [Vividbot/vividbot_image/images, Vividbot/llava-instruct-150k-vi/images]
-video_data_path: [/content/videoinstruck100_vi_all.json, /content/vividbot_video_65k_all.json]
+video_data_path: [/content/videoinstruck100_vi_all.json, /content/vivid_video_instruct_128k_all.json]
 video_folder:  /content
 hf_repo_video: [Vividbot/videoinstruck100k/video, Vividbot/vividbot_video/videos]
 output_dir: model/output/stage2
