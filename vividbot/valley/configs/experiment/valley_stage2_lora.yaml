@@ -20,6 +20,7 @@ freeze_backbone: False
 tune_mm_mlp_adapter: True
 # wether lora
 lora: True
+should_save: True # save merged model
 # wether multimodal
 is_multimodal: True
 

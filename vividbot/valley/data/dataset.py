@@ -10,11 +10,12 @@ import torch
 import transformers
 from PIL import Image
 from torch.utils.data import Dataset
+
 from vividbot.valley.util.config import IGNORE_INDEX
 from vividbot.valley.util.data_util import (
   load_image_hf,
   load_video,
-  load_video_hf,
+  load_video_hf_with_fallback,
   preprocess,
   preprocess_multimodal_multiimage,
 )
@@ -160,7 +161,9 @@ class HybridDataset(Dataset):
           video = None
           for repo_id in self.multimodal_cfg["hf_repo_video"]:
             try:
-              video = load_video_hf(repo_path=repo_id, hf_video_path=video_file)
+              video = load_video_hf_with_fallback(
+                repo_path=repo_id, hf_video_path=video_file
+              )
               break
             except Exception:
               continue

@@ -250,7 +250,6 @@ def train(args):
 
   trainer.save_state()
   safe_save_model_for_hf_trainer(trainer=trainer, output_dir=training_args.output_dir)
-  model.save_pretrained(training_args.output_dir)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,8 @@
 import copy
 import io
+import logging
 import os
+import random
 import zipfile
 from pathlib import Path
 from typing import Dict, Sequence
@@ -14,6 +16,7 @@ from huggingface_hub import HfFileSystem
 from PIL import Image
 from torchvision import transforms
 from transformers import StoppingCriteria
+
 from vividbot.valley import conversation as conversation_lib
 from vividbot.valley.data import video_transform
 from vividbot.valley.util.config import (
@@ -26,6 +29,15 @@ from vividbot.valley.util.config import (
   DEFAULT_VIDEO_FRAME_TOKEN,
   DEFAULT_VIDEO_TOKEN,
   IGNORE_INDEX,
+)
+from vividbot.valley.util.constants import FALLBACK_HF_VIDEO_PATHS
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+  filename="model/output/stage2/trainer.log",
+  filemode="a",
+  level=logging.INFO,
+  format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 
 
@@ -409,6 +421,27 @@ def load_video_hf(repo_path, hf_video_path, frame_mode="fixed", fixed_frame_numb
   )
   video = trans(video)
   return video
+
+
+def load_video_hf_with_fallback(
+  repo_path, hf_video_path, frame_mode="fixed", fixed_frame_number=8
+):
+  # try to load the video from the hf path
+  # if it fails, iterate through the shuffled fallback paths and try to load the video from each until one succeeds
+  try:
+    return load_video_hf(repo_path, hf_video_path, frame_mode, fixed_frame_number)
+  except Exception as e:
+    logger.warning(
+      f"Failed to load video from hf path {hf_video_path}: {e} - Retrying with fallback paths..."
+    )
+    for fallback_path in random.sample(
+      FALLBACK_HF_VIDEO_PATHS, len(FALLBACK_HF_VIDEO_PATHS)
+    ):
+      try:
+        return load_video_hf(repo_path, fallback_path, frame_mode, fixed_frame_number)
+      except Exception as e:
+        logger.warning(f"Failed to load video from fallback path {fallback_path}: {e}")
+        continue
 
 
 def load_image_hf(repo_path, hf_image_path):
