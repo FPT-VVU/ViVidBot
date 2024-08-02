@@ -12,6 +12,7 @@ import torch
 import transformers
 from peft import LoraConfig, TaskType, get_peft_model
 from transformers import Trainer, TrainerCallback
+
 from vividbot.valley.data.dataset import make_video_supervised_data_module
 from vividbot.valley.model.valley_model import VividGPTForCausalLM
 from vividbot.valley.train.trainner import LLMCallback
@@ -249,6 +250,7 @@ def train(args):
 
   trainer.save_state()
   safe_save_model_for_hf_trainer(trainer=trainer, output_dir=training_args.output_dir)
+  model.save_pretrained(training_args.output_dir)
 
 
 if __name__ == "__main__":
