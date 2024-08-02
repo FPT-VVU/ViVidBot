@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+
 from langchain.globals import set_llm_cache
 from langchain.prompts import ChatPromptTemplate
 from langchain_community.cache import SQLiteCache
@@ -6,7 +9,8 @@ from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 from vividbot.data.task.vivid_instruct_65k.utils.llms import FALLBACK_LLM, LLM
 from vividbot.data.task.vivid_instruct_65k.utils.prompts import get_generate_qa_prompt
 
-set_llm_cache(SQLiteCache(database_path=".langchain.db"))
+os.makedirs(f"{Path.home()}/.cache", exist_ok=True)
+set_llm_cache(SQLiteCache(database_path=f"{Path.home()}/.cache/.langchain.db"))
 
 
 def get_generate_qa_pairs_chain():

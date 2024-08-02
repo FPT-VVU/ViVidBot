@@ -21,13 +21,13 @@ Remember to avoid harmful, inappropriate, or offensive content in the questions 
 
 
 DESCRIBE_VIDEO_PROMPTS_VI = [
-  """Mô tả sinh động nội dung của video.""",
-  """Viết mô tả toàn diện về video, nắm bắt bản chất và những khoảnh khắc quan trọng.""",
-  """Phân tích chi tiết video, bao gồm các chủ đề và yếu tố chính.""",
-  """Diễn đạt chính xác nội dung video, tập trung vào cốt truyện và hình ảnh.""",
-  """Trình bày phân tích chi tiết về các thành phần chính của video.""",
-  """Mô tả chi tiết các hành động, nhân vật và bối cảnh trong video.""",
-  """Trình bày chi tiết về bối cảnh, nhân vật và sự kiện trong video.""",
+  """Hãy mô tả nội dung video một cách sinh động.""",
+  """Viết một bản mô tả toàn diện về video, nắm bắt được điểm chính và những khoảnh khắc đáng nhớ.""",
+  """Phân tích kỹ lưỡng video, bao gồm chủ đề chính và các yếu tố nổi bật.""",
+  """Diễn đạt chính xác nội dung video, tập trung vào cốt truyện và hình ảnh quan trọng.""",
+  """Trình bày phân tích chi tiết về những thành phần chủ yếu của video.""",
+  """Mô tả cụ thể các hành động, nhân vật và bối cảnh xuất hiện trong video.""",
+  """Trình bày chi tiết về khung cảnh, nhân vật và sự kiện diễn ra trong video.""",
 ]
 
 GENERATE_QA_PROMPTS = [

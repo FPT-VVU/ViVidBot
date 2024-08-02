@@ -70,23 +70,46 @@ def process(shard_files: List[str]):
       for line in f:
         data.append(json.loads(line))
 
-    for i, d in tqdm(enumerate(data)):
+    conversational_data = []
+    for d in tqdm(data):
       id = d["id"]
       video = d["video"]
       conversations = []
-      description = d.get("description", None)
+
+      logger.info(f"Processing video: {video}")
+
+      for j, c in enumerate(d["conversations"]):
+        if j > 0 and j % 2 == 0:
+          # remove the strings "<video>\n" or "\n<video>" from the value
+          c["value"] = c["value"].replace("\n<video>", "").replace("<video>\n", "")
+
+        conversations.append(c)
+
+      conversational_data.append(
+        {
+          "id": id,
+          "video": video,
+          "conversations": conversations,
+        }
+      )
+
+    detailed_data = []
+    for d in tqdm(data):
+      id = d["id"]
+      video = d["video"]
+      conversations = []
+      description = d.get("description")
 
       logger.info(f"Processing video: {video}")
 
       if description:
-        if len(description) > 10000:
-          logger.info(f"Found malformed description: {description[:1000]}...")
+        if len(description) >= 1000:
+          logger.info(f"Found probably malformed description: {description[:1000]}...")
 
           dedup_chain = get_dedup_description_chain()
-
           description = dedup_chain.invoke(
             {
-              "message": description[:10000],
+              "message": description[:2000],
             }
           )
 
@@ -111,37 +134,39 @@ def process(shard_files: List[str]):
           }
         )
 
-        for j, c in enumerate(d["conversations"]):
-          if j % 2 == 0:
-            # remove the strings "<video>\n" or "\n<video>" from the value
-            c["value"] = c["value"].replace("\n<video>", "").replace("<video>\n", "")
+        detailed_data.append(
+          {
+            "id": id,
+            "video": video,
+            "conversations": conversations,
+          }
+        )
 
-          conversations.append(c)
-      else:
-        for j, c in enumerate(d["conversations"]):
-          if j > 0 and j % 2 == 0:
-            # remove the strings "<video>\n" or "\n<video>" from the value
-            c["value"] = c["value"].replace("\n<video>", "").replace("<video>\n", "")
-
-          conversations.append(c)
-
-      data[i] = {
-        "id": id,
-        "video": video,
-        "conversations": conversations,
-      }
+    final_data = conversational_data + detailed_data
 
     # sort data by id
-    data = sorted(data, key=lambda x: x["id"])
+    final_data = sorted(final_data, key=lambda x: x["id"])
+    conversational_data = sorted(conversational_data, key=lambda x: x["id"])
+    detailed_data = sorted(detailed_data, key=lambda x: x["id"])
 
     with open(
       f"{BASE_DATA_PATH}/post-processing/metadata-training/{shard}.json", "w"
     ) as f:
-      for d in data:
+      for d in final_data:
         f.write(json.dumps(d, ensure_ascii=False) + "\n")
 
-    with open(f"{BASE_DATA_PATH}/post-processing/metadata-training.json", "a") as f:
-      for d in data:
+    with open(
+      f"{BASE_DATA_PATH}/post-processing/vivid_video_instruct_128k.json", "a"
+    ) as f:
+      for d in final_data:
+        f.write(json.dumps(d, ensure_ascii=False) + "\n")
+
+    with open(f"{BASE_DATA_PATH}/post-processing/conversation_64k.json", "a") as f:
+      for d in conversational_data:
+        f.write(json.dumps(d, ensure_ascii=False) + "\n")
+
+    with open(f"{BASE_DATA_PATH}/post-processing/detail_64k.json", "a") as f:
+      for d in detailed_data:
         f.write(json.dumps(d, ensure_ascii=False) + "\n")
 
     # upload to huggingface
@@ -159,9 +184,46 @@ def process(shard_files: List[str]):
 
   # upload to huggingface
   hf_processor.upload_file(
-    file_path=f"{BASE_DATA_PATH}/output/post-processing/metadata-training.json",
+    file_path=f"{BASE_DATA_PATH}/output/post-processing/vivid_video_instruct_128k.json",
     repo_id="Vividbot/vividbot_video",
-    path_in_repo="metadata-training.json",
+    path_in_repo="vivid_video_instruct_128k.json",
+    repo_type="dataset",
+    overwrite=True,
+  )
+
+  hf_processor.upload_file(
+    file_path=f"{BASE_DATA_PATH}/output/post-processing/conversation_64k.json",
+    repo_id="Vividbot/vividbot_video",
+    path_in_repo="conversation_64k.json",
+    repo_type="dataset",
+    overwrite=True,
+  )
+
+  hf_processor.upload_file(
+    file_path=f"{BASE_DATA_PATH}/output/post-processing/detail_64k.json",
+    repo_id="Vividbot/vividbot_video",
+    path_in_repo="detail_64k.json",
+    repo_type="dataset",
+    overwrite=True,
+  )
+
+  # read the json lines in vivid_video_instruct_128k.json, save it to a list of json objects
+  all_data = []
+  with open(
+    f"{BASE_DATA_PATH}/output/post-processing/vivid_video_instruct_128k.json", "r"
+  ) as f:
+    for line in f:
+      all_data.append(json.loads(line))
+  # save the list to vivid_video_instruct_128k_all.json
+  with open(
+    f"{BASE_DATA_PATH}/output/post-processing/vivid_video_instruct_128k_all.json", "w"
+  ) as f:
+    f.write(json.dumps(all_data, ensure_ascii=False, indent=2))
+
+  hf_processor.upload_file(
+    file_path=f"{BASE_DATA_PATH}/output/post-processing/vivid_video_instruct_128k_all.json",
+    repo_id="Vividbot/vividbot_video",
+    path_in_repo="vivid_video_instruct_128k_all.json",
     repo_type="dataset",
     overwrite=True,
   )
@@ -175,13 +237,15 @@ def prepare():
 
 def main():
   prepare()
-  shard_files = os.listdir(f"{BASE_DATA_PATH}/vivid_instruct_65k")
-  shard_files = sorted(
-    shard_files,
-    key=lambda x: int(x.split(".")[0].split("_")[1]),
-  )
+  # shard_files = os.listdir(f"{BASE_DATA_PATH}/vivid_instruct_65k")
+  # shard_files = sorted(
+  #   shard_files,
+  #   key=lambda x: int(x.split(".")[0].split("_")[1]),
+  # )
 
-  last_successful_shard = 124
+  shard_files = [f"shard_{i}.jsonl" for i in range(0, 130)]
+
+  last_successful_shard = -1
 
   logger.info(f"Processing shards: {shard_files}")
 
