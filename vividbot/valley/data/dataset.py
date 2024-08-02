@@ -207,7 +207,9 @@ class HybridDataset(Dataset):
     except Exception as e:
       try:
         wandb.log(
-          f"Error processing data {self.list_data_dict[i]}: {e} - Retrying with fallbacks..."
+          {
+            "error": f"Error processing data {self.list_data_dict[i]}: {e} - Retrying with fallbacks..."
+          }
         )
 
         fallback_sources = None
@@ -271,7 +273,7 @@ class HybridDataset(Dataset):
               )
               break
             except Exception as e:
-              wandb.log(f"Couldn't process fallback image {image_file}: {e}")
+              wandb.log({"error": f"Couldn't process fallback image {image_file}: {e}"})
               continue
         elif data_type == "video":
           # repo: Vividbot/vividbot_video/videos
@@ -312,7 +314,7 @@ class HybridDataset(Dataset):
               )
               break
             except Exception as e:
-              wandb.log(f"Couldn't process fallback video {video_file}: {e}")
+              wandb.log({"error": f"Couldn't process fallback video {video_file}: {e}"})
               continue
         else:
           fallback_sources = json.load(
@@ -340,7 +342,9 @@ class HybridDataset(Dataset):
           data_dict["image"] = torch.zeros(3, crop_size["height"], crop_size["width"])
         return data_dict
       except Exception as e:
-        wandb.log(f"Error processing fallback data for {self.list_data_dict[i]}: {e}")
+        wandb.log(
+          {"error": f"Error processing fallback data for {self.list_data_dict[i]}: {e}"}
+        )
         return ("fail", sources)
 
 
