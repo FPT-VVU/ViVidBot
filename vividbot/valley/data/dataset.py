@@ -8,6 +8,7 @@ from typing import Dict, Literal, Sequence, Union
 
 import torch
 import transformers
+import wandb
 from PIL import Image
 from torch.utils.data import Dataset
 
@@ -22,14 +23,6 @@ from vividbot.valley.util.data_util import (
   load_video_hf,
   preprocess,
   preprocess_multimodal_multiimage,
-)
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(
-  filename="model/output/stage2/trainer.log",
-  filemode="a",
-  level=logging.INFO,
-  format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 
 
@@ -85,7 +78,7 @@ class HybridDataset(Dataset):
   def __getitem__(self, i) -> Dict[str, torch.Tensor]:
     sources = self.list_data_dict[i]
     if isinstance(i, int):
-        sources = [sources]
+      sources = [sources]
     data_type: Union[Literal["image", "video"], None] = (
       "image" if "image" in sources[0] else "video" if "video" in sources[0] else None
     )
@@ -93,13 +86,12 @@ class HybridDataset(Dataset):
     video = None
 
     try:
-      
       assert len(sources) == 1, "Don't know why it is wrapped to a list"  # FIXME
       if data_type == "image":
         processor = self.multimodal_cfg["image_processor"]
         # multi image preprocess
         if isinstance(self.list_data_dict[i]["image"], list):
-          image_file_lsit = self.list_data_dict[i]["image"] 
+          image_file_lsit = self.list_data_dict[i]["image"]
           image = [Image.open(image_file) for image_file in image_file_lsit]
           image = processor.preprocess(image, return_tensors="pt")["pixel_values"]
           # FIXME: 14 is hardcoded patch size
@@ -214,7 +206,7 @@ class HybridDataset(Dataset):
       return data_dict
     except Exception as e:
       try:
-        logger.error(
+        wandb.log(
           f"Error processing data {self.list_data_dict[i]}: {e} - Retrying with fallbacks..."
         )
 
@@ -279,7 +271,7 @@ class HybridDataset(Dataset):
               )
               break
             except Exception as e:
-              logger.error(f"Couldn't process fallback image {image_file}: {e}")
+              wandb.log(f"Couldn't process fallback image {image_file}: {e}")
               continue
         elif data_type == "video":
           # repo: Vividbot/vividbot_video/videos
@@ -320,7 +312,7 @@ class HybridDataset(Dataset):
               )
               break
             except Exception as e:
-              logger.error(f"Couldn't process fallback video {video_file}: {e}")
+              wandb.log(f"Couldn't process fallback video {video_file}: {e}")
               continue
         else:
           fallback_sources = json.load(
@@ -348,9 +340,7 @@ class HybridDataset(Dataset):
           data_dict["image"] = torch.zeros(3, crop_size["height"], crop_size["width"])
         return data_dict
       except Exception as e:
-        logger.error(
-          f"Error processing fallback data for {self.list_data_dict[i]}: {e}"
-        )
+        wandb.log(f"Error processing fallback data for {self.list_data_dict[i]}: {e}")
         return ("fail", sources)
 
 
