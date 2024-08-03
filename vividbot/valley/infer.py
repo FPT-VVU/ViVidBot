@@ -1,11 +1,13 @@
 import argparse
 import os
 import sys
+from transformers import BitsAndBytesConfig
+import torch
 
 from peft import PeftConfig, PeftModel
 from transformers import AutoTokenizer
 
-sys.path.append("/home/duytran/Desktop/ViVidBot")
+sys.path.append("/ViVidBot")
 from vividbot.valley.model.valley_model import VividGPTForCausalLM
 from vividbot.valley.util.config import (
   DEFAULT_IM_END_TOKEN,
@@ -43,20 +45,24 @@ def init_vision_token(model, tokenizer):
 def main(args):
   disable_torch_init()
 
-  # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-  device = "cpu"
+  device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+  # device = "cuda"
   model_name = os.path.expanduser(args.model_name)
-
+  # bnb_config = BitsAndBytesConfig(
+  #     load_in_8bit=True)
+      # bnb_8bit_use_double_quant=True,
+      # bnb_8bit_quant_type="nf4",
+      # bnb_8bit_compute_dtype=torch.float16,)
   print("load model")
   # if "lora" in model_name:
   config = PeftConfig.from_pretrained(model_name)
   if "config.json" in os.listdir(model_name):
-    model_old = VividGPTForCausalLM.from_pretrained(model_name)
+    model_old = VividGPTForCausalLM.from_pretrained(model_name, device_map=device)
   else:
-    model_old = VividGPTForCausalLM.from_pretrained(config.base_model_name_or_path)
+    model_old = VividGPTForCausalLM.from_pretrained(config.base_model_name_or_path, device_map=device)
   print("load lora model")
-  model = PeftModel.from_pretrained(model_old, model_name)
-  model = model.merge_and_unload().half()
+  model = PeftModel.from_pretrained(model_old, model_name, device_map=device)
+  model = model.merge_and_unload()
   tokenizer = AutoTokenizer.from_pretrained(config.base_model_name_or_path)
   tokenizer.padding_side = "left"
   print("load end")
@@ -67,13 +73,13 @@ def main(args):
   #     tokenizer = AutoTokenizer.from_pretrained(args.model_name)
   init_vision_token(model, tokenizer)
   print("load end")
-  model = model.to(device)
+  # model = model.to(device)
   model.eval()
 
   message = [
     {
       "role": "system",
-      "content": args.system_prompt if args.system_prompt else DEFAULT_SYSTEM,
+      "content": DEFAULT_SYSTEM,
     },
     # {"role":"user", "content": 'Hi!'},
     # {"role":"assistent", "content": 'Hi there! How can I help you today?'},
@@ -82,7 +88,7 @@ def main(args):
 
   gen_kwargs = dict(
     do_sample=False,
-    temperature=0.2,
+    temperature=0.0,
     max_new_tokens=1024,
   )
   response = model.completion(tokenizer, args.video_file, message, gen_kwargs, device)
@@ -92,19 +98,19 @@ def main(args):
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument(
-    "--model-name", type=str, default="../../checkpoints/stable-valley-13b-v1"
+    "--model-name", type=str, default="/ViVidBot/model/output/stage2/lora"
   )
   parser.add_argument(
     "--query",
     type=str,
     required=False,
-    default="Describe this video concisely.\n<video>",
+    default="Tỉ số của trận đấu này là bao nhiêu?\n<video>",
   )
   parser.add_argument(
     "--video-file",
     type=str,
     required=False,
-    default="valley/serve/examples/videos/dc52388394cc9f692d16a95d9833ca07.mp4",
+    default="/content/t.mp4",
   )
   parser.add_argument("--vision-tower", type=str, default=None)
   parser.add_argument("--system-prompt", type=str, default="")
