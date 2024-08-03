@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+
 import torch
 from peft import PeftConfig, PeftModel
 from transformers import BitsAndBytesConfig
@@ -7,7 +10,7 @@ from vividbot.valley.model.valley_model import VividGPTForCausalLM
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(device)
 
-model_name = "/home/dminhvu/vivid-4b/steps_30000"
+model_name = "Vividbot-vivid-4b-instruct"
 bnb_config = BitsAndBytesConfig(
   load_in_4bit=True,
   bnb_4bit_use_double_quant=True,
@@ -33,4 +36,5 @@ model = PeftModel.from_pretrained(
 print(model)
 
 model = model.merge_and_unload()
-model.save_pretrained("/home/dminhvu/vivid-4b/merged")
+os.makedirs(f"{Path.home()}/vivid-4b-merged", exist_ok=True)
+model.save_pretrained(f"{Path.home()}/vivid-4b-merged")
