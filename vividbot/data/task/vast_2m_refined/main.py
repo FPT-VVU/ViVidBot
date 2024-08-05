@@ -85,6 +85,7 @@ def _process(batch: dict):
   vision_caps = batch["vision_cap"]
   shard = videos[0].split("/")[0]
   processed_metadata = None
+  processed_ids = []
 
   # check if id already exists
   if os.path.exists(f"{REFINED_METADATA_PATH}/{shard}.jsonl"):
@@ -94,11 +95,10 @@ def _process(batch: dict):
       split="train",
     )
 
+    processed_ids = processed_metadata["id"]
+
   for i, (id, video, vision_cap) in tqdm(enumerate(zip(ids, videos, vision_caps))):
-    if (
-      processed_metadata
-      and processed_metadata.filter(lambda x: x["id"] == id).num_rows > 0
-    ):
+    if processed_metadata and id in processed_ids:
       logger.info(f"Skipping video {id} in shard {shard} as it already exists.")
       continue
 
@@ -223,8 +223,8 @@ def process():
     key=lambda x: int(x.split(".")[0].split("_")[1]),
   )
 
-  last_successful_shard = 299
-  shard_files = shard_files[last_successful_shard + 1 :]
+  last_successful_shard = 399
+  shard_files = shard_files[last_successful_shard + 1 : last_successful_shard + 101]
 
   logger.info(f"Processing shards: {shard_files}")
 

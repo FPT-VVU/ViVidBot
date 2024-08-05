@@ -81,6 +81,7 @@ def _process(batch: dict):
   images = batch["image"]
   all_conversations = batch["conversations"]
   processed_metadata = None
+  processed_ids = []
 
   # check if id already exists
   if os.path.exists(REFINED_METADATA_FILE):
@@ -90,13 +91,12 @@ def _process(batch: dict):
       split="train",
     )
 
+    processed_ids = processed_metadata["id"]
+
   for i, (id, image, conversations) in tqdm(
     enumerate(zip(ids, images, all_conversations))
   ):
-    if (
-      processed_metadata
-      and processed_metadata.filter(lambda x: x["id"] == id).num_rows > 0
-    ):
+    if processed_metadata and id in processed_ids:
       logger.info(f"Skipping video {id} as it already exists.")
       continue
 
