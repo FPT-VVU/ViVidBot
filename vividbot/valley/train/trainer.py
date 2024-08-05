@@ -19,10 +19,11 @@ from transformers.tokenization_utils_base import PreTrainedTokenizerBase
 from transformers.trainer_callback import TrainerControl, TrainerState
 from transformers.trainer_utils import EvalPrediction
 from transformers.training_args import TrainingArguments
+
 from vividbot.valley.util.data_util import KeywordsStoppingCriteria
 from vividbot.valley.utils import get_logger
 
-logger = get_logger("Trainer")
+logger = get_logger(__name__)
 
 
 class LLMCallback(TrainerCallback):
@@ -406,7 +407,7 @@ class VividTrainer(Seq2SeqTrainer):
     """
     # logger.info(f"rank: {dist.get_rank()}-{inputs['input_ids'].size()}-{inputs['ground_truth_labels'].size()}")
 
-    # evalset is format as input_ids, labels, and label_index, labels represent each turn converation length, and label_index is assistent reponse index
+    # evalset is format as input_ids, labels, and label_index, labels represent each turn converation length, and label_index is AI reponse index
     # inputs:{ 'input_ids', 'attention_mask', 'labels', 'images', 'label_index' }
 
     if not self.args.predict_with_generate or prediction_loss_only:

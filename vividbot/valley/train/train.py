@@ -15,7 +15,7 @@ from transformers import Trainer, TrainerCallback
 
 from vividbot.valley.data.dataset import make_video_supervised_data_module
 from vividbot.valley.model.valley_model import VividGPTForCausalLM
-from vividbot.valley.train.trainner import LLMCallback
+from vividbot.valley.train.trainer import LLMCallback
 from vividbot.valley.util.config import (
   DEFAULT_PAD_TOKEN,
   DEFAULT_VI_END_TOKEN,

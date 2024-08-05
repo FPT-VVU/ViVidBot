@@ -1,7 +1,6 @@
 import argparse
 import os
 import sys
-from transformers import BitsAndBytesConfig
 import torch
 
 from peft import PeftConfig, PeftModel
@@ -46,20 +45,22 @@ def main(args):
   disable_torch_init()
 
   device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-  # device = "cuda"
+
   model_name = os.path.expanduser(args.model_name)
   # bnb_config = BitsAndBytesConfig(
   #     load_in_8bit=True)
-      # bnb_8bit_use_double_quant=True,
-      # bnb_8bit_quant_type="nf4",
-      # bnb_8bit_compute_dtype=torch.float16,)
+  # bnb_8bit_use_double_quant=True,
+  # bnb_8bit_quant_type="nf4",
+  # bnb_8bit_compute_dtype=torch.float16,)
   print("load model")
   # if "lora" in model_name:
   config = PeftConfig.from_pretrained(model_name)
   if "config.json" in os.listdir(model_name):
     model_old = VividGPTForCausalLM.from_pretrained(model_name, device_map=device)
   else:
-    model_old = VividGPTForCausalLM.from_pretrained(config.base_model_name_or_path, device_map=device)
+    model_old = VividGPTForCausalLM.from_pretrained(
+      config.base_model_name_or_path, device_map=device
+    )
   print("load lora model")
   model = PeftModel.from_pretrained(model_old, model_name, device_map=device)
   model = model.merge_and_unload()
@@ -81,13 +82,11 @@ def main(args):
       "role": "system",
       "content": DEFAULT_SYSTEM,
     },
-    # {"role":"user", "content": 'Hi!'},
-    # {"role":"assistent", "content": 'Hi there! How can I help you today?'},
-    {"role": "user", "content": args.query},
+    {"role": "human", "content": args.query},
   ]
 
   gen_kwargs = dict(
-    do_sample=False,
+    do_sample=True,
     temperature=0.0,
     max_new_tokens=1024,
   )

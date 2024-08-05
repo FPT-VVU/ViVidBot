@@ -3,6 +3,7 @@ from enum import Enum
 
 import torch
 from transformers import AutoTokenizer
+
 from vividbot.valley.model.valley_model import ValleyLlamaForCausalLM
 from vividbot.valley.util.config import (
   DEFAULT_IM_END_TOKEN,
@@ -67,9 +68,9 @@ model.eval()
 # we support openai format input
 message = [
   {"role": "system", "content": system_prompt},
-  {"role": "user", "content": "Hi!"},
-  {"role": "assistent", "content": "Hi there! How can I help you today?"},
-  {"role": "user", "content": query},
+  {"role": "human", "content": "Hi!"},
+  {"role": "ai", "content": "Hi there! How can I help you today?"},
+  {"role": "human", "content": query},
 ]
 
 gen_kwargs = dict(
