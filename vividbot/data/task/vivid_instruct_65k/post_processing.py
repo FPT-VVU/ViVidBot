@@ -12,14 +12,14 @@ from tqdm import tqdm
 
 from vividbot.data.processor.download import YoutubeDownloader
 from vividbot.data.processor.huggingface import HuggingFaceProcessor
-from vividbot.data.task.vivid_instruct_65k.utils.chains import (
-  get_dedup_description_chain,
-)
 from vividbot.data.task.vivid_instruct_65k.utils.notifications import (
   send_completion_message,
 )
 from vividbot.data.task.vivid_instruct_65k.utils.prompts import (
   get_describe_video_prompt_vi,
+)
+from vividbot.data.task.common.chains import (
+  get_dedup_description_chain,
 )
 
 load_dotenv()

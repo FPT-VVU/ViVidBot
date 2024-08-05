@@ -74,7 +74,7 @@ def _process(batch: dict):
     thread.join()
 
 
-def process(shard_filename: str):
+def process_shard(shard_filename: str):
   """
   shard_filename: str = "shard_0.json"
   """
@@ -134,15 +134,14 @@ def prepare():
     f.write("")
 
 
-def main():
-  prepare()
+def process():
   shard_files = os.listdir(f"{BASE_DATA_PATH}/shards")
   shard_files = sorted(
     shard_files,
     key=lambda x: int(x.split(".")[0].split("_")[1]),
   )
 
-  last_successful_shard = 12
+  last_successful_shard = -1
   # only process shards after the last successful shard
   shard_files = shard_files[last_successful_shard + 1 :]
 
@@ -154,11 +153,12 @@ def main():
     unit="shard",
     unit_scale=True,
   ):
-    # thread = threading.Thread(target=process, args=(shard,))
-    # thread.start()
-    # thread.join()
-    process(shard)
+    process_shard(shard)
 
+
+def main():
+  prepare()
+  process()
   send_completion_message()
 
 
