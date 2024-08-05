@@ -223,7 +223,7 @@ def process():
     key=lambda x: int(x.split(".")[0].split("_")[1]),
   )
 
-  last_successful_shard = 399
+  last_successful_shard = 199
   shard_files = shard_files[last_successful_shard + 1 : last_successful_shard + 101]
 
   logger.info(f"Processing shards: {shard_files}")
