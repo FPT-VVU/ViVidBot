@@ -536,9 +536,9 @@ class VividGPTForCausalLM(LlamaForCausalLM):
         if "<video>" in m["content"] or "<image>" in m["content"]:
           message = m["content"].replace("<video>", replace_token)
           message = message.replace("<image>", replace_token)
-          prompt += " " + "Human: " + message + "\n\n" + "###"
+          prompt += " " + "Human: " + message + "\n" + "###"
       elif m["role"] == "ai":
-        prompt += " " + "AI" + ": " + m["content"] + "\n\n" + "###"
+        prompt += " " + "AI" + ": " + m["content"] + "\n" + "###"
       else:
         raise ValueError('Role must be "system", "human" or "ai".')
     if DEFAULT_IM_START_TOKEN not in prompt:
