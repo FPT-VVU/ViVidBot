@@ -70,9 +70,7 @@ def main(args):
       "role": "system",
       "content": args.system_prompt if args.system_prompt else DEFAULT_SYSTEM,
     },
-    # {"role":"user", "content": 'Hi!'},
-    # {"role":"assistent", "content": 'Hi there! How can I help you today?'},
-    {"role": "user", "content": args.query},
+    {"role": "human", "content": args.query},
   ]
 
   gen_kwargs = dict(

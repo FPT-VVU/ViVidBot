@@ -45,7 +45,7 @@ def main(args):
   disable_torch_init()
 
   device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-  # device = "cuda"
+
   model_name = os.path.expanduser(args.model_name)
   # bnb_config = BitsAndBytesConfig(
   #     load_in_8bit=True)
@@ -82,13 +82,11 @@ def main(args):
       "role": "system",
       "content": DEFAULT_SYSTEM,
     },
-    # {"role":"user", "content": 'Hi!'},
-    # {"role":"assistent", "content": 'Hi there! How can I help you today?'},
-    {"role": "user", "content": args.query},
+    {"role": "human", "content": args.query},
   ]
 
   gen_kwargs = dict(
-    do_sample=False,
+    do_sample=True,
     temperature=0.0,
     max_new_tokens=1024,
   )

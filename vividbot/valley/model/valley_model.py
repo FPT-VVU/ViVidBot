@@ -524,7 +524,7 @@ class VividGPTForCausalLM(LlamaForCausalLM):
     for m in messages:
       if m["role"] == "system":
         prompt += m["content"] + "\n\n" + "###"
-      elif m["role"] == "user":
+      elif m["role"] == "human":
         replace_token = (
           DEFAULT_IM_START_TOKEN
           + DEFAULT_IMAGE_PATCH_TOKEN * 256
@@ -536,11 +536,11 @@ class VividGPTForCausalLM(LlamaForCausalLM):
         if "<video>" in m["content"] or "<image>" in m["content"]:
           message = m["content"].replace("<video>", replace_token)
           message = message.replace("<image>", replace_token)
-          prompt += " " + "Human" + ": " + message + " \n" + "###"
-      elif m["role"] == "assistent":
-        prompt += " " + "Assistent" + ": " + m["content"] + " \n" + "###"
+          prompt += " " + "Human: " + message + "\n" + "###"
+      elif m["role"] == "ai":
+        prompt += " " + "AI" + ": " + m["content"] + "\n" + "###"
       else:
-        raise ValueError('Role is only suport "assistent", "human" and "system".')
+        raise ValueError('Role must be "system", "human" or "ai".')
     if DEFAULT_IM_START_TOKEN not in prompt:
       raise ValueError("You need to specify the <video> token in the query")
     tokenizer.padding_side = "left"
@@ -553,7 +553,7 @@ class VividGPTForCausalLM(LlamaForCausalLM):
       while True:
         cur_len = len(out)
         out = out.strip()
-        for pattern in ["###", "Assistant:", "Response:", "Vivid:"]:
+        for pattern in ["###", "AI:"]:
           if out.startswith(pattern):
             out = out[len(pattern) :].strip()
         if len(out) == cur_len:

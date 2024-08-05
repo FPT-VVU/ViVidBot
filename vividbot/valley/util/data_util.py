@@ -297,7 +297,7 @@ def load_video(
     elif frame_mode == "fps":
       fps_offset = int(round(video_reader.get_avg_fps()) / fps_number)
       video = video_reader.get_batch(range(0, video_len, fps_offset)).byte()
-      video = video.permute(3, 0, 1, 2)  # 3 x 8 x height x width
+      video = video.permute(3, 0, 1, 2)  # 3 x n x height x width
     input_mean = [
       0.48145466,
       0.4578275,
@@ -331,7 +331,7 @@ def load_video(
     elif frame_mode == "fps":
       raise ValueError("Input folder is not support this frame mode")
     else:
-      raise ValueError('Frame mode is only support "fps" or "fixed"')
+      raise ValueError('Frame mode only supports "fps" or "fixed"')
     video_frames = [Image.open(str(path)) for path in video_frames]
 
     if frame_process_method == "resize":
@@ -397,7 +397,7 @@ def load_video_hf(repo_path, hf_video_path, frame_mode="fixed", fixed_frame_numb
   elif frame_mode == "fps":
     raise ValueError("Input folder is not support this frame mode")
   else:
-    raise ValueError('Frame mode is only support "fps" or "fixed"')
+    raise ValueError('Frame mode only supports "fps" or "fixed"')
   input_mean = [
     0.48145466,
     0.4578275,
