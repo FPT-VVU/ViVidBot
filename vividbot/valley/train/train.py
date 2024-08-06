@@ -170,7 +170,7 @@ def train(args):
     model.initialize_vision_tokenizer(tokenizer=tokenizer)
 
   if training_args.freeze_backbone:
-    model.model.requires_grad_(False)
+    model.transformer.requires_grad_(False)
 
   if training_args.lora:
     # target_modules = [

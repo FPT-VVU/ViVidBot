@@ -380,8 +380,8 @@ class VividGPTForCausalLM(MptForCausalLM):
   def __init__(self, config):
     # super(LlamaForCausalLM, self).__init__(config)
     super(MptForCausalLM, self).__init__(config)
-    #self.model = VividGPTModel(config)
     self.transformer = VividGPTModel(config)
+    # self.transformer = VividGPTModel(config)
 
     self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
 
