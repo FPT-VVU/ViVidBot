@@ -15,3 +15,5 @@ prettytable
 opencv-python-headless 
 wandb
 av
+git+https://github.com/NVIDIA/TransformerEngine.git@144e4888b2cdd60bd52e706d5b7a79cb9c1a7156
+flash-attn

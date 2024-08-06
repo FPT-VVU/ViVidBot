@@ -8,18 +8,21 @@ from transformers import (
   AutoModelForCausalLM,
   CLIPImageProcessor,
   CLIPVisionModel,
-  # LlamaConfig,
-  # LlamaForCausalLM,
-  # LlamaModel,
-  MptConfig,
-  MptForCausalLM,
-  MptModel,
 )
+
+# LlamaConfig,
+# LlamaForCausalLM,
+# LlamaModel,
+# MptConfig,
+# MptForCausalLM,
+# MptModel,
 from transformers.modeling_outputs import (
   BaseModelOutputWithPast,
   CausalLMOutputWithPast,
 )
 
+from vividbot.valley.model.pho_gpt.configuration_mpt import MptConfig
+from vividbot.valley.model.pho_gpt.modeling_mpt import MptForCausalLM, MptModel
 from vividbot.valley.util.config import (
   DEFAULT_IM_END_TOKEN,
   DEFAULT_IM_START_TOKEN,
@@ -52,7 +55,7 @@ class VividGPTModel(MptModel):
       # if "chinese" in config.mm_vision_tower:
       #   from transformers import ChineseCLIPVisionModel as CLIPVisionModel
       # else:
-      from transformers import CLIPVisionModel
+      # from transformers import CLIPVisionModel
 
       self.vision_tower = CLIPVisionModel.from_pretrained(config.mm_vision_tower)
 
@@ -175,8 +178,10 @@ class VividGPTModel(MptModel):
     patch_feature_mean = torch.mean(patch_feature, dim=1)  # 256 , 4096
     patch_feature = patch_feature_delta + patch_feature_mean
     return patch_feature
+
   def embed_tokens(self, x):
     return self.wte(x)
+
   def forward(
     self,
     input_ids: torch.LongTensor = None,
@@ -192,9 +197,9 @@ class VividGPTModel(MptModel):
     # HACK: replace back original embeddings for Valley pretraining
     orig_embeds_params = getattr(self, "orig_embeds_params", None)
     if orig_embeds_params is not None:
-        orig_embeds_params = orig_embeds_params[0]
-        with torch.no_grad():
-            self.get_input_embeddings().weight.data[:-2] = orig_embeds_params[:-2].data
+      orig_embeds_params = orig_embeds_params[0]
+      with torch.no_grad():
+        self.get_input_embeddings().weight.data[:-2] = orig_embeds_params[:-2].data
 
     if inputs_embeds is None:
       # print(torch.max(input_ids))
@@ -367,7 +372,7 @@ class VividGPTModel(MptModel):
     )
 
 
-#class VividGPTForCausalLM(LlamaForCausalLM):
+# class VividGPTForCausalLM(LlamaForCausalLM):
 class VividGPTForCausalLM(MptForCausalLM):
   config_class = VividConfig
 
