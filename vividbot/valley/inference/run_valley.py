@@ -5,7 +5,7 @@ import torch
 from peft import PeftConfig, PeftModel
 from transformers import AutoTokenizer
 
-from vividbot.valley.model.valley_model import VividGPTForCausalLM
+from vividbot.valley.model.valley_model import VividMptForCausalLM
 from vividbot.valley.util.config import (
   DEFAULT_IM_END_TOKEN,
   DEFAULT_IM_START_TOKEN,
@@ -48,9 +48,9 @@ def main(args):
   if "lora" in model_name:
     config = PeftConfig.from_pretrained(model_name)
     if "config.json" in os.listdir(model_name):
-      model_old = VividGPTForCausalLM.from_pretrained(model_name)
+      model_old = VividMptForCausalLM.from_pretrained(model_name)
     else:
-      model_old = VividGPTForCausalLM.from_pretrained(config.base_model_name_or_path)
+      model_old = VividMptForCausalLM.from_pretrained(config.base_model_name_or_path)
     print("load lora model")
     model = PeftModel.from_pretrained(model_old, model_name)
     model = model.merge_and_unload().half()
@@ -58,7 +58,7 @@ def main(args):
     tokenizer.padding_side = "left"
     print("load end")
   else:
-    model = VividGPTForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
+    model = VividMptForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
     tokenizer = AutoTokenizer.from_pretrained(args.model_name)
   init_vision_token(model, tokenizer)
   print("load end")

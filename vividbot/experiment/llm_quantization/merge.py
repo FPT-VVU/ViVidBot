@@ -5,7 +5,7 @@ import torch
 from peft import PeftConfig, PeftModel
 from transformers import BitsAndBytesConfig
 
-from vividbot.valley.model.valley_model import VividGPTForCausalLM
+from vividbot.valley.model.valley_model import VividMptForCausalLM
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(device)
@@ -21,7 +21,7 @@ bnb_config = BitsAndBytesConfig(
 config = PeftConfig.from_pretrained(model_name)
 print(config)
 
-model = VividGPTForCausalLM.from_pretrained(
+model = VividMptForCausalLM.from_pretrained(
   model_name,
   quantization_config=bnb_config,
   device_map="auto",

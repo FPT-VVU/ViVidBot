@@ -7,7 +7,7 @@ from peft import PeftConfig, PeftModel
 from transformers import AutoTokenizer
 
 sys.path.append("/ViVidBot")
-from vividbot.valley.model.valley_model import VividGPTForCausalLM
+from vividbot.valley.model.valley_model import VividMptForCausalLM
 from vividbot.valley.util.config import (
   DEFAULT_IM_END_TOKEN,
   DEFAULT_IM_START_TOKEN,
@@ -56,9 +56,9 @@ def main(args):
   # if "lora" in model_name:
   config = PeftConfig.from_pretrained(model_name)
   if "config.json" in os.listdir(model_name):
-    model_old = VividGPTForCausalLM.from_pretrained(model_name, device_map=device)
+    model_old = VividMptForCausalLM.from_pretrained(model_name, device_map=device)
   else:
-    model_old = VividGPTForCausalLM.from_pretrained(
+    model_old = VividMptForCausalLM.from_pretrained(
       config.base_model_name_or_path, device_map=device
     )
   print("load lora model")

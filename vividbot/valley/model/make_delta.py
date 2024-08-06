@@ -8,7 +8,7 @@ import argparse
 import torch
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from vividbot.valley.model.valley_model import VividGPTForCausalLM
+from vividbot.valley.model.valley_model import VividMptForCausalLM
 
 
 def make_delta(base_model_path, target_model_path, delta_path, hub_repo_id):
@@ -18,7 +18,7 @@ def make_delta(base_model_path, target_model_path, delta_path, hub_repo_id):
   )
 
   print("Loading target model")
-  target = VividGPTForCausalLM.from_pretrained(
+  target = VividMptForCausalLM.from_pretrained(
     target_model_path, torch_dtype=torch.float16, low_cpu_mem_usage=True
   )
 

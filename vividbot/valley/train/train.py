@@ -14,7 +14,7 @@ from peft import LoraConfig, TaskType, get_peft_model
 from transformers import Trainer, TrainerCallback
 
 from vividbot.valley.data.dataset import make_video_supervised_data_module
-from vividbot.valley.model.valley_model import VividGPTForCausalLM
+from vividbot.valley.model.valley_model import VividMptForCausalLM
 from vividbot.valley.train.trainer import LLMCallback
 from vividbot.valley.util.config import (
   DEFAULT_PAD_TOKEN,
@@ -116,7 +116,7 @@ def train(args):
   training_args.learning_rate = float(training_args.learning_rate)
   os.environ["WANDB_PROJECT"] = data_args.project_name
 
-  model = VividGPTForCausalLM.from_pretrained(
+  model = VividMptForCausalLM.from_pretrained(
     model_args.model_name_or_path,
     cache_dir=training_args.cache_dir,
   )

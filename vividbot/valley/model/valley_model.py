@@ -1,28 +1,31 @@
+import math
+import warnings
 from typing import List, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
 from torch.nn import CrossEntropyLoss
+from torch.nn import functional as F
 from transformers import (
   AutoConfig,
   AutoModelForCausalLM,
   CLIPImageProcessor,
   CLIPVisionModel,
+  MptConfig,
+  MptForCausalLM,
+  MptModel,
 )
 
 # LlamaConfig,
 # LlamaForCausalLM,
 # LlamaModel,
-# MptConfig,
-# MptForCausalLM,
-# MptModel,
 from transformers.modeling_outputs import (
   BaseModelOutputWithPast,
   CausalLMOutputWithPast,
 )
 
-from vividbot.valley.model.pho_gpt.configuration_mpt import MptConfig
-from vividbot.valley.model.pho_gpt.modeling_mpt import MptForCausalLM, MptModel
+# from vividbot.valley.model.pho_gpt.configuration_mpt import MptConfig
+# from vividbot.valley.model.pho_gpt.modeling_mpt import MptForCausalLM, MptModel
 from vividbot.valley.util.config import (
   DEFAULT_IM_END_TOKEN,
   DEFAULT_IM_START_TOKEN,
@@ -35,30 +38,29 @@ from vividbot.valley.util.data_util import KeywordsStoppingCriteria, load_video
 
 
 # class VividConfig(LlamaConfig):
-class VividConfig(MptConfig):
-  model_type = "vivid"
+class VividMptConfig(MptConfig):
+  model_type = "vivid_mpt"
 
 
 # class VividGPTModel(LlamaModel):
-class VividGPTModel(MptModel):
-  config_class = VividConfig
+class VividMptModel(MptModel):
+  config_class = VividMptConfig
 
   # def __init__(self, config: LlamaConfig, mm_vision_tower=None, mm_hidden_size=None):
   def __init__(self, config: MptConfig, mm_vision_tower=None, mm_hidden_size=None):
-    super(VividGPTModel, self).__init__(config)
     config.hidden_size = config.d_model
+    super(VividMptModel, self).__init__(config)
 
     self.patch_pooling_method = "mean"
 
     if hasattr(config, "mm_vision_tower"):
       # HACK: for FSDP
-      self.vision_tower = [CLIPVisionModel.from_pretrained(config.mm_vision_tower)]
+      self.vision_tower = CLIPVisionModel.from_pretrained(config.mm_vision_tower)
+      self.mm_projector = nn.Linear(config.mm_hidden_size, config.hidden_size)
       # if "chinese" in config.mm_vision_tower:
       #   from transformers import ChineseCLIPVisionModel as CLIPVisionModel
       # else:
       # from transformers import CLIPVisionModel
-
-      # self.vision_tower = CLIPVisionModel.from_pretrained(config.mm_vision_tower)
 
     if (
       hasattr(config, "use_patch_importance_pooling")
@@ -81,9 +83,8 @@ class VividGPTModel(MptModel):
       self.position_matrix = torch.nn.Parameter(torch.zeros(2048, config.hidden_size))
       self.position_matrix.requires_grad = False
 
-    if hasattr(config, "use_mm_proj"):
-      self.mm_projector = nn.Linear(config.mm_hidden_size, config.hidden_size)
-      print(config.mm_hidden_size, config.hidden_size)
+  def embed_tokens(self, x):
+    return self.wte(x)
 
   def initialize_vision_modules(
     self,
@@ -179,9 +180,6 @@ class VividGPTModel(MptModel):
     patch_feature_mean = torch.mean(patch_feature, dim=1)  # 256 , 4096
     patch_feature = patch_feature_delta + patch_feature_mean
     return patch_feature
-
-  def embed_tokens(self, x):
-    return self.wte(x)
 
   def forward(
     self,
@@ -361,7 +359,7 @@ class VividGPTModel(MptModel):
         cur_image_idx += 1
       inputs_embeds = torch.stack(new_input_embeds, dim=0)
 
-    return super(VividGPTModel, self).forward(
+    return super(VividMptModel, self).forward(
       input_ids=None,
       attention_mask=attention_mask,
       past_key_values=past_key_values,
@@ -374,22 +372,38 @@ class VividGPTModel(MptModel):
 
 
 # class VividGPTForCausalLM(LlamaForCausalLM):
-class VividGPTForCausalLM(MptForCausalLM):
-  config_class = VividConfig
+class VividMptForCausalLM(MptForCausalLM):
+  config_class = VividMptConfig
+  supports_gradient_checkpointing = True
 
   def __init__(self, config):
     # super(LlamaForCausalLM, self).__init__(config)
     super(MptForCausalLM, self).__init__(config)
-    self.transformer = VividGPTModel(config)
+    self.transformer = VividMptModel(config)
     # self.transformer = VividGPTModel(config)
 
     self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
+    self.logit_scale = None
+    if config.logit_scale is not None:
+      logit_scale = config.logit_scale
+      if isinstance(logit_scale, str):
+        if logit_scale == "inv_sqrt_d_model":
+          logit_scale = 1 / math.sqrt(config.d_model)
+        else:
+          raise ValueError(
+            f"logit_scale={logit_scale!r} is not recognized as an option; use numeric value or 'inv_sqrt_d_model'."
+          )
+      self.logit_scale = logit_scale
 
     # Initialize weights and apply final processing
     self.post_init()
 
   def get_model(self):
     return self.transformer
+
+  def _set_gradient_checkpointing(self, module, value=False):
+    if isinstance(module, VividMptModel):
+      module.gradient_checkpointing = value
 
   def forward(
     self,
@@ -417,6 +431,7 @@ class VividGPTForCausalLM(MptForCausalLM):
     return_dict = (
       return_dict if return_dict is not None else self.config.use_return_dict
     )
+    use_cache = use_cache if use_cache is not None else self.config.use_cache
 
     # decoder outputs consists of (dec_features, layer_state, dec_hidden, dec_attn)
     outputs = self.transformer(
@@ -431,8 +446,26 @@ class VividGPTForCausalLM(MptForCausalLM):
       images=images,
     )
 
-    hidden_states = outputs[0]
-    logits = self.lm_head(hidden_states)
+    logits = F.linear(
+      outputs.last_hidden_state.to(self.transformer.wte.weight.device),
+      self.transformer.wte.weight,
+    )
+    if self.logit_scale is not None:
+      if self.logit_scale == 0:
+        warnings.warn(
+          f"Multiplying logits by self.logit_scale={self.logit_scale!r}. This will produce uniform (uninformative) outputs."
+        )
+      logits *= self.logit_scale
+    loss = None
+    if labels is not None:
+      labels = torch.roll(labels, shifts=-1)
+      labels[:, -1] = -100
+      loss = F.cross_entropy(
+        logits.view(-1, logits.size(-1)), labels.to(logits.device).view(-1)
+      )
+
+    # hidden_states = outputs[0]
+    # logits = self.lm_head(hidden_states)
     # print("*"*100)
     # print(self.config.vocab_size)
 
@@ -610,5 +643,5 @@ class VividGPTForCausalLM(MptForCausalLM):
     return response
 
 
-AutoConfig.register("vivid", VividConfig)
-AutoModelForCausalLM.register(VividConfig, VividGPTForCausalLM)
+AutoConfig.register("vivid", VividMptConfig)
+AutoModelForCausalLM.register(VividMptConfig, VividMptForCausalLM)
