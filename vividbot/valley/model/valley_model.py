@@ -46,6 +46,7 @@ class VividGPTModel(MptModel):
   # def __init__(self, config: LlamaConfig, mm_vision_tower=None, mm_hidden_size=None):
   def __init__(self, config: MptConfig, mm_vision_tower=None, mm_hidden_size=None):
     super(VividGPTModel, self).__init__(config)
+    config.hidden_size = config.d_model
 
     self.patch_pooling_method = "mean"
 
@@ -57,7 +58,7 @@ class VividGPTModel(MptModel):
       # else:
       # from transformers import CLIPVisionModel
 
-      self.vision_tower = CLIPVisionModel.from_pretrained(config.mm_vision_tower)
+      # self.vision_tower = CLIPVisionModel.from_pretrained(config.mm_vision_tower)
 
     if (
       hasattr(config, "use_patch_importance_pooling")
@@ -379,7 +380,8 @@ class VividGPTForCausalLM(MptForCausalLM):
   def __init__(self, config):
     # super(LlamaForCausalLM, self).__init__(config)
     super(MptForCausalLM, self).__init__(config)
-    self.model = VividGPTModel(config)
+    #self.model = VividGPTModel(config)
+    self.transformer = VividGPTModel(config)
 
     self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
 
@@ -387,7 +389,7 @@ class VividGPTForCausalLM(MptForCausalLM):
     self.post_init()
 
   def get_model(self):
-    return self.model
+    return self.transformer
 
   def forward(
     self,
@@ -417,7 +419,7 @@ class VividGPTForCausalLM(MptForCausalLM):
     )
 
     # decoder outputs consists of (dec_features, layer_state, dec_hidden, dec_attn)
-    outputs = self.model(
+    outputs = self.transformer(
       input_ids=input_ids,
       attention_mask=attention_mask,
       past_key_values=past_key_values,
