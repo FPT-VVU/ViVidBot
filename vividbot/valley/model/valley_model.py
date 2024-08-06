@@ -643,5 +643,5 @@ class VividMptForCausalLM(MptForCausalLM):
     return response
 
 
-AutoConfig.register("vivid", VividMptConfig)
+AutoConfig.register("vivid_mpt", VividMptConfig)
 AutoModelForCausalLM.register(VividMptConfig, VividMptForCausalLM)
