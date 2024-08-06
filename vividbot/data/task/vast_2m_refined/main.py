@@ -241,7 +241,7 @@ def process():
 def main():
   prepare()
   process()
-  post_process()
+  # post_process()
   send_completion_message()
 
 
