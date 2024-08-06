@@ -1,14 +1,14 @@
-model_name_or_path: vinai/PhoGPT-4B-Chat
-data_path: /content/instruct500k_vi_all.json
-hf_repo_image: Vividbot/instruct500k_vi
+model_name_or_path: vinai/PhoGPT-4B
+data_path: 
+hf_repo_image: [Vividbot/llava-pretrain-vi/images]
 image_folder: /content
-video_data_path: /content/vast2m_vi_all.json
+video_data_path: [/content/vast_2m_vi_refined_all.json]
 video_folder: /content
-hf_repo_video: Vividbot/vast2m_vi
+hf_repo_video: [Vividbot/vast-2m-vi/video]
 output_dir: model/output
 # experiment name
-project_name: valley
-run_name: valley_stage1
+project_name: vivid
+run_name: vivid_stage1_phogpt4b
 
 # Whether to make the system prompt a mask in the label, and others do not mask
 only_mask_system: False

@@ -125,7 +125,7 @@ def train(args):
     cache_dir=training_args.cache_dir,
     model_max_length=training_args.model_max_length,
     padding_side="right",
-    use_fast=True,
+    # use_fast=True,
     trust_remote_code=True,
   )
   if tokenizer.pad_token is None:
@@ -134,12 +134,6 @@ def train(args):
       tokenizer=tokenizer,
       model=model,
     )
-  # if "llama" in model_args.model_name_or_path:
-  #     tokenizer.add_special_tokens({
-  #         "eos_token": DEFAULT_EOS_TOKEN,
-  #         "bos_token": DEFAULT_BOS_TOKEN,
-  #         "unk_token": DEFAULT_UNK_TOKEN,
-  #     })
 
   tokenizer.add_tokens(
     [DEFAULT_VIDEO_FRAME_TOKEN, DEFAULT_VI_START_TOKEN, DEFAULT_VI_END_TOKEN],
@@ -207,8 +201,8 @@ def train(args):
     peft_config = LoraConfig(
       task_type=TaskType.CAUSAL_LM,
       inference_mode=False,
-      r=16,
-      lora_alpha=32,
+      r=32,
+      lora_alpha=128,
       lora_dropout=0.05,
       target_modules=target_modules,
     )

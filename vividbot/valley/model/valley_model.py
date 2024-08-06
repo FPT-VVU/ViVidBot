@@ -8,9 +8,12 @@ from transformers import (
   AutoModelForCausalLM,
   CLIPImageProcessor,
   CLIPVisionModel,
-  LlamaConfig,
-  LlamaForCausalLM,
-  LlamaModel,
+  # LlamaConfig,
+  # LlamaForCausalLM,
+  # LlamaModel,
+  MptConfig,
+  MptForCausalLM,
+  MptModel,
 )
 from transformers.modeling_outputs import (
   BaseModelOutputWithPast,
@@ -28,25 +31,28 @@ from vividbot.valley.util.config import (
 from vividbot.valley.util.data_util import KeywordsStoppingCriteria, load_video
 
 
-class VividConfig(LlamaConfig):
+# class VividConfig(LlamaConfig):
+class VividConfig(MptConfig):
   model_type = "vivid"
 
 
-class VividGPTModel(LlamaModel):
+# class VividGPTModel(LlamaModel):
+class VividGPTModel(MptModel):
   config_class = VividConfig
 
-  def __init__(self, config: LlamaConfig, mm_vision_tower=None, mm_hidden_size=None):
+  # def __init__(self, config: LlamaConfig, mm_vision_tower=None, mm_hidden_size=None):
+  def __init__(self, config: MptConfig, mm_vision_tower=None, mm_hidden_size=None):
     super(VividGPTModel, self).__init__(config)
 
     self.patch_pooling_method = "mean"
 
     if hasattr(config, "mm_vision_tower"):
       # HACK: for FSDP
-      # self.vision_tower = [CLIPVisionModel.from_pretrained(config.mm_vision_tower)]
-      if "chinese" in config.mm_vision_tower:
-        from transformers import ChineseCLIPVisionModel as CLIPVisionModel
-      else:
-        from transformers import CLIPVisionModel
+      self.vision_tower = [CLIPVisionModel.from_pretrained(config.mm_vision_tower)]
+      # if "chinese" in config.mm_vision_tower:
+      #   from transformers import ChineseCLIPVisionModel as CLIPVisionModel
+      # else:
+      from transformers import CLIPVisionModel
 
       self.vision_tower = CLIPVisionModel.from_pretrained(config.mm_vision_tower)
 
@@ -183,11 +189,11 @@ class VividGPTModel(LlamaModel):
     return_dict: Optional[bool] = None,
   ) -> Union[Tuple, BaseModelOutputWithPast]:
     # HACK: replace back original embeddings for Valley pretraining
-    # orig_embeds_params = getattr(self, "orig_embeds_params", None)
-    # if orig_embeds_params is not None:
-    #     orig_embeds_params = orig_embeds_params[0]
-    #     with torch.no_grad():
-    #         self.get_input_embeddings().weight.data[:-2] = orig_embeds_params[:-2].data
+    orig_embeds_params = getattr(self, "orig_embeds_params", None)
+    if orig_embeds_params is not None:
+        orig_embeds_params = orig_embeds_params[0]
+        with torch.no_grad():
+            self.get_input_embeddings().weight.data[:-2] = orig_embeds_params[:-2].data
 
     if inputs_embeds is None:
       # print(torch.max(input_ids))
@@ -203,7 +209,7 @@ class VividGPTModel(LlamaModel):
       and images is not None
     ):
       # TODO: this is a modified multimodal LLM -- Haotian Liu
-      # vision_tower = vision_tower[0]  # HACK: for FSDP
+      vision_tower = vision_tower[0]  # HACK: for FSDP
       with torch.no_grad():
         if type(images) is list:
           # variable length images
@@ -360,11 +366,13 @@ class VividGPTModel(LlamaModel):
     )
 
 
-class VividGPTForCausalLM(LlamaForCausalLM):
+#class VividGPTForCausalLM(LlamaForCausalLM):
+class VividGPTForCausalLM(MptForCausalLM):
   config_class = VividConfig
 
   def __init__(self, config):
-    super(LlamaForCausalLM, self).__init__(config)
+    # super(LlamaForCausalLM, self).__init__(config)
+    super(MptForCausalLM, self).__init__(config)
     self.model = VividGPTModel(config)
 
     self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)

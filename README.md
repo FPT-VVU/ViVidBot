@@ -8,8 +8,8 @@ huggingface-cli login --token ...
 
 ## download data for pretrain stage
 from huggingface_hub import hf_hub_download
-hf_hub_download(repo_id="Vividbot/vast2m_vi", filename="vast2m_vi_all.json", repo_type="dataset", local_dir="/content")
-hf_hub_download(repo_id="Vividbot/instruct500k_vi", filename="instruct500k_vi_all.json", repo_type="dataset", local_dir="/content")
+hf_hub_download(repo_id="Vividbot/vast-2m-vi", filename="vast_2m_vi_refined_all.json", repo_type="dataset", local_dir="/content")
+hf_hub_download(repo_id="Vividbot/llava-pretrain-vi", filename="instruct500k_vi_all.json", repo_type="dataset", local_dir="/content")
 
 # download model pretrain
 hf_hub_download(repo_id="Vividbot/vividbot_pretrain", filename="output/vividbot-pretrained.zip", repo_type="model", local_dir="/content")
