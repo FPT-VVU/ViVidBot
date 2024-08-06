@@ -177,7 +177,7 @@ Description: Đây là một tấm đệm lót nệm cao cấp bằng gel memory
 Example 2:
 Captions: a spartan helmet, laurels and laurel wreath, silhouette logo, emblem
 Question: Bạn có thể giải thích ý nghĩa của hình ảnh này không?
-Description: Hình ảnh này là một biểu tượng hoặc logo có ý nghĩa tượng trưng cho sức mạnh và vinh quang. Nó bao gồm một mũ giáp Sparta - biểu tượng của chiến binh và lòng dũng cảm - được bao quanh bởi vòng nguyệt quế, vốn là biểu tượng truyền thống của chiến thắng và danh dự. Thiết kế dạng bóng đen (silhouette) tạo nên một hình ảnh mạnh mẽ và dễ nhận biết, thích hợp để sử dụng làm biểu tượng hoặc huy hiệu cho các tổ chức muốn thể hiện tinh thần chiến đấu và thành công.
+Description: Hình ảnh này là một biểu tượng hoặc logo có ý nghĩa tượng trưng cho sức mạnh và vinh quang. Nó bao gồm một mũ giáp Sparta - biểu tượng của chiến binh và lòng dũng cảm - được bao quanh bởi vòng nguyệt quế, vốn là biểu tượng truyền thống của chiến thắng và danh dự. Thiết kế dạng bóng đen tạo nên một hình ảnh mạnh mẽ và dễ nhận biết, thích hợp để sử dụng làm biểu tượng hoặc huy hiệu cho các tổ chức muốn thể hiện tinh thần chiến đấu và thành công.
 """
 
   return (

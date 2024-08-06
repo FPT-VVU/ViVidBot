@@ -108,6 +108,14 @@ def _process(batch: dict):
       conversations=[],
     )
 
+    # langfuse_handler = CallbackHandler(
+    #   secret_key="sk-lf-bfa7365e-2871-4669-bda2-4818fcab68de",
+    #   public_key="pk-lf-b6e63d27-8f4b-4911-acd2-5838400c1dfb",
+    #   host="https://langfuse.formularizer.com",
+    #   tags=["vividbot"],
+    #   session_id=id,
+    # )
+
     translate_chain = get_rewrite_vast_caps_chain()
 
     question = get_random_question(id=i)
@@ -115,7 +123,10 @@ def _process(batch: dict):
       {
         "captions": json.dumps(vision_cap, separators=(",", ":"), ensure_ascii=False),
         "question": question,
-      }
+      },
+      {
+        # "callbacks": [langfuse_handler],
+      },
     )
 
     if np.random.rand() < 0.5:
@@ -223,8 +234,8 @@ def process():
     key=lambda x: int(x.split(".")[0].split("_")[1]),
   )
 
-  last_successful_shard = 199
-  shard_files = shard_files[last_successful_shard + 1 : last_successful_shard + 101]
+  last_successful_shard = -1
+  shard_files = shard_files[last_successful_shard + 1 : last_successful_shard + 501]
 
   logger.info(f"Processing shards: {shard_files}")
 

@@ -77,26 +77,21 @@ def prepare():
 
 
 def _process(batch: dict):
-  ids = batch["id"]
-  images = batch["image"]
-  all_conversations = batch["conversations"]
-  processed_metadata = None
+  batch_ids = batch["id"]
+  batch_images = batch["image"]
+  batch_conversations = batch["conversations"]
   processed_ids = []
 
   # check if id already exists
-  if os.path.exists(REFINED_METADATA_FILE):
-    processed_metadata = load_dataset(
-      "json",
-      data_files=REFINED_METADATA_FILE,
-      split="train",
+  if os.path.exists(f"{Path.home()}/data/llava-pretrain/process_ids.json"):
+    processed_ids = json.load(
+      open(f"{Path.home()}/data/llava-pretrain/process_ids.json")
     )
 
-    processed_ids = processed_metadata["id"]
-
   for i, (id, image, conversations) in tqdm(
-    enumerate(zip(ids, images, all_conversations))
+    enumerate(zip(batch_ids, batch_images, batch_conversations))
   ):
-    if processed_metadata and id in processed_ids:
+    if id in processed_ids:
       logger.info(f"Skipping video {id} as it already exists.")
       continue
 
@@ -113,7 +108,7 @@ def _process(batch: dict):
       {
         "captions": conversations[1]["value"],
         "question": question,
-      }
+      },
     )
 
     if np.random.rand() < 0.5:
@@ -151,7 +146,7 @@ def process():
     split="train",
   )
 
-  temp_metadata.map(_process, num_proc=os.cpu_count(), batched=True, batch_size=200)
+  temp_metadata.map(_process, num_proc=os.cpu_count(), batched=True, batch_size=480)
 
   processed_metadata = load_dataset(
     "json",
