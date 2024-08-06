@@ -26,8 +26,8 @@ from vividbot.valley.util.data_util import (
 )
 
 logger = logging.getLogger(__name__)
-with open(f"{Path.home()}/run.log", "w") as f:
-  f.write("")
+# with open(f"{Path.home()}/run.log", "w") as f:
+#   f.write("")
 logging.basicConfig(
   filename=f"{Path.home()}/run.log",
   level=logging.INFO,
