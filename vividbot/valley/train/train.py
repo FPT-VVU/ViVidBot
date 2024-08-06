@@ -1,6 +1,8 @@
 import os
 import sys
 
+from vividbot.valley.model.vivid_llama import VividLlamaForCausalLM
+
 sys.path.append(os.getcwd())
 import argparse
 import os
@@ -14,10 +16,14 @@ from peft import LoraConfig, TaskType, get_peft_model
 from transformers import Trainer, TrainerCallback
 
 from vividbot.valley.data.dataset import make_video_supervised_data_module
-from vividbot.valley.model.valley_model import VividGPTForCausalLM
+
+# from vividbot.valley.model.valley_model import VividGPTForCausalLM
 from vividbot.valley.train.trainer import LLMCallback
 from vividbot.valley.util.config import (
+  DEFAULT_BOS_TOKEN,
+  DEFAULT_EOS_TOKEN,
   DEFAULT_PAD_TOKEN,
+  DEFAULT_UNK_TOKEN,
   DEFAULT_VI_END_TOKEN,
   DEFAULT_VI_START_TOKEN,
   DEFAULT_VIDEO_FRAME_TOKEN,
@@ -116,7 +122,7 @@ def train(args):
   training_args.learning_rate = float(training_args.learning_rate)
   os.environ["WANDB_PROJECT"] = data_args.project_name
 
-  model = VividGPTForCausalLM.from_pretrained(
+  model = VividLlamaForCausalLM.from_pretrained(
     model_args.model_name_or_path,
     cache_dir=training_args.cache_dir,
   )
@@ -125,7 +131,7 @@ def train(args):
     cache_dir=training_args.cache_dir,
     model_max_length=training_args.model_max_length,
     padding_side="right",
-    # use_fast=True,
+    use_fast=True,
     trust_remote_code=True,
   )
   if tokenizer.pad_token is None:
@@ -133,6 +139,15 @@ def train(args):
       special_tokens_dict=dict(pad_token=DEFAULT_PAD_TOKEN),
       tokenizer=tokenizer,
       model=model,
+    )
+
+  if "llama" in model_args.model_name_or_path:
+    tokenizer.add_special_tokens(
+      {
+        "eos_token": DEFAULT_EOS_TOKEN,
+        "bos_token": DEFAULT_BOS_TOKEN,
+        "unk_token": DEFAULT_UNK_TOKEN,
+      }
     )
 
   tokenizer.add_tokens(
@@ -187,7 +202,6 @@ def train(args):
     #   ]
     # ]
 
-    # target modules for PhoGPT should be
     target_modules = [
       "q_proj",
       "k_proj",
