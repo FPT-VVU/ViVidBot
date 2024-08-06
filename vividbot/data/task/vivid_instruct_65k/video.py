@@ -15,15 +15,15 @@ from tqdm import tqdm
 
 from vividbot.data.processor.download import YoutubeDownloader
 from vividbot.data.processor.huggingface import HuggingFaceProcessor
-from vividbot.data.task.vivid_instruct_65k.utils.chains import (
-  get_generate_qa_pairs_chain,
-)
 from vividbot.data.task.vivid_instruct_65k.utils.notifications import (
   send_completion_message,
   send_process_shard_success_message,
 )
 from vividbot.data.task.vivid_instruct_65k.utils.prompts import (
   get_describe_video_prompt,
+)
+from vividbot.data.task.common.chains import (
+  get_generate_qa_pairs_chain,
 )
 
 load_dotenv()
