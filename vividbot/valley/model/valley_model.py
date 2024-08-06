@@ -175,7 +175,8 @@ class VividGPTModel(MptModel):
     patch_feature_mean = torch.mean(patch_feature, dim=1)  # 256 , 4096
     patch_feature = patch_feature_delta + patch_feature_mean
     return patch_feature
-
+  def embed_tokens(self, x):
+    return self.wte(x)
   def forward(
     self,
     input_ids: torch.LongTensor = None,

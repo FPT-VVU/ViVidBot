@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 # with open(f"{Path.home()}/run.log", "w") as f:
 #   f.write("")
 logging.basicConfig(
-  filename=f"{Path.home()}/run.log",
+  filename=f"/root/run.log",
   level=logging.INFO,
   format="%(asctime)s - %(levelname)s - %(message)s",
 )
