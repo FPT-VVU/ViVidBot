@@ -1120,16 +1120,6 @@ Pillow = "*"
 pydantic = "*"
 
 [[package]]
-name = "flash-attention"
-version = "1.0.0"
-description = "Flash Attention2 operator on Huawei Ascend 910A."
-optional = false
-python-versions = "*"
-files = [
-    {file = "flash_attention-1.0.0-py3-none-any.whl", hash = "sha256:9f8293b16dda6e46149cf73631158c40afec1393db66698fa45f8ba4b64b5f3e"},
-]
-
-[[package]]
 name = "frozenlist"
 version = "1.4.1"
 description = "A list-like structure which implements collections.abc.MutableSequence"
@@ -6013,4 +6003,4 @@ test = ["pytest (>=8.1,<9.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "5fd7f3ad8adda20d9cfe33d687a97e344ed3500ffc765022b3b2610fa19ca32d"
+content-hash = "ae6de4aad33e1004cb1b9b0d4b5c43c7cdf593ed42868fa0ea237f5103332c5e"

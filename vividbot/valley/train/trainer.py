@@ -76,7 +76,7 @@ class LLMCallback(TrainerCallback):
         epoch = "steps_" + save_number
         output_dir = os.path.join(args.output_dir, epoch)
         os.makedirs(output_dir, exist_ok=True)
-        model_.base_model.transformer.save_pretrained(output_dir)
+        model_.base_model.model.save_pretrained(output_dir)
 
     return super().on_step_end(args, state, control, **kwargs)
 
@@ -110,7 +110,7 @@ class LLMCallback(TrainerCallback):
         epoch = "epoch_" + save_number
         output_dir = os.path.join(args.output_dir, epoch)
         os.makedirs(output_dir, exist_ok=True)
-        model_.base_model.transformer.save_pretrained(output_dir)
+        model_.base_model.model.save_pretrained(output_dir)
     return super().on_epoch_end(args, state, control, **kwargs)
 
   def merge_files(self, prediction_file_name):

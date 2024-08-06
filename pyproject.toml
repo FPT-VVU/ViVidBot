@@ -51,7 +51,6 @@ sentencepiece = "^0.2.0"
 unsloth = {git = "https://github.com/unslothai/unsloth.git"}
 bitsandbytes = "^0.43.3"
 gguf = "^0.9.1"
-flash-attention = "^1.0.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -73,7 +72,7 @@ target-version = "py310"
 # Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
 # McCabe complexity (`C901`) by default.
 select = ["E4", "E7", "E9", "F"]
-ignore = ["E722", "E402", "E712", "E731"]
+ignore = []
 
 fixable = ["ALL"]
 unfixable = []

@@ -8,21 +8,18 @@ from transformers import (
   AutoModelForCausalLM,
   CLIPImageProcessor,
   CLIPVisionModel,
+  # LlamaConfig,
+  # LlamaForCausalLM,
+  # LlamaModel,
+  MptConfig,
+  MptForCausalLM,
+  MptModel,
 )
-
-# LlamaConfig,
-# LlamaForCausalLM,
-# LlamaModel,
-# MptConfig,
-# MptForCausalLM,
-# MptModel,
 from transformers.modeling_outputs import (
   BaseModelOutputWithPast,
   CausalLMOutputWithPast,
 )
 
-from vividbot.valley.model.pho_gpt.configuration_mpt import MptConfig
-from vividbot.valley.model.pho_gpt.modeling_mpt import MptForCausalLM, MptModel
 from vividbot.valley.util.config import (
   DEFAULT_IM_END_TOKEN,
   DEFAULT_IM_START_TOKEN,
@@ -46,19 +43,18 @@ class VividGPTModel(MptModel):
   # def __init__(self, config: LlamaConfig, mm_vision_tower=None, mm_hidden_size=None):
   def __init__(self, config: MptConfig, mm_vision_tower=None, mm_hidden_size=None):
     super(VividGPTModel, self).__init__(config)
-    config.hidden_size = config.d_model
 
     self.patch_pooling_method = "mean"
 
     if hasattr(config, "mm_vision_tower"):
       # HACK: for FSDP
-      self.vision_tower = [CLIPVisionModel.from_pretrained(config.mm_vision_tower)]
+      # self.vision_tower = [CLIPVisionModel.from_pretrained(config.mm_vision_tower)]
       # if "chinese" in config.mm_vision_tower:
       #   from transformers import ChineseCLIPVisionModel as CLIPVisionModel
       # else:
-      # from transformers import CLIPVisionModel
+      from transformers import CLIPVisionModel
 
-      # self.vision_tower = CLIPVisionModel.from_pretrained(config.mm_vision_tower)
+      self.vision_tower = CLIPVisionModel.from_pretrained(config.mm_vision_tower)
 
     if (
       hasattr(config, "use_patch_importance_pooling")
@@ -380,8 +376,7 @@ class VividGPTForCausalLM(MptForCausalLM):
   def __init__(self, config):
     # super(LlamaForCausalLM, self).__init__(config)
     super(MptForCausalLM, self).__init__(config)
-    self.transformer = VividGPTModel(config)
-    # self.transformer = VividGPTModel(config)
+    self.model = VividGPTModel(config)
 
     self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
 
@@ -389,7 +384,7 @@ class VividGPTForCausalLM(MptForCausalLM):
     self.post_init()
 
   def get_model(self):
-    return self.transformer
+    return self.model
 
   def forward(
     self,
@@ -419,7 +414,7 @@ class VividGPTForCausalLM(MptForCausalLM):
     )
 
     # decoder outputs consists of (dec_features, layer_state, dec_hidden, dec_attn)
-    outputs = self.transformer(
+    outputs = self.model(
       input_ids=input_ids,
       attention_mask=attention_mask,
       past_key_values=past_key_values,
