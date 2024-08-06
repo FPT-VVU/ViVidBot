@@ -214,7 +214,7 @@ class VividMptModel(MptModel):
       and images is not None
     ):
       # TODO: this is a modified multimodal LLM -- Haotian Liu
-      vision_tower = vision_tower[0]  # HACK: for FSDP
+      # vision_tower = vision_tower[0]  # HACK: for FSDP
       with torch.no_grad():
         if type(images) is list:
           # variable length images
@@ -572,7 +572,7 @@ class VividMptForCausalLM(MptForCausalLM):
     prompt = ""
     for m in messages:
       if m["role"] == "system":
-        prompt += m["content"] + "\n\n" + "###"
+        prompt += m["content"] + "###"
       elif m["role"] == "human":
         replace_token = (
           DEFAULT_IM_START_TOKEN
