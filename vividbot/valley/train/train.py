@@ -179,19 +179,31 @@ def train(args):
     model.model.requires_grad_(False)
 
   if training_args.lora:
+    # target_modules = [
+    #   "model.layers." + str(i) + "." + k
+    #   for i in range(40)
+    #   for k in [
+    #     "self_attn.q_proj",
+    #     "self_attn.k_proj",
+    #     "self_attn.v_proj",
+    #     "self_attn.o_proj",
+    #     "mlp.gate_proj",
+    #     "mlp.down_proj",
+    #     "mlp.up_proj",
+    #   ]
+    # ]
+
+    # target modules for PhoGPT should be
     target_modules = [
-      "model.layers." + str(i) + "." + k
-      for i in range(40)
-      for k in [
-        "self_attn.q_proj",
-        "self_attn.k_proj",
-        "self_attn.v_proj",
-        "self_attn.o_proj",
-        "mlp.gate_proj",
-        "mlp.down_proj",
-        "mlp.up_proj",
-      ]
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "down_proj",
+      "up_proj",
     ]
+
     peft_config = LoraConfig(
       task_type=TaskType.CAUSAL_LM,
       inference_mode=False,
