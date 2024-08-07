@@ -13,7 +13,7 @@ from typing import Optional
 import torch
 import transformers
 from peft import LoraConfig, TaskType, get_peft_model
-from transformers import Trainer, TrainerCallback
+from transformers import AutoTokenizer, Trainer, TrainerCallback
 
 from vividbot.valley.data.dataset import make_video_supervised_data_module
 
@@ -132,12 +132,12 @@ def train(args):
     cache_dir=training_args.cache_dir,
   )
   print("tokenizer model_name_or_path=", model_args.model_name_or_path)
-  tokenizer = transformers.AutoTokenizer.from_pretrained(
+  tokenizer = AutoTokenizer.from_pretrained(
     model_args.model_name_or_path,
     cache_dir=training_args.cache_dir,
     model_max_length=training_args.model_max_length,
     padding_side="right",
-    use_fast=False,
+    use_fast=True,
     trust_remote_code=True,
   )
   if tokenizer.pad_token is None:
