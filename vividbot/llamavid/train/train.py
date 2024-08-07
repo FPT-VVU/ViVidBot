@@ -44,7 +44,7 @@ from vividbot.llamavid.train.llava_trainer import LLaVATrainer
 from vividbot.llamavid.train.mm_utils import tokenizer_image_token
 from vividbot.valley.util.data_util import load_image_hf, load_video_hf
 
-wandb.init(project="vivid")
+wandb.init(project="vivid", name="vivid_llama_stage1")
 local_rank = None
 
 

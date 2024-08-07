@@ -14,7 +14,7 @@ wandb login c2842eff34b9959f6e3efe3a790707d7ccf10fb3
 
 NCCL_P2P_DISABLE=1 NCCL_IB_DISABLE=1 deepspeed vividbot/llamavid/train/train_mem.py \
     --deepspeed ./vividbot/scripts/zero2.json \
-    --model_name_or_path meta-llama/Llama-2-7b \
+    --model_name_or_path vilm/vinallama-7b \
     --version plain_guided \
     --data_path /content/vast_2m_vi_refined_all.json /content/llava_pretrain_vi_all.json \
     --image_folder Vividbot/llava-pretrain-vi/images \
