@@ -119,6 +119,10 @@ def train(args):
   model_args, data_args, training_args = parser.parse_yaml_file(
     args.conf, allow_extra_keys=True
   )
+  print("model_args", model_args)
+  print("data_args", data_args)
+  print("training_args", training_args)
+
   training_args.learning_rate = float(training_args.learning_rate)
   os.environ["WANDB_PROJECT"] = data_args.project_name
 
@@ -126,6 +130,7 @@ def train(args):
     model_args.model_name_or_path,
     cache_dir=training_args.cache_dir,
   )
+
   tokenizer = transformers.AutoTokenizer.from_pretrained(
     model_args.model_name_or_path,
     cache_dir=training_args.cache_dir,
