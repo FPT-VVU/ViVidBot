@@ -78,6 +78,13 @@ class LLMCallback(TrainerCallback):
         os.makedirs(output_dir, exist_ok=True)
         model_.base_model.model.save_pretrained(output_dir)
 
+    # save trainer_state.json
+    state.save_to_json(
+      os.path.join(
+        args.output_dir, f"checkpoint-{state.global_step}/trainer_state.json"
+      )
+    )
+
     return super().on_step_end(args, state, control, **kwargs)
 
   def on_epoch_end(

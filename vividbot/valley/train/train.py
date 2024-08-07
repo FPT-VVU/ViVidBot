@@ -258,6 +258,8 @@ def train(args):
   else:
     callback_class = TrainerCallback
 
+  tokenizer.save_pretrained(training_args.output_dir)
+
   trainer = Trainer(
     model=model,
     tokenizer=tokenizer,
