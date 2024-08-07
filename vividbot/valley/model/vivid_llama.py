@@ -170,8 +170,8 @@ class VividLlamaModel(LlamaModel):
     patch_feature = patch_feature_delta + patch_feature_mean
     return patch_feature
 
-  # def embed_tokens(self, x):
-  #   return self.wte(x)
+  def embed_tokens(self, x):
+    return self.wte
 
   def forward(
     self,
@@ -187,11 +187,11 @@ class VividLlamaModel(LlamaModel):
     return_dict: Optional[bool] = None,
   ) -> Union[Tuple, BaseModelOutputWithPast]:
     # HACK: replace back original embeddings for Valley pretraining
-    # orig_embeds_params = getattr(self, "orig_embeds_params", None)
-    # if orig_embeds_params is not None:
-    #   orig_embeds_params = orig_embeds_params[0]
-    #   with torch.no_grad():
-    #     self.get_input_embeddings().weight.data[:-2] = orig_embeds_params[:-2].data
+    orig_embeds_params = getattr(self, "orig_embeds_params", None)
+    if orig_embeds_params is not None:
+      orig_embeds_params = orig_embeds_params[0]
+      with torch.no_grad():
+        self.get_input_embeddings().weight.data[:-2] = orig_embeds_params[:-2].data
 
     if inputs_embeds is None:
       # print(torch.max(input_ids))
