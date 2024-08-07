@@ -2,7 +2,16 @@ from typing import List, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
+import math
 from torch.nn import CrossEntropyLoss
+from vividbot.valley.util.data_util import (
+  load_image_hf,
+  load_video,
+  load_video_hf,
+  preprocess,
+  preprocess_multimodal_multiimage,
+)
+from vividbot.valley.util.data_util import  KeywordsStoppingCriteria
 from transformers import (
   AutoConfig,
   AutoModelForCausalLM,
@@ -28,7 +37,6 @@ from vividbot.valley.util.config import (
   DEFAULT_VI_START_TOKEN,
   DEFAULT_VIDEO_FRAME_TOKEN,
 )
-from vividbot.valley.util.data_util import KeywordsStoppingCriteria, load_video
 
 
 # class VividConfig(LlamaConfig):
@@ -42,8 +50,8 @@ class VividGPTModel(MptModel):
 
   # def __init__(self, config: LlamaConfig, mm_vision_tower=None, mm_hidden_size=None):
   def __init__(self, config: MptConfig, mm_vision_tower=None, mm_hidden_size=None):
+    config.hidden_size = config.d_model
     super(VividGPTModel, self).__init__(config)
-
     self.patch_pooling_method = "mean"
 
     if hasattr(config, "mm_vision_tower"):
@@ -212,7 +220,7 @@ class VividGPTModel(MptModel):
       and images is not None
     ):
       # TODO: this is a modified multimodal LLM -- Haotian Liu
-      vision_tower = vision_tower[0]  # HACK: for FSDP
+      # vision_tower = vision_tower[0]  # HACK: for FSDP
       with torch.no_grad():
         if type(images) is list:
           # variable length images
@@ -372,19 +380,19 @@ class VividGPTModel(MptModel):
 # class VividGPTForCausalLM(LlamaForCausalLM):
 class VividGPTForCausalLM(MptForCausalLM):
   config_class = VividConfig
+  supports_gradient_checkpointing = True
 
   def __init__(self, config):
     # super(LlamaForCausalLM, self).__init__(config)
     super(MptForCausalLM, self).__init__(config)
-    self.model = VividGPTModel(config)
+    self.transformer = VividGPTModel(config)
 
     self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
-
     # Initialize weights and apply final processing
     self.post_init()
 
   def get_model(self):
-    return self.model
+    return self.transformer
 
   def forward(
     self,
@@ -414,7 +422,7 @@ class VividGPTForCausalLM(MptForCausalLM):
     )
 
     # decoder outputs consists of (dec_features, layer_state, dec_hidden, dec_attn)
-    outputs = self.model(
+    outputs = self.transformer(
       input_ids=input_ids,
       attention_mask=attention_mask,
       past_key_values=past_key_values,
@@ -428,6 +436,7 @@ class VividGPTForCausalLM(MptForCausalLM):
 
     hidden_states = outputs[0]
     logits = self.lm_head(hidden_states)
+  
     # print("*"*100)
     # print(self.config.vocab_size)
 

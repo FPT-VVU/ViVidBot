@@ -1,0 +1,46 @@
+
+  0%|                                                                                                                                       | 0/970921 [00:00<?, ?it/s]/opt/conda/lib/python3.10/site-packages/torch/utils/checkpoint.py:460: UserWarning: torch.utils.checkpoint: please pass in use_reentrant=True or use_reentrant=False explicitly. The default value of use_reentrant will be updated to be False in the future. To maintain current behavior, pass use_reentrant=True. It is recommended that you use use_reentrant=False. Refer to docs for more details on the differences between the two variants.
+  warnings.warn(
+/opt/conda/lib/python3.10/site-packages/torch/utils/checkpoint.py:90: UserWarning: None of the inputs have requires_grad=True. Gradients will be None
+  warnings.warn(
+  0%|                                                                                                                           | 5/970921 [00:07<211:02:40,  1.28it/s]
+{'loss': 35.75, 'grad_norm': 55.13890838623047, 'learning_rate': 6.866245536940402e-08, 'epoch': 0.0}
+{'loss': 37.5, 'grad_norm': 49.11106872558594, 'learning_rate': 1.3732491073880804e-07, 'epoch': 0.0}
+{'loss': 36.5, 'grad_norm': 43.39593505859375, 'learning_rate': 2.0598736610821204e-07, 'epoch': 0.0}
+{'loss': 36.75, 'grad_norm': 40.4224739074707, 'learning_rate': 2.7464982147761607e-07, 'epoch': 0.0}
+{'loss': 33.25, 'grad_norm': 37.971336364746094, 'learning_rate': 3.4331227684702005e-07, 'epoch': 0.0}
+{'loss': 34.75, 'grad_norm': 50.10122299194336, 'learning_rate': 4.119747322164241e-07, 'epoch': 0.0}
+
+  0%|                                                                                                                          | 11/970921 [00:09<100:33:20,  2.68it/s]
+{'loss': 36.0, 'grad_norm': 48.86891174316406, 'learning_rate': 5.492996429552321e-07, 'epoch': 0.0}
+{'loss': 36.25, 'grad_norm': 52.59099578857422, 'learning_rate': 6.179620983246361e-07, 'epoch': 0.0}
+{'loss': 35.0, 'grad_norm': 40.44525909423828, 'learning_rate': 6.866245536940401e-07, 'epoch': 0.0}
+{'loss': 35.25, 'grad_norm': 50.44004440307617, 'learning_rate': 7.552870090634441e-07, 'epoch': 0.0}
+{'loss': 35.25, 'grad_norm': 40.810997009277344, 'learning_rate': 8.239494644328482e-07, 'epoch': 0.0}
+{'loss': 33.0, 'grad_norm': 46.21754837036133, 'learning_rate': 8.926119198022522e-07, 'epoch': 0.0}
+
+  0%|                                                                                                                           | 15/970921 [00:10<69:59:53,  3.85it/s]
+  0%|                                                                                                                           | 15/970921 [00:10<69:59:53,  3.85it/s]Traceback (most recent call last):
+  File "/ViVidBot/vividbot/valley/train/train.py", line 268, in <module>
+    train(args)
+  File "/ViVidBot/vividbot/valley/train/train.py", line 256, in train
+    trainer.train()
+  File "/opt/conda/lib/python3.10/site-packages/transformers/trainer.py", line 1948, in train
+    return inner_training_loop(
+  File "/opt/conda/lib/python3.10/site-packages/transformers/trainer.py", line 2246, in _inner_training_loop
+    for step, inputs in enumerate(epoch_iterator):
+  File "/opt/conda/lib/python3.10/site-packages/accelerate/data_loader.py", line 464, in __iter__
+    next_batch = next(dataloader_iter)
+  File "/opt/conda/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
+    data = self._next_data()
+  File "/opt/conda/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1329, in _next_data
+    idx, data = self._get_data()
+  File "/opt/conda/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1285, in _get_data
+    success, data = self._try_get_data()
+  File "/opt/conda/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1133, in _try_get_data
+    data = self._data_queue.get(timeout=timeout)
+  File "/opt/conda/lib/python3.10/queue.py", line 180, in get
+    self.not_empty.wait(remaining)
+  File "/opt/conda/lib/python3.10/threading.py", line 324, in wait
+    gotit = waiter.acquire(True, timeout)
+KeyboardInterrupt

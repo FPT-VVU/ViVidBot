@@ -1,0 +1,119 @@
+
+  0%|                                                                                                                                       | 0/485461 [00:00<?, ?it/s]/opt/conda/lib/python3.10/site-packages/torch/utils/checkpoint.py:460: UserWarning: torch.utils.checkpoint: please pass in use_reentrant=True or use_reentrant=False explicitly. The default value of use_reentrant will be updated to be False in the future. To maintain current behavior, pass use_reentrant=True. It is recommended that you use use_reentrant=False. Refer to docs for more details on the differences between the two variants.
+  warnings.warn(
+/opt/conda/lib/python3.10/site-packages/torch/utils/checkpoint.py:90: UserWarning: None of the inputs have requires_grad=True. Gradients will be None
+  warnings.warn(
+****************************************************************************************************
+Linear(in_features=3072, out_features=20486, bias=False)
+{'loss': 35.5, 'grad_norm': 40.13454055786133, 'learning_rate': 1.3732491073880804e-07, 'epoch': 0.0}
+****************************************************************************************************
+Linear(in_features=3072, out_features=20486, bias=False)
+{'loss': 34.5, 'grad_norm': 38.7967529296875, 'learning_rate': 2.7464982147761607e-07, 'epoch': 0.0}
+****************************************************************************************************
+Linear(in_features=3072, out_features=20486, bias=False)
+{'loss': 36.0, 'grad_norm': 33.64872741699219, 'learning_rate': 4.119747322164241e-07, 'epoch': 0.0}
+  0%|                                                                                                                           | 4/485461 [00:11<233:51:05,  1.73s/it]
+****************************************************************************************************
+Linear(in_features=3072, out_features=20486, bias=False)
+{'loss': 37.25, 'grad_norm': 37.75178909301758, 'learning_rate': 5.492996429552321e-07, 'epoch': 0.0}
+****************************************************************************************************
+Linear(in_features=3072, out_features=20486, bias=False)
+{'loss': 38.0, 'grad_norm': 45.5324821472168, 'learning_rate': 6.866245536940401e-07, 'epoch': 0.0}
+****************************************************************************************************
+Linear(in_features=3072, out_features=20486, bias=False)
+{'loss': 36.5, 'grad_norm': 42.96829605102539, 'learning_rate': 8.239494644328482e-07, 'epoch': 0.0}
+****************************************************************************************************
+Linear(in_features=3072, out_features=20486, bias=False)
+
+  0%|                                                                                                                           | 7/485461 [00:12<114:33:23,  1.18it/s]
+****************************************************************************************************
+Linear(in_features=3072, out_features=20486, bias=False)
+{'loss': 37.0, 'grad_norm': 33.3529167175293, 'learning_rate': 1.0985992859104643e-06, 'epoch': 0.0}
+****************************************************************************************************
+Linear(in_features=3072, out_features=20486, bias=False)
+{'loss': 35.25, 'grad_norm': 38.46382141113281, 'learning_rate': 1.2359241966492721e-06, 'epoch': 0.0}
+****************************************************************************************************
+
+  0%|                                                                                                                           | 11/485461 [00:15<89:47:29,  1.50it/s]
+{'loss': 35.75, 'grad_norm': 49.51860046386719, 'learning_rate': 1.3732491073880802e-06, 'epoch': 0.0}
+****************************************************************************************************
+Linear(in_features=3072, out_features=20486, bias=False)
+{'loss': 35.5, 'grad_norm': 44.47541427612305, 'learning_rate': 1.5105740181268883e-06, 'epoch': 0.0}
+****************************************************************************************************
+Linear(in_features=3072, out_features=20486, bias=False)
+{'loss': 34.75, 'grad_norm': 39.68741226196289, 'learning_rate': 1.6478989288656963e-06, 'epoch': 0.0}
+****************************************************************************************************
+Linear(in_features=3072, out_features=20486, bias=False)
+{'loss': 33.25, 'grad_norm': 32.67003631591797, 'learning_rate': 1.7852238396045044e-06, 'epoch': 0.0}
+****************************************************************************************************
+
+  0%|                                                                                                                           | 15/485461 [00:17<70:30:36,  1.91it/s]
+{'loss': 36.0, 'grad_norm': 49.300498962402344, 'learning_rate': 1.9225487503433124e-06, 'epoch': 0.0}
+****************************************************************************************************
+Linear(in_features=3072, out_features=20486, bias=False)
+{'loss': 34.0, 'grad_norm': 35.0224609375, 'learning_rate': 2.0598736610821203e-06, 'epoch': 0.0}
+****************************************************************************************************
+
+  0%|                                                                                                                          | 17/485461 [00:21<154:20:30,  1.14s/it]
+{'loss': 35.75, 'grad_norm': 34.538631439208984, 'learning_rate': 2.1971985718209286e-06, 'epoch': 0.0}
+****************************************************************************************************
+Linear(in_features=3072, out_features=20486, bias=False)
+{'loss': 36.5, 'grad_norm': 48.212764739990234, 'learning_rate': 2.3345234825597364e-06, 'epoch': 0.0}
+****************************************************************************************************
+Linear(in_features=3072, out_features=20486, bias=False)
+{'loss': 36.0, 'grad_norm': 40.39063262939453, 'learning_rate': 2.4718483932985443e-06, 'epoch': 0.0}
+****************************************************************************************************
+Linear(in_features=3072, out_features=20486, bias=False)
+{'loss': 33.25, 'grad_norm': 37.320152282714844, 'learning_rate': 2.6091733040373525e-06, 'epoch': 0.0}
+****************************************************************************************************
+  0%|                                                                                                                           | 20/485461 [00:22<94:28:42,  1.43it/s]Traceback (most recent call last):
+  File "/ViVidBot/vividbot/valley/train/train.py", line 268, in <module>
+    train(args)
+  File "/ViVidBot/vividbot/valley/train/train.py", line 256, in train
+    trainer.train()
+  File "/opt/conda/lib/python3.10/site-packages/transformers/trainer.py", line 1948, in train
+    return inner_training_loop(
+  File "/opt/conda/lib/python3.10/site-packages/transformers/trainer.py", line 2289, in _inner_training_loop
+    tr_loss_step = self.training_step(model, inputs)
+  File "/opt/conda/lib/python3.10/site-packages/transformers/trainer.py", line 3328, in training_step
+    loss = self.compute_loss(model, inputs)
+  File "/opt/conda/lib/python3.10/site-packages/transformers/trainer.py", line 3373, in compute_loss
+    outputs = model(**inputs)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/deepspeed/utils/nvtx.py", line 15, in wrapped_fn
+    ret_val = func(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1846, in forward
+    loss = self.module(*inputs, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/ViVidBot/vividbot/valley/model/valley_model.py", line 421, in forward
+    outputs = self.transformer(
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/ViVidBot/vividbot/valley/model/valley_model.py", line 236, in forward
+    image_forward_outs = vision_tower(
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/transformers/models/clip/modeling_clip.py", line 1105, in forward
+    return self.vision_model(
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/transformers/models/clip/modeling_clip.py", line 1029, in forward
+    hidden_states = self.embeddings(pixel_values)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+KeyboardInterrupt
+{'loss': 35.5, 'grad_norm': 35.028446197509766, 'learning_rate': 2.7464982147761604e-06, 'epoch': 0.0}

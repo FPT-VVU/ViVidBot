@@ -100,7 +100,6 @@ class TrainingArguments(transformers.Seq2SeqTrainingArguments):
     },
   )
   deepspeed: str = field(default=None)
-  should_save: bool = field(default=False)
   output_dir: str = field(default="./checkpoints")
   lora: str = field(default=False)
   dataloader_num_workers: int = field(default=8)
@@ -170,7 +169,7 @@ def train(args):
     model.initialize_vision_tokenizer(tokenizer=tokenizer)
 
   if training_args.freeze_backbone:
-    model.model.requires_grad_(False)
+    model.transformer.requires_grad_(False)
 
   if training_args.lora:
     # target_modules = [

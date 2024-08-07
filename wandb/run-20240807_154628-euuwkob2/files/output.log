@@ -1,0 +1,29 @@
+
+  0%|                                                                                                                                       | 0/242731 [00:00<?, ?it/s]/opt/conda/lib/python3.10/site-packages/torch/utils/checkpoint.py:460: UserWarning: torch.utils.checkpoint: please pass in use_reentrant=True or use_reentrant=False explicitly. The default value of use_reentrant will be updated to be False in the future. To maintain current behavior, pass use_reentrant=True. It is recommended that you use use_reentrant=False. Refer to docs for more details on the differences between the two variants.
+  warnings.warn(
+/opt/conda/lib/python3.10/site-packages/torch/utils/checkpoint.py:90: UserWarning: None of the inputs have requires_grad=True. Gradients will be None
+  warnings.warn(
+/ViVidBot/vividbot/valley/model/pho_gpt/attention.py:123: UserWarning: Propagating key_padding_mask to the attention module and applying it within the attention module can cause unnecessary computation/memory usage. Consider integrating into attn_bias once and passing that to each attention module instead.
+  warnings.warn(
+Traceback (most recent call last):
+  File "/ViVidBot/vividbot/valley/train/train.py", line 268, in <module>
+    train(args)
+  File "/ViVidBot/vividbot/valley/train/train.py", line 256, in train
+    trainer.train()
+  File "/opt/conda/lib/python3.10/site-packages/transformers/trainer.py", line 1948, in train
+    return inner_training_loop(
+  File "/opt/conda/lib/python3.10/site-packages/transformers/trainer.py", line 2289, in _inner_training_loop
+    tr_loss_step = self.training_step(model, inputs)
+  File "/opt/conda/lib/python3.10/site-packages/transformers/trainer.py", line 3359, in training_step
+    self.accelerator.backward(loss, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/accelerate/accelerator.py", line 2151, in backward
+    self.deepspeed_engine_wrapped.backward(loss, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/accelerate/utils/deepspeed.py", line 166, in backward
+    self.engine.backward(loss, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/deepspeed/utils/nvtx.py", line 15, in wrapped_fn
+    ret_val = func(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1967, in backward
+    self.optimizer.backward(loss, retain_graph=retain_graph)
+  File "/opt/conda/lib/python3.10/site-packages/deepspeed/runtime/zero/stage_1_and_2.py", line 2047, in backward
+    buf_1 = torch.empty(int(self.reduce_bucket_size),
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 954.00 MiB. GPU 0 has a total capacity of 23.65 GiB of which 563.81 MiB is free. Process 175120 has 23.09 GiB memory in use. Of the allocated memory 21.55 GiB is allocated by PyTorch, and 978.46 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)

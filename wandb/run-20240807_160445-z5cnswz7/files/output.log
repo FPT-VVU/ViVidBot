@@ -1,0 +1,90 @@
+
+  0%|                                                                                                                                       | 0/485461 [00:00<?, ?it/s]/opt/conda/lib/python3.10/site-packages/torch/utils/checkpoint.py:460: UserWarning: torch.utils.checkpoint: please pass in use_reentrant=True or use_reentrant=False explicitly. The default value of use_reentrant will be updated to be False in the future. To maintain current behavior, pass use_reentrant=True. It is recommended that you use use_reentrant=False. Refer to docs for more details on the differences between the two variants.
+  warnings.warn(
+/opt/conda/lib/python3.10/site-packages/torch/utils/checkpoint.py:90: UserWarning: None of the inputs have requires_grad=True. Gradients will be None
+  warnings.warn(
+/ViVidBot/vividbot/valley/model/pho_gpt/attention.py:123: UserWarning: Propagating key_padding_mask to the attention module and applying it within the attention module can cause unnecessary computation/memory usage. Consider integrating into attn_bias once and passing that to each attention module instead.
+  warnings.warn(
+  0%|                                                                                                                           | 3/485461 [00:09<299:29:09,  2.22s/it]
+{'loss': 9.6875, 'grad_norm': 82.46342468261719, 'learning_rate': 1.3732491073880804e-07, 'epoch': 0.0}
+{'loss': 9.625, 'grad_norm': 16.178363800048828, 'learning_rate': 2.7464982147761607e-07, 'epoch': 0.0}
+{'loss': 9.6875, 'grad_norm': 12.983445167541504, 'learning_rate': 4.119747322164241e-07, 'epoch': 0.0}
+
+  0%|                                                                                                                            | 7/485461 [00:10<92:04:55,  1.46it/s]
+{'loss': 9.625, 'grad_norm': 8.576797485351562, 'learning_rate': 6.866245536940401e-07, 'epoch': 0.0}
+{'loss': 9.625, 'grad_norm': 0.2163913995027542, 'learning_rate': 8.239494644328482e-07, 'epoch': 0.0}
+
+  0%|                                                                                                                           | 10/485461 [00:13<97:11:52,  1.39it/s]
+{'loss': 9.625, 'grad_norm': 27.517078399658203, 'learning_rate': 1.0985992859104643e-06, 'epoch': 0.0}
+{'loss': 9.625, 'grad_norm': 0.11832758784294128, 'learning_rate': 1.2359241966492721e-06, 'epoch': 0.0}
+{'loss': 9.6875, 'grad_norm': 26.032991409301758, 'learning_rate': 1.3732491073880802e-06, 'epoch': 0.0}
+
+  0%|                                                                                                                           | 15/485461 [00:15<56:30:27,  2.39it/s]
+{'loss': 9.6875, 'grad_norm': 63.36440658569336, 'learning_rate': 1.6478989288656963e-06, 'epoch': 0.0}
+{'loss': 9.625, 'grad_norm': 0.32803696393966675, 'learning_rate': 1.7852238396045044e-06, 'epoch': 0.0}
+{'loss': 9.6875, 'grad_norm': 6.476124286651611, 'learning_rate': 1.9225487503433124e-06, 'epoch': 0.0}
+{'loss': 9.6875, 'grad_norm': 7.943504810333252, 'learning_rate': 2.0598736610821203e-06, 'epoch': 0.0}
+
+  0%|                                                                                                                          | 18/485461 [00:19<135:26:18,  1.00s/it]
+{'loss': 9.625, 'grad_norm': 0.1959681659936905, 'learning_rate': 2.3345234825597364e-06, 'epoch': 0.0}
+{'loss': 9.6875, 'grad_norm': 13.912264823913574, 'learning_rate': 2.4718483932985443e-06, 'epoch': 0.0}
+
+  0%|                                                                                                                           | 23/485461 [00:21<63:03:47,  2.14it/s]
+{'loss': 9.625, 'grad_norm': 1.4226638078689575, 'learning_rate': 2.7464982147761604e-06, 'epoch': 0.0}
+{'loss': 9.6875, 'grad_norm': 6.308520793914795, 'learning_rate': 2.8838231255149687e-06, 'epoch': 0.0}
+{'loss': 9.625, 'grad_norm': 3.08309006690979, 'learning_rate': 3.0211480362537765e-06, 'epoch': 0.0}
+{'loss': 9.6875, 'grad_norm': 145.93142700195312, 'learning_rate': 3.1584729469925844e-06, 'epoch': 0.0}
+
+  0%|                                                                                                                          | 27/485461 [00:25<102:10:27,  1.32it/s]
+{'loss': 9.6875, 'grad_norm': 258.23065185546875, 'learning_rate': 3.4331227684702005e-06, 'epoch': 0.0}
+{'loss': 9.6875, 'grad_norm': 18.06464195251465, 'learning_rate': 3.5704476792090088e-06, 'epoch': 0.0}
+{'loss': 9.625, 'grad_norm': 0.8570812344551086, 'learning_rate': 3.7077725899478166e-06, 'epoch': 0.0}
+
+  0%|                                                                                                                           | 28/485461 [00:25<85:53:20,  1.57it/s]
+{'loss': 9.6875, 'grad_norm': 79.26969146728516, 'learning_rate': 3.982422411425433e-06, 'epoch': 0.0}
+
+  0%|                                                                                                                           | 31/485461 [00:28<94:38:35,  1.42it/s]
+{'loss': 9.625, 'grad_norm': 1.418586254119873, 'learning_rate': 4.257072232903049e-06, 'epoch': 0.0}
+{'loss': 9.625, 'grad_norm': 2.326730966567993, 'learning_rate': 4.394397143641857e-06, 'epoch': 0.0}
+{'loss': 9.6875, 'grad_norm': 14.867080688476562, 'learning_rate': 4.531722054380665e-06, 'epoch': 0.0}
+
+  0%|                                                                                                                           | 35/485461 [00:31<89:59:22,  1.50it/s]
+{'loss': 9.6875, 'grad_norm': 59.79997253417969, 'learning_rate': 4.8063718758582815e-06, 'epoch': 0.0}
+{'loss': 9.625, 'grad_norm': 0.14263059198856354, 'learning_rate': 4.9436967865970885e-06, 'epoch': 0.0}
+
+  0%|                                                                                                                           | 39/485461 [00:33<63:54:56,  2.11it/s]
+{'loss': 9.625, 'grad_norm': 0.8616286516189575, 'learning_rate': 5.218346608074705e-06, 'epoch': 0.0}
+{'loss': 9.625, 'grad_norm': 21.93579864501953, 'learning_rate': 5.355671518813513e-06, 'epoch': 0.0}
+
+  0%|                                                                                                                           | 43/485461 [00:37<91:23:32,  1.48it/s]
+{'loss': 9.6875, 'grad_norm': 26.87971305847168, 'learning_rate': 5.6303213402911295e-06, 'epoch': 0.0}
+{'loss': 9.625, 'grad_norm': 26.60873794555664, 'learning_rate': 5.767646251029937e-06, 'epoch': 0.0}
+{'loss': 9.6875, 'grad_norm': 10.128971099853516, 'learning_rate': 5.904971161768745e-06, 'epoch': 0.0}
+{'loss': 9.625, 'grad_norm': 17.34087371826172, 'learning_rate': 6.042296072507553e-06, 'epoch': 0.0}
+{'loss': 9.6875, 'grad_norm': 0.3044704496860504, 'learning_rate': 6.179620983246362e-06, 'epoch': 0.0}
+
+  0%|                                                                                                                           | 47/485461 [00:38<59:39:09,  2.26it/s]
+  0%|                                                                                                                           | 47/485461 [00:38<59:39:09,  2.26it/s]Traceback (most recent call last):
+  File "/ViVidBot/vividbot/valley/train/train.py", line 268, in <module>
+    train(args)
+  File "/ViVidBot/vividbot/valley/train/train.py", line 256, in train
+    trainer.train()
+  File "/opt/conda/lib/python3.10/site-packages/transformers/trainer.py", line 1948, in train
+    return inner_training_loop(
+  File "/opt/conda/lib/python3.10/site-packages/transformers/trainer.py", line 2246, in _inner_training_loop
+    for step, inputs in enumerate(epoch_iterator):
+  File "/opt/conda/lib/python3.10/site-packages/accelerate/data_loader.py", line 464, in __iter__
+    next_batch = next(dataloader_iter)
+  File "/opt/conda/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 631, in __next__
+    data = self._next_data()
+  File "/opt/conda/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1329, in _next_data
+    idx, data = self._get_data()
+  File "/opt/conda/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1285, in _get_data
+    success, data = self._try_get_data()
+  File "/opt/conda/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1133, in _try_get_data
+    data = self._data_queue.get(timeout=timeout)
+  File "/opt/conda/lib/python3.10/queue.py", line 180, in get
+    self.not_empty.wait(remaining)
+  File "/opt/conda/lib/python3.10/threading.py", line 324, in wait
+    gotit = waiter.acquire(True, timeout)
+KeyboardInterrupt

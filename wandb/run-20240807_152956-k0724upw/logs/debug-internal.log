@@ -1,0 +1,227 @@
+2024-08-07 15:29:56,508 INFO    StreamThr :14676 [internal.py:wandb_internal():85] W&B internal server running at pid: 14676, started at: 2024-08-07 15:29:56.507468
+2024-08-07 15:29:56,510 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: status
+2024-08-07 15:29:56,512 INFO    WriterThread:14676 [datastore.py:open_for_write():87] open: /ViVidBot/wandb/run-20240807_152956-k0724upw/run-k0724upw.wandb
+2024-08-07 15:29:56,512 DEBUG   SenderThread:14676 [sender.py:send():379] send: header
+2024-08-07 15:29:56,515 DEBUG   SenderThread:14676 [sender.py:send():379] send: run
+2024-08-07 15:29:56,661 INFO    SenderThread:14676 [dir_watcher.py:__init__():211] watching files in: /ViVidBot/wandb/run-20240807_152956-k0724upw/files
+2024-08-07 15:29:56,662 INFO    SenderThread:14676 [sender.py:_start_run_threads():1188] run started: k0724upw with start time 1723044596.507206
+2024-08-07 15:29:56,673 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: check_version
+2024-08-07 15:29:56,674 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: check_version
+2024-08-07 15:29:56,760 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: run_start
+2024-08-07 15:29:56,770 DEBUG   HandlerThread:14676 [system_info.py:__init__():26] System info init
+2024-08-07 15:29:56,770 DEBUG   HandlerThread:14676 [system_info.py:__init__():41] System info init done
+2024-08-07 15:29:56,770 INFO    HandlerThread:14676 [system_monitor.py:start():194] Starting system monitor
+2024-08-07 15:29:56,771 INFO    SystemMonitor:14676 [system_monitor.py:_start():158] Starting system asset monitoring threads
+2024-08-07 15:29:56,771 INFO    HandlerThread:14676 [system_monitor.py:probe():214] Collecting system info
+2024-08-07 15:29:56,771 INFO    SystemMonitor:14676 [interfaces.py:start():188] Started cpu monitoring
+2024-08-07 15:29:56,772 INFO    SystemMonitor:14676 [interfaces.py:start():188] Started disk monitoring
+2024-08-07 15:29:56,773 INFO    SystemMonitor:14676 [interfaces.py:start():188] Started gpu monitoring
+2024-08-07 15:29:56,774 INFO    SystemMonitor:14676 [interfaces.py:start():188] Started memory monitoring
+2024-08-07 15:29:56,774 INFO    SystemMonitor:14676 [interfaces.py:start():188] Started network monitoring
+2024-08-07 15:29:56,817 DEBUG   HandlerThread:14676 [system_info.py:probe():152] Probing system
+2024-08-07 15:29:56,820 DEBUG   HandlerThread:14676 [system_info.py:_probe_git():137] Probing git
+2024-08-07 15:29:56,829 DEBUG   HandlerThread:14676 [system_info.py:_probe_git():145] Probing git done
+2024-08-07 15:29:56,829 DEBUG   HandlerThread:14676 [system_info.py:probe():200] Probing system done
+2024-08-07 15:29:56,830 DEBUG   HandlerThread:14676 [system_monitor.py:probe():223] {'os': 'Linux-6.5.0-28-generic-x86_64-with-glibc2.35', 'python': '3.10.13', 'heartbeatAt': '2024-08-07T15:29:56.817608', 'startedAt': '2024-08-07T15:29:56.503742', 'docker': None, 'cuda': None, 'args': ('--conf', 'vividbot/valley/configs/experiment/vivid_stage1_phogpt4b.yaml'), 'state': 'running', 'program': '/ViVidBot/vividbot/valley/train/train.py', 'codePathLocal': 'vividbot/valley/train/train.py', 'codePath': 'vividbot/valley/train/train.py', 'git': {'remote': 'https://github.com/FPT-VVU/ViVidBot.git', 'commit': '2619b2eb6c4828bec73e5353f73a2c16e87d90cd'}, 'email': None, 'root': '/ViVidBot', 'host': '89643f82eb0f', 'username': 'root', 'executable': '/opt/conda/bin/python', 'cpu_count': 64, 'cpu_count_logical': 128, 'cpu_freq': {'current': 1.7873515624999998, 'min': 1500.0, 'max': 2250.0}, 'cpu_freq_per_core': [{'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.798, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.755, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.582, 'min': 1500.0, 'max': 2250.0}, {'current': 1.498, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.648, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 1.9, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 2.819, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 1.799, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.9, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 2.023, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.796, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.798, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 3.523, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 2.066, 'min': 1500.0, 'max': 2250.0}, {'current': 2.147, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 2.25, 'min': 1500.0, 'max': 2250.0}, {'current': 1.9, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}, {'current': 1.5, 'min': 1500.0, 'max': 2250.0}], 'disk': {'/': {'total': 168.0, 'used': 17.666675567626953}}, 'gpu': 'NVIDIA GeForce RTX 4090', 'gpu_count': 1, 'gpu_devices': [{'name': 'NVIDIA GeForce RTX 4090', 'memory_total': 25757220864}], 'memory': {'total': 251.5196876525879}}
+2024-08-07 15:29:56,830 INFO    HandlerThread:14676 [system_monitor.py:probe():224] Finished collecting system info
+2024-08-07 15:29:56,830 INFO    HandlerThread:14676 [system_monitor.py:probe():227] Publishing system info
+2024-08-07 15:29:56,830 DEBUG   HandlerThread:14676 [system_info.py:_save_conda():209] Saving list of conda packages installed into the current environment
+2024-08-07 15:29:57,663 INFO    Thread-12 :14676 [dir_watcher.py:_on_file_created():271] file/dir created: /ViVidBot/wandb/run-20240807_152956-k0724upw/files/conda-environment.yaml
+2024-08-07 15:30:00,152 DEBUG   HandlerThread:14676 [system_info.py:_save_conda():224] Saving conda packages done
+2024-08-07 15:30:00,153 INFO    HandlerThread:14676 [system_monitor.py:probe():229] Finished publishing system info
+2024-08-07 15:30:00,155 DEBUG   SenderThread:14676 [sender.py:send():379] send: files
+2024-08-07 15:30:00,155 INFO    SenderThread:14676 [sender.py:_save_file():1454] saving file wandb-metadata.json with policy now
+2024-08-07 15:30:00,303 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: python_packages
+2024-08-07 15:30:00,303 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: python_packages
+2024-08-07 15:30:00,304 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: stop_status
+2024-08-07 15:30:00,304 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: stop_status
+2024-08-07 15:30:00,307 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:00,358 DEBUG   SenderThread:14676 [sender.py:send():379] send: telemetry
+2024-08-07 15:30:00,358 DEBUG   SenderThread:14676 [sender.py:send():379] send: config
+2024-08-07 15:30:00,359 DEBUG   SenderThread:14676 [sender.py:send():379] send: telemetry
+2024-08-07 15:30:00,359 DEBUG   SenderThread:14676 [sender.py:send():379] send: metric
+2024-08-07 15:30:00,359 DEBUG   SenderThread:14676 [sender.py:send():379] send: telemetry
+2024-08-07 15:30:00,359 DEBUG   SenderThread:14676 [sender.py:send():379] send: metric
+2024-08-07 15:30:00,359 WARNING SenderThread:14676 [sender.py:send_metric():1405] Seen metric with glob (shouldn't happen)
+2024-08-07 15:30:00,359 DEBUG   SenderThread:14676 [sender.py:send():379] send: telemetry
+2024-08-07 15:30:00,359 DEBUG   SenderThread:14676 [sender.py:send():379] send: telemetry
+2024-08-07 15:30:00,359 DEBUG   SenderThread:14676 [sender.py:send():379] send: config
+2024-08-07 15:30:00,406 INFO    wandb-upload_0:14676 [upload_job.py:push():130] Uploaded file /tmp/tmpe1zbpxniwandb/ft03v4te-wandb-metadata.json
+2024-08-07 15:30:00,662 INFO    Thread-12 :14676 [dir_watcher.py:_on_file_modified():288] file/dir modified: /ViVidBot/wandb/run-20240807_152956-k0724upw/files/conda-environment.yaml
+2024-08-07 15:30:00,663 INFO    Thread-12 :14676 [dir_watcher.py:_on_file_created():271] file/dir created: /ViVidBot/wandb/run-20240807_152956-k0724upw/files/requirements.txt
+2024-08-07 15:30:00,663 INFO    Thread-12 :14676 [dir_watcher.py:_on_file_created():271] file/dir created: /ViVidBot/wandb/run-20240807_152956-k0724upw/files/output.log
+2024-08-07 15:30:00,663 INFO    Thread-12 :14676 [dir_watcher.py:_on_file_created():271] file/dir created: /ViVidBot/wandb/run-20240807_152956-k0724upw/files/wandb-metadata.json
+2024-08-07 15:30:01,305 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:02,304 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:02,360 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: status_report
+2024-08-07 15:30:02,663 INFO    Thread-12 :14676 [dir_watcher.py:_on_file_modified():288] file/dir modified: /ViVidBot/wandb/run-20240807_152956-k0724upw/files/output.log
+2024-08-07 15:30:03,304 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:04,305 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:05,305 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:06,305 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:07,305 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:08,305 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: status_report
+2024-08-07 15:30:08,305 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:09,305 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:10,305 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:11,305 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:12,306 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:13,306 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:14,305 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: status_report
+2024-08-07 15:30:14,306 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:15,303 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: stop_status
+2024-08-07 15:30:15,304 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: stop_status
+2024-08-07 15:30:15,306 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:16,306 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:16,668 INFO    Thread-12 :14676 [dir_watcher.py:_on_file_modified():288] file/dir modified: /ViVidBot/wandb/run-20240807_152956-k0724upw/files/output.log
+2024-08-07 15:30:17,306 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:18,306 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:19,306 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:19,382 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: status_report
+2024-08-07 15:30:20,307 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:21,307 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:22,307 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:23,307 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:24,307 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:25,289 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: status_report
+2024-08-07 15:30:25,335 DEBUG   SenderThread:14676 [sender.py:send():379] send: exit
+2024-08-07 15:30:25,336 INFO    SenderThread:14676 [sender.py:send_exit():586] handling exit code: 1
+2024-08-07 15:30:25,336 INFO    SenderThread:14676 [sender.py:send_exit():588] handling runtime: 28
+2024-08-07 15:30:25,337 INFO    SenderThread:14676 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-07 15:30:25,337 INFO    SenderThread:14676 [sender.py:send_exit():594] send defer
+2024-08-07 15:30:25,338 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: defer
+2024-08-07 15:30:25,338 INFO    HandlerThread:14676 [handler.py:handle_request_defer():184] handle defer: 0
+2024-08-07 15:30:25,338 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: defer
+2024-08-07 15:30:25,338 INFO    SenderThread:14676 [sender.py:send_request_defer():610] handle sender defer: 0
+2024-08-07 15:30:25,338 INFO    SenderThread:14676 [sender.py:transition_state():614] send defer: 1
+2024-08-07 15:30:25,338 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: defer
+2024-08-07 15:30:25,338 INFO    HandlerThread:14676 [handler.py:handle_request_defer():184] handle defer: 1
+2024-08-07 15:30:25,339 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: defer
+2024-08-07 15:30:25,339 INFO    SenderThread:14676 [sender.py:send_request_defer():610] handle sender defer: 1
+2024-08-07 15:30:25,339 INFO    SenderThread:14676 [sender.py:transition_state():614] send defer: 2
+2024-08-07 15:30:25,339 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: defer
+2024-08-07 15:30:25,339 INFO    HandlerThread:14676 [handler.py:handle_request_defer():184] handle defer: 2
+2024-08-07 15:30:25,339 INFO    HandlerThread:14676 [system_monitor.py:finish():203] Stopping system monitor
+2024-08-07 15:30:25,340 DEBUG   SystemMonitor:14676 [system_monitor.py:_start():172] Starting system metrics aggregation loop
+2024-08-07 15:30:25,340 DEBUG   SystemMonitor:14676 [system_monitor.py:_start():179] Finished system metrics aggregation loop
+2024-08-07 15:30:25,340 DEBUG   SystemMonitor:14676 [system_monitor.py:_start():183] Publishing last batch of metrics
+2024-08-07 15:30:25,341 INFO    HandlerThread:14676 [interfaces.py:finish():200] Joined cpu monitor
+2024-08-07 15:30:25,342 INFO    HandlerThread:14676 [interfaces.py:finish():200] Joined disk monitor
+2024-08-07 15:30:25,352 INFO    HandlerThread:14676 [interfaces.py:finish():200] Joined gpu monitor
+2024-08-07 15:30:25,352 INFO    HandlerThread:14676 [interfaces.py:finish():200] Joined memory monitor
+2024-08-07 15:30:25,352 INFO    HandlerThread:14676 [interfaces.py:finish():200] Joined network monitor
+2024-08-07 15:30:25,353 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: defer
+2024-08-07 15:30:25,353 INFO    SenderThread:14676 [sender.py:send_request_defer():610] handle sender defer: 2
+2024-08-07 15:30:25,353 INFO    SenderThread:14676 [sender.py:transition_state():614] send defer: 3
+2024-08-07 15:30:25,353 DEBUG   SenderThread:14676 [sender.py:send():379] send: stats
+2024-08-07 15:30:25,354 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: defer
+2024-08-07 15:30:25,354 INFO    HandlerThread:14676 [handler.py:handle_request_defer():184] handle defer: 3
+2024-08-07 15:30:25,354 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: defer
+2024-08-07 15:30:25,354 INFO    SenderThread:14676 [sender.py:send_request_defer():610] handle sender defer: 3
+2024-08-07 15:30:25,354 INFO    SenderThread:14676 [sender.py:transition_state():614] send defer: 4
+2024-08-07 15:30:25,354 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: defer
+2024-08-07 15:30:25,354 INFO    HandlerThread:14676 [handler.py:handle_request_defer():184] handle defer: 4
+2024-08-07 15:30:25,354 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: defer
+2024-08-07 15:30:25,354 INFO    SenderThread:14676 [sender.py:send_request_defer():610] handle sender defer: 4
+2024-08-07 15:30:25,355 INFO    SenderThread:14676 [sender.py:transition_state():614] send defer: 5
+2024-08-07 15:30:25,355 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: defer
+2024-08-07 15:30:25,355 INFO    HandlerThread:14676 [handler.py:handle_request_defer():184] handle defer: 5
+2024-08-07 15:30:25,355 DEBUG   SenderThread:14676 [sender.py:send():379] send: summary
+2024-08-07 15:30:25,358 INFO    SenderThread:14676 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-07 15:30:25,358 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: defer
+2024-08-07 15:30:25,359 INFO    SenderThread:14676 [sender.py:send_request_defer():610] handle sender defer: 5
+2024-08-07 15:30:25,359 INFO    SenderThread:14676 [sender.py:transition_state():614] send defer: 6
+2024-08-07 15:30:25,359 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: defer
+2024-08-07 15:30:25,359 INFO    HandlerThread:14676 [handler.py:handle_request_defer():184] handle defer: 6
+2024-08-07 15:30:25,359 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: defer
+2024-08-07 15:30:25,359 INFO    SenderThread:14676 [sender.py:send_request_defer():610] handle sender defer: 6
+2024-08-07 15:30:25,362 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: status_report
+2024-08-07 15:30:25,445 INFO    SenderThread:14676 [sender.py:transition_state():614] send defer: 7
+2024-08-07 15:30:25,445 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: defer
+2024-08-07 15:30:25,445 INFO    HandlerThread:14676 [handler.py:handle_request_defer():184] handle defer: 7
+2024-08-07 15:30:25,446 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: defer
+2024-08-07 15:30:25,446 INFO    SenderThread:14676 [sender.py:send_request_defer():610] handle sender defer: 7
+2024-08-07 15:30:25,671 INFO    Thread-12 :14676 [dir_watcher.py:_on_file_modified():288] file/dir modified: /ViVidBot/wandb/run-20240807_152956-k0724upw/files/config.yaml
+2024-08-07 15:30:25,672 INFO    Thread-12 :14676 [dir_watcher.py:_on_file_created():271] file/dir created: /ViVidBot/wandb/run-20240807_152956-k0724upw/files/wandb-summary.json
+2024-08-07 15:30:26,334 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: poll_exit
+2024-08-07 15:30:26,395 INFO    SenderThread:14676 [sender.py:transition_state():614] send defer: 8
+2024-08-07 15:30:26,395 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: poll_exit
+2024-08-07 15:30:26,396 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: defer
+2024-08-07 15:30:26,396 INFO    HandlerThread:14676 [handler.py:handle_request_defer():184] handle defer: 8
+2024-08-07 15:30:26,396 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: defer
+2024-08-07 15:30:26,396 INFO    SenderThread:14676 [sender.py:send_request_defer():610] handle sender defer: 8
+2024-08-07 15:30:26,396 INFO    SenderThread:14676 [job_builder.py:build():440] Attempting to build job artifact
+2024-08-07 15:30:26,397 INFO    SenderThread:14676 [job_builder.py:_get_source_type():569] is repo sourced job
+2024-08-07 15:30:26,417 INFO    SenderThread:14676 [job_builder.py:build():545] adding wandb-job metadata file
+2024-08-07 15:30:26,429 INFO    SenderThread:14676 [sender.py:transition_state():614] send defer: 9
+2024-08-07 15:30:26,429 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: defer
+2024-08-07 15:30:26,429 INFO    HandlerThread:14676 [handler.py:handle_request_defer():184] handle defer: 9
+2024-08-07 15:30:26,430 DEBUG   SenderThread:14676 [sender.py:send():379] send: artifact
+2024-08-07 15:30:26,630 INFO    SenderThread:14676 [sender.py:send_artifact():1537] sent artifact job-https___github.com_FPT-VVU_ViVidBot.git_vividbot_valley_train_train.py - {'id': 'QXJ0aWZhY3Q6MTExMzI4ODQ2Nw==', 'state': 'COMMITTED', 'artifactSequence': {'id': 'QXJ0aWZhY3RDb2xsZWN0aW9uOjM4MzM0NjQ4MA==', 'latestArtifact': {'id': 'QXJ0aWZhY3Q6MTExMzI4ODQ2Nw==', 'versionIndex': 8}}}
+2024-08-07 15:30:26,630 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: defer
+2024-08-07 15:30:26,630 INFO    SenderThread:14676 [sender.py:send_request_defer():610] handle sender defer: 9
+2024-08-07 15:30:26,630 INFO    SenderThread:14676 [dir_watcher.py:finish():358] shutting down directory watcher
+2024-08-07 15:30:26,672 INFO    Thread-12 :14676 [dir_watcher.py:_on_file_modified():288] file/dir modified: /ViVidBot/wandb/run-20240807_152956-k0724upw/files/output.log
+2024-08-07 15:30:26,673 INFO    SenderThread:14676 [dir_watcher.py:finish():388] scan: /ViVidBot/wandb/run-20240807_152956-k0724upw/files
+2024-08-07 15:30:26,673 INFO    SenderThread:14676 [dir_watcher.py:finish():402] scan save: /ViVidBot/wandb/run-20240807_152956-k0724upw/files/config.yaml config.yaml
+2024-08-07 15:30:26,673 INFO    SenderThread:14676 [dir_watcher.py:finish():402] scan save: /ViVidBot/wandb/run-20240807_152956-k0724upw/files/conda-environment.yaml conda-environment.yaml
+2024-08-07 15:30:26,673 INFO    SenderThread:14676 [dir_watcher.py:finish():402] scan save: /ViVidBot/wandb/run-20240807_152956-k0724upw/files/wandb-metadata.json wandb-metadata.json
+2024-08-07 15:30:26,674 INFO    SenderThread:14676 [dir_watcher.py:finish():402] scan save: /ViVidBot/wandb/run-20240807_152956-k0724upw/files/requirements.txt requirements.txt
+2024-08-07 15:30:26,674 INFO    SenderThread:14676 [dir_watcher.py:finish():402] scan save: /ViVidBot/wandb/run-20240807_152956-k0724upw/files/output.log output.log
+2024-08-07 15:30:26,678 INFO    SenderThread:14676 [dir_watcher.py:finish():402] scan save: /ViVidBot/wandb/run-20240807_152956-k0724upw/files/wandb-summary.json wandb-summary.json
+2024-08-07 15:30:26,684 INFO    SenderThread:14676 [sender.py:transition_state():614] send defer: 10
+2024-08-07 15:30:26,685 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: defer
+2024-08-07 15:30:26,685 INFO    HandlerThread:14676 [handler.py:handle_request_defer():184] handle defer: 10
+2024-08-07 15:30:26,687 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: defer
+2024-08-07 15:30:26,687 INFO    SenderThread:14676 [sender.py:send_request_defer():610] handle sender defer: 10
+2024-08-07 15:30:26,687 INFO    SenderThread:14676 [file_pusher.py:finish():169] shutting down file pusher
+2024-08-07 15:30:26,897 INFO    wandb-upload_0:14676 [upload_job.py:push():130] Uploaded file /ViVidBot/wandb/run-20240807_152956-k0724upw/files/config.yaml
+2024-08-07 15:30:27,004 INFO    wandb-upload_1:14676 [upload_job.py:push():130] Uploaded file /ViVidBot/wandb/run-20240807_152956-k0724upw/files/conda-environment.yaml
+2024-08-07 15:30:27,005 INFO    wandb-upload_2:14676 [upload_job.py:push():130] Uploaded file /ViVidBot/wandb/run-20240807_152956-k0724upw/files/requirements.txt
+2024-08-07 15:30:27,006 INFO    wandb-upload_3:14676 [upload_job.py:push():130] Uploaded file /ViVidBot/wandb/run-20240807_152956-k0724upw/files/output.log
+2024-08-07 15:30:27,010 INFO    wandb-upload_4:14676 [upload_job.py:push():130] Uploaded file /ViVidBot/wandb/run-20240807_152956-k0724upw/files/wandb-summary.json
+2024-08-07 15:30:27,211 INFO    Thread-11 (_thread_body):14676 [sender.py:transition_state():614] send defer: 11
+2024-08-07 15:30:27,211 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: defer
+2024-08-07 15:30:27,211 INFO    HandlerThread:14676 [handler.py:handle_request_defer():184] handle defer: 11
+2024-08-07 15:30:27,212 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: defer
+2024-08-07 15:30:27,212 INFO    SenderThread:14676 [sender.py:send_request_defer():610] handle sender defer: 11
+2024-08-07 15:30:27,212 INFO    SenderThread:14676 [file_pusher.py:join():175] waiting for file pusher
+2024-08-07 15:30:27,212 INFO    SenderThread:14676 [sender.py:transition_state():614] send defer: 12
+2024-08-07 15:30:27,213 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: defer
+2024-08-07 15:30:27,213 INFO    HandlerThread:14676 [handler.py:handle_request_defer():184] handle defer: 12
+2024-08-07 15:30:27,213 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: defer
+2024-08-07 15:30:27,213 INFO    SenderThread:14676 [sender.py:send_request_defer():610] handle sender defer: 12
+2024-08-07 15:30:27,213 INFO    SenderThread:14676 [file_stream.py:finish():601] file stream finish called
+2024-08-07 15:30:27,335 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: poll_exit
+2024-08-07 15:30:27,555 INFO    SenderThread:14676 [file_stream.py:finish():605] file stream finish is done
+2024-08-07 15:30:27,555 INFO    SenderThread:14676 [sender.py:transition_state():614] send defer: 13
+2024-08-07 15:30:27,555 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: poll_exit
+2024-08-07 15:30:27,556 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: defer
+2024-08-07 15:30:27,556 INFO    HandlerThread:14676 [handler.py:handle_request_defer():184] handle defer: 13
+2024-08-07 15:30:27,556 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: defer
+2024-08-07 15:30:27,556 INFO    SenderThread:14676 [sender.py:send_request_defer():610] handle sender defer: 13
+2024-08-07 15:30:27,556 INFO    SenderThread:14676 [sender.py:transition_state():614] send defer: 14
+2024-08-07 15:30:27,557 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: defer
+2024-08-07 15:30:27,557 INFO    HandlerThread:14676 [handler.py:handle_request_defer():184] handle defer: 14
+2024-08-07 15:30:27,558 DEBUG   SenderThread:14676 [sender.py:send():379] send: final
+2024-08-07 15:30:27,558 DEBUG   SenderThread:14676 [sender.py:send():379] send: footer
+2024-08-07 15:30:27,558 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: defer
+2024-08-07 15:30:27,558 INFO    SenderThread:14676 [sender.py:send_request_defer():610] handle sender defer: 14
+2024-08-07 15:30:27,559 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: poll_exit
+2024-08-07 15:30:27,559 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: poll_exit
+2024-08-07 15:30:27,560 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: server_info
+2024-08-07 15:30:27,560 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: server_info
+2024-08-07 15:30:27,563 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: poll_exit
+2024-08-07 15:30:27,564 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: get_summary
+2024-08-07 15:30:27,564 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: sampled_history
+2024-08-07 15:30:27,565 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-07 15:30:27,607 DEBUG   SenderThread:14676 [sender.py:send_request():406] send_request: poll_exit
+2024-08-07 15:30:27,608 INFO    MainThread:14676 [wandb_run.py:_footer_history_summary_info():4016] rendering history
+2024-08-07 15:30:27,608 INFO    MainThread:14676 [wandb_run.py:_footer_history_summary_info():4048] rendering summary
+2024-08-07 15:30:27,608 INFO    MainThread:14676 [wandb_run.py:_footer_sync_info():3975] logging synced files
+2024-08-07 15:30:27,609 DEBUG   HandlerThread:14676 [handler.py:handle_request():158] handle_request: shutdown
+2024-08-07 15:30:27,609 INFO    HandlerThread:14676 [handler.py:finish():882] shutting down handler
+2024-08-07 15:30:28,565 INFO    WriterThread:14676 [datastore.py:close():296] close: /ViVidBot/wandb/run-20240807_152956-k0724upw/run-k0724upw.wandb
+2024-08-07 15:30:28,608 INFO    SenderThread:14676 [sender.py:finish():1615] shutting down sender
+2024-08-07 15:30:28,608 INFO    SenderThread:14676 [file_pusher.py:finish():169] shutting down file pusher
+2024-08-07 15:30:28,608 INFO    SenderThread:14676 [file_pusher.py:join():175] waiting for file pusher

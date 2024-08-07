@@ -1,0 +1,37 @@
+
+  0%|                                                                                                                                       | 0/970921 [00:00<?, ?it/s]Traceback (most recent call last):
+  File "/ViVidBot/vividbot/valley/train/train.py", line 268, in <module>
+    train(args)
+  File "/ViVidBot/vividbot/valley/train/train.py", line 256, in train
+    trainer.train()
+  File "/opt/conda/lib/python3.10/site-packages/transformers/trainer.py", line 1948, in train
+    return inner_training_loop(
+  File "/opt/conda/lib/python3.10/site-packages/transformers/trainer.py", line 2289, in _inner_training_loop
+    tr_loss_step = self.training_step(model, inputs)
+  File "/opt/conda/lib/python3.10/site-packages/transformers/trainer.py", line 3328, in training_step
+    loss = self.compute_loss(model, inputs)
+  File "/opt/conda/lib/python3.10/site-packages/transformers/trainer.py", line 3373, in compute_loss
+    outputs = model(**inputs)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/deepspeed/utils/nvtx.py", line 15, in wrapped_fn
+    ret_val = func(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/deepspeed/runtime/engine.py", line 1846, in forward
+    loss = self.module(*inputs, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/ViVidBot/vividbot/valley/model/valley_model.py", line 417, in forward
+    outputs = self.transformer(
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/ViVidBot/vividbot/valley/model/valley_model.py", line 206, in forward
+    inputs_embeds = self.embed_tokens(input_ids)
+  File "/opt/conda/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1688, in __getattr__
+    raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+AttributeError: 'VividGPTModel' object has no attribute 'embed_tokens'

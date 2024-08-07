@@ -54,27 +54,27 @@ def main(args):
   # bnb_8bit_compute_dtype=torch.float16,)
   print("load model")
   # if "lora" in model_name:
-  config = PeftConfig.from_pretrained(model_name)
-  if "config.json" in os.listdir(model_name):
-    model_old = VividGPTForCausalLM.from_pretrained(model_name, device_map=device)
-  else:
-    model_old = VividGPTForCausalLM.from_pretrained(
-      config.base_model_name_or_path, device_map=device
-    )
-  print("load lora model")
-  model = PeftModel.from_pretrained(model_old, model_name, device_map=device)
-  model = model.merge_and_unload()
-  tokenizer = AutoTokenizer.from_pretrained(config.base_model_name_or_path)
-  tokenizer.padding_side = "left"
-  print("load end")
+  # config = PeftConfig.from_pretrained(model_name)
+  # if "config.json" in os.listdir(model_name):
+  #   model_old = VividGPTForCausalLM.from_pretrained(model_name, device_map=device)
   # else:
-  #     model = VividGPTForCausalLM.from_pretrained(
-  #         model_name, torch_dtype=torch.float16
-  #     )
-  #     tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+  #   model_old = VividGPTForCausalLM.from_pretrained(
+  #     config.base_model_name_or_path, device_map=device
+  #   )
+  # print("load lora model")
+  # model = PeftModel.from_pretrained(model_old, model_name, device_map=device)
+  # model = model.merge_and_unload()
+  # tokenizer = AutoTokenizer.from_pretrained(config.base_model_name_or_path)
+  # tokenizer.padding_side = "left"
+  # print("load end")
+  # else:
+  model = VividGPTForCausalLM.from_pretrained(
+          model_name, torch_dtype=torch.float16
+      )
+  tokenizer = AutoTokenizer.from_pretrained(args.model_name)
   init_vision_token(model, tokenizer)
   print("load end")
-  # model = model.to(device)
+  model = model.to(device)
   model.eval()
 
   message = [
@@ -86,9 +86,9 @@ def main(args):
   ]
 
   gen_kwargs = dict(
-    do_sample=True,
-    temperature=0.0,
-    max_new_tokens=1024,
+    do_sample=False,
+    temperature=0.01,
+    max_new_tokens=520,
   )
   response = model.completion(tokenizer, args.video_file, message, gen_kwargs, device)
   print(response)
@@ -97,19 +97,19 @@ def main(args):
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument(
-    "--model-name", type=str, default="/ViVidBot/model/output/stage2/lora"
+    "--model-name", type=str, default="/ViVidBot/model/output"
   )
   parser.add_argument(
     "--query",
     type=str,
     required=False,
-    default="Tỉ số của trận đấu này là bao nhiêu?\n<video>",
+    default="<video>\nVideo này đang cố gắng giải thích điều gì?",
   )
   parser.add_argument(
     "--video-file",
     type=str,
     required=False,
-    default="/content/t.mp4",
+    default="/content/t2.mp4",
   )
   parser.add_argument("--vision-tower", type=str, default=None)
   parser.add_argument("--system-prompt", type=str, default="")
