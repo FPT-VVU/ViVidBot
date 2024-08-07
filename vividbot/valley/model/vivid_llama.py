@@ -154,7 +154,7 @@ class VividLlamaModel(LlamaModel):
     patch_feature = torch.sum(patch_feature, dim=0)
     return patch_feature
 
-  def temporal_tranforemr_delta_adding(self, patch_feature):  # 8, 256, 5120
+  def temporal_tranformer_delta_adding(self, patch_feature):  # 8, 256, 5120
     patch_feature = patch_feature.permute(1, 0, 2)  # 256,8,5120
     sequence_length = patch_feature.shape[1]
     patch_number = patch_feature.shape[0]
@@ -170,8 +170,8 @@ class VividLlamaModel(LlamaModel):
     patch_feature = patch_feature_delta + patch_feature_mean
     return patch_feature
 
-  def embed_tokens(self, x):
-    return self.wte(x)
+  # def embed_tokens(self, x):
+  #   return self.wte(x)
 
   def forward(
     self,
@@ -274,7 +274,7 @@ class VividLlamaModel(LlamaModel):
             cur_image_features[:, 1:, :]
           )  # 256 , 4096
         elif self.patch_pooling_method == "temporal_transformer":
-          mean_image_features = self.temporal_tranforemr_delta_adding(
+          mean_image_features = self.temporal_tranformer_delta_adding(
             cur_image_features[:, 1:, :]
           )  # 256 , 4096
 
