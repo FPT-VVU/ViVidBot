@@ -126,11 +126,12 @@ def train(args):
   training_args.learning_rate = float(training_args.learning_rate)
   os.environ["WANDB_PROJECT"] = data_args.project_name
 
+  print("pretrain model_name_or_path=", model_args.model_name_or_path)
   model = VividLlamaForCausalLM.from_pretrained(
     model_args.model_name_or_path,
     cache_dir=training_args.cache_dir,
   )
-
+  print("tokenizer model_name_or_path=", model_args.model_name_or_path)
   tokenizer = transformers.AutoTokenizer.from_pretrained(
     model_args.model_name_or_path,
     cache_dir=training_args.cache_dir,
