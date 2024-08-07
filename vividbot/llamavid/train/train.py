@@ -73,7 +73,9 @@ class ModelArguments:
 
 @dataclass
 class DataArguments:
-  data_path: str = field(default=None, metadata={"help": "Path to the training data."})
+  data_path: List[str] = field(
+    default=None, metadata={"help": "Path to the training data."}
+  )
   lazy_preprocess: bool = False
   is_multimodal: bool = False
   image_folder: Optional[List[str]] = field(default=None)
