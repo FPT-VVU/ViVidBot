@@ -18,25 +18,23 @@ from typing import List, Optional, Tuple, Union
 import torch
 import torch.nn as nn
 from torch.nn import CrossEntropyLoss
-
 from transformers import (
   AutoConfig,
   AutoModelForCausalLM,
   LlamaConfig,
-  LlamaModel,
   LlamaForCausalLM,
+  LlamaModel,
 )
-
 from transformers.modeling_outputs import CausalLMOutputWithPast
 
 from vividbot.llamavid.model.llamavid_arch import (
-  LLaMAVIDMetaModel,
   LLaMAVIDMetaForCausalLM,
+  LLaMAVIDMetaModel,
 )
 
 
 class LlavaConfig(LlamaConfig):
-  model_type = "llava"
+  model_type = "vivid_llama"
 
 
 class LlavaAttLlamaModel(LLaMAVIDMetaModel, LlamaModel):
@@ -171,5 +169,5 @@ class LlavaLlamaAttForCausalLM(LlamaForCausalLM, LLaMAVIDMetaForCausalLM):
     return model_inputs
 
 
-AutoConfig.register("llava", LlavaConfig)
+AutoConfig.register("vivid_llama", LlavaConfig)
 AutoModelForCausalLM.register(LlavaConfig, LlavaLlamaAttForCausalLM)

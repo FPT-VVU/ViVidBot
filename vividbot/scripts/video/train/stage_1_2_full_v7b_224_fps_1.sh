@@ -1,14 +1,22 @@
 #!/bin/bash
-
-deepspeed llamavid/train/train_mem.py \
-    --deepspeed ./scripts/zero2.json \
+sudo apt update -y && \
+pip install poetry "huggingface_hub[cli]" && \
+huggingface-cli login --token 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 && \
+mkdir -p content && mkdir -p content/vivid-llama2-7b && \
+huggingface-cli download Vividbot/llava-pretrain-vi --repo-type dataset --include llava_pretrain_vi_all.json --local-dir ./content && \
+huggingface-cli download Vividbot/vast-2m-vi --repo-type dataset --include vast_2m_vi_refined_all.json --local-dir ./content && \
+git clone https://dminhvu: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@github.com/FPT-VVU/ViVidBot && \
+cd ViVidBot && git checkout train/llamavid && \
+poetry install && poetry add deepspeed && \
+poetry run deepspeed vividbot/llamavid/train/train_mem.py \
+    --deepspeed ./vividbot/scripts/zero2.json \
     --model_name_or_path bkai-foundation-models/vietnamese-llama2-7b-120GB \
     --version plain_guided \
     --data_path /content/vast_2m_vi_refined_all.json /content/llava_pretrain_vi_all.json \
     --image_folder Vividbot/llava-pretrain-vi/images \
     --video_folder Vividbot/vast-2m-vi/video \
     --vision_tower openai/clip-vit-large-patch14 \
-    --image_processor ./llamavid/processor/clip-patch14-224 \
+    --image_processor ./vividbot/llamavid/processor/clip-patch14-224 \
     --mm_projector_type mlp2x_gelu \
     --tune_mm_mlp_adapter True \
     --mm_vision_select_layer -2 \
@@ -21,7 +29,7 @@ deepspeed llamavid/train/train_mem.py \
     --bf16 True \
     --output_dir /content/vivid-llama2-7b \
     --num_train_epochs 1 \
-    --per_device_train_batch_size 32 \
+    --per_device_train_batch_size 8 \
     --per_device_eval_batch_size 4 \
     --gradient_accumulation_steps 1 \
     --evaluation_strategy "no" \
@@ -34,7 +42,7 @@ deepspeed llamavid/train/train_mem.py \
     --lr_scheduler_type "cosine" \
     --logging_steps 1 \
     --tf32 True \
-    --model_max_length 2048 \
+    --model_max_length 4096 \
     --gradient_checkpointing True \
     --dataloader_num_workers 4 \
     --lazy_preprocess True \
