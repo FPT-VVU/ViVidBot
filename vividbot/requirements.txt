@@ -15,3 +15,5 @@ prettytable
 opencv-python-headless 
 wandb
 av
+flash_attn
+fairscale

@@ -2,6 +2,7 @@
 # Modified from LLaVA (https://github.com/haotian-liu/LLaVA)
 # ------------------------------------------------------------------------
 import os
+
 import torch
 import torch.nn as nn
 
@@ -10,9 +11,10 @@ try:
 except:
   print("no smdistributed.modelparallel.torch")
 
+from typing import List, Optional
+
 from fairscale.optim import OSS
 from torch.utils.data import Sampler
-
 from transformers import Trainer
 from transformers.pytorch_utils import ALL_LAYERNORM_LAYERS
 from transformers.trainer_pt_utils import (
@@ -23,8 +25,6 @@ from transformers.utils import (
   is_sagemaker_mp_enabled,
   logging,
 )
-
-from typing import List, Optional
 
 logger = logging.get_logger(__name__)
 
@@ -210,8 +210,8 @@ class LLaVATrainer(Trainer):
     """
     if is_sagemaker_mp_enabled():
       return super().create_optimizer()
-    if self.sharded_ddp == ShardedDDPOption.SIMPLE:
-      return super().create_optimizer()
+    # if self.sharded_ddp == ShardedDDPOption.SIMPLE:
+    #   return super().create_optimizer()
 
     opt_model = self.model
 
@@ -301,29 +301,22 @@ class LLaVATrainer(Trainer):
 
       optimizer_cls, optimizer_kwargs = Trainer.get_optimizer_cls_and_kwargs(self.args)
 
-      if self.sharded_ddp == ShardedDDPOption.SIMPLE:
-        self.optimizer = OSS(
-          params=optimizer_grouped_parameters,
-          optim=optimizer_cls,
-          **optimizer_kwargs,
-        )
-      else:
-        self.optimizer = optimizer_cls(optimizer_grouped_parameters, **optimizer_kwargs)
-        if optimizer_cls.__name__ == "Adam8bit":
-          import bitsandbytes
+      self.optimizer = optimizer_cls(optimizer_grouped_parameters, **optimizer_kwargs)
+      if optimizer_cls.__name__ == "Adam8bit":
+        import bitsandbytes
 
-          manager = bitsandbytes.optim.GlobalOptimManager.get_instance()
+        manager = bitsandbytes.optim.GlobalOptimManager.get_instance()
 
-          skipped = 0
-          for module in opt_model.modules():
-            if isinstance(module, nn.Embedding):
-              skipped += sum(
-                {p.data_ptr(): p.numel() for p in module.parameters()}.values()
-              )
-              logger.info(f"skipped {module}: {skipped/2**20}M params")
-              manager.register_module_override(module, "weight", {"optim_bits": 32})
-              logger.debug(f"bitsandbytes: will optimize {module} in fp32")
-          logger.info(f"skipped: {skipped/2**20}M params")
+        skipped = 0
+        for module in opt_model.modules():
+          if isinstance(module, nn.Embedding):
+            skipped += sum(
+              {p.data_ptr(): p.numel() for p in module.parameters()}.values()
+            )
+            logger.info(f"skipped {module}: {skipped/2**20}M params")
+            manager.register_module_override(module, "weight", {"optim_bits": 32})
+            logger.debug(f"bitsandbytes: will optimize {module} in fp32")
+        logger.info(f"skipped: {skipped/2**20}M params")
 
     return self.optimizer
 

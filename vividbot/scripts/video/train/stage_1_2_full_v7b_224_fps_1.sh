@@ -7,7 +7,10 @@ huggingface-cli download Vividbot/llava-pretrain-vi --repo-type dataset --includ
 huggingface-cli download Vividbot/vast-2m-vi --repo-type dataset --include vast_2m_vi_refined_all.json --local-dir ./content && \
 git clone https://dminhvu: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@github.com/FPT-VVU/ViVidBot && \
 cd ViVidBot && git checkout train/llamavid && \
-poetry install && poetry add deepspeed && \
+poetry install && poetry add deepspeed wandb && \
+poetry run pip install flash-attn -U --force-reinstall && \
+wandb login c2842eff34b9959f6e3efe3a790707d7ccf10fb3
+
 poetry run deepspeed vividbot/llamavid/train/train_mem.py \
     --deepspeed ./vividbot/scripts/zero2.json \
     --model_name_or_path bkai-foundation-models/vietnamese-llama2-7b-120GB \
