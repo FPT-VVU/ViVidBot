@@ -20,7 +20,7 @@ from transformers.pytorch_utils import ALL_LAYERNORM_LAYERS
 from transformers.trainer_pt_utils import (
   get_parameter_names,
 )
-from transformers.trainer_utils import ShardedDDPOption, has_length
+from transformers.trainer_utils import has_length
 from transformers.utils import (
   is_sagemaker_mp_enabled,
   logging,
@@ -210,8 +210,6 @@ class LLaVATrainer(Trainer):
     """
     if is_sagemaker_mp_enabled():
       return super().create_optimizer()
-    # if self.sharded_ddp == ShardedDDPOption.SIMPLE:
-    #   return super().create_optimizer()
 
     opt_model = self.model
 
