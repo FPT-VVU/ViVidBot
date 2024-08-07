@@ -33,12 +33,12 @@ from vividbot.valley.util.config import (
 from vividbot.valley.util.constants import FALLBACK_HF_VIDEO_PATHS
 
 logger = logging.getLogger(__name__)
-# logging.basicConfig(
-#   filename="model/output/stage2/trainer.log",
-#   filemode="a",
-#   level=logging.INFO,
-#   format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-# )
+logging.basicConfig(
+  filename="/root/run.log",
+  filemode="a",
+  level=logging.INFO,
+  format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 
 
 def collate_wrapper(batch):

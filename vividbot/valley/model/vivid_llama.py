@@ -42,13 +42,13 @@ class VividLlamaModel(LlamaModel):
 
     if hasattr(config, "mm_vision_tower"):
       # HACK: for FSDP
-      self.vision_tower = [CLIPVisionModel.from_pretrained(config.mm_vision_tower)]
+      # self.vision_tower = [CLIPVisionModel.from_pretrained(config.mm_vision_tower)]
       # if "chinese" in config.mm_vision_tower:
       #   from transformers import ChineseCLIPVisionModel as CLIPVisionModel
       # else:
       # from transformers import CLIPVisionModel
 
-      # self.vision_tower = CLIPVisionModel.from_pretrained(config.mm_vision_tower)
+      self.vision_tower = CLIPVisionModel.from_pretrained(config.mm_vision_tower)
 
     if (
       hasattr(config, "use_patch_importance_pooling")
@@ -60,11 +60,11 @@ class VividLlamaModel(LlamaModel):
 
     if hasattr(config, "use_delta_transformer") and config.use_delta_transformer:
       print("using temporal transformer delta adding")
-      self.transforemr_adding_layer = nn.TransformerEncoderLayer(
+      self.transformer_adding_layer = nn.TransformerEncoderLayer(
         d_model=config.hidden_size, nhead=8, batch_first=True
       )
       self.transformer_delta_encoder = nn.TransformerEncoder(
-        self.transforemr_adding_layer, num_layers=1
+        self.transformer_adding_layer, num_layers=1
       )
       self.patch_pooling_method = "temporal_transformer"
       # self.position_matrix = torch.nn.Parameter(self.getPositionEncoding(seq_len=2048, d = config.hidden_size))
@@ -72,7 +72,7 @@ class VividLlamaModel(LlamaModel):
       self.position_matrix.requires_grad = False
 
     if hasattr(config, "use_mm_proj"):
-      self._projector = nn.Linear(config.mm_hidden_size, config.hidden_size)
+      self.mm_projector = nn.Linear(config.mm_hidden_size, config.hidden_size)
       print(config.mm_hidden_size, config.hidden_size)
 
   def initialize_vision_modules(
@@ -108,11 +108,11 @@ class VividLlamaModel(LlamaModel):
       self.patch_pooling_method = "temporal_importance"
 
     if not hasattr(self, "transformer_delta_encoder") and use_delta_transformer:
-      self.transforemr_adding_layer = nn.TransformerEncoderLayer(
+      self.transformer_adding_layer = nn.TransformerEncoderLayer(
         d_model=self.config.hidden_size, nhead=8, batch_first=True
       )
       self.transformer_delta_encoder = nn.TransformerEncoder(
-        self.transforemr_adding_layer, num_layers=1
+        self.transformer_adding_layer, num_layers=1
       )
       self.patch_pooling_method = "temporal_transformer"
       self.position_matrix = torch.nn.Parameter(
@@ -371,7 +371,6 @@ class VividLlamaForCausalLM(LlamaForCausalLM):
   def __init__(self, config):
     super(LlamaForCausalLM, self).__init__(config)
     self.model = VividLlamaModel(config)
-
     self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)
 
     # Initialize weights and apply final processing
