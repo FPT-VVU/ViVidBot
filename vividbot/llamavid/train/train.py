@@ -31,6 +31,7 @@ import transformers
 from PIL import Image
 from torch.utils.data import Dataset
 
+import wandb
 from vividbot.llamavid import conversation as conversation_lib
 from vividbot.llamavid.constants import (
   DEFAULT_IM_END_TOKEN,
@@ -43,6 +44,7 @@ from vividbot.llamavid.train.llava_trainer import LLaVATrainer
 from vividbot.llamavid.train.mm_utils import tokenizer_image_token
 from vividbot.valley.util.data_util import load_image_hf, load_video_hf
 
+wandb.init(project="vivid")
 local_rank = None
 
 
