@@ -1,8 +1,8 @@
 import argparse
 import os
 import sys
-import torch
 
+import torch
 from peft import PeftConfig, PeftModel
 from transformers import AutoTokenizer
 
@@ -53,28 +53,26 @@ def main(args):
   # bnb_8bit_quant_type="nf4",
   # bnb_8bit_compute_dtype=torch.float16,)
   print("load model")
-  # if "lora" in model_name:
-  config = PeftConfig.from_pretrained(model_name)
-  if "config.json" in os.listdir(model_name):
-    model_old = VividGPTForCausalLM.from_pretrained(model_name, device_map=device)
+  if "lora" in model_name:
+    config = PeftConfig.from_pretrained(model_name)
+    if "config.json" in os.listdir(model_name):
+      model_old = VividGPTForCausalLM.from_pretrained(model_name, device_map=device)
+    else:
+      model_old = VividGPTForCausalLM.from_pretrained(
+        config.base_model_name_or_path, device_map=device
+      )
+    print("load lora model")
+    model = PeftModel.from_pretrained(model_old, model_name, device_map=device)
+    model = model.merge_and_unload()
+    tokenizer = AutoTokenizer.from_pretrained(config.base_model_name_or_path)
+    tokenizer.padding_side = "left"
+    print("load end")
   else:
-    model_old = VividGPTForCausalLM.from_pretrained(
-      config.base_model_name_or_path, device_map=device
-    )
-  print("load lora model")
-  model = PeftModel.from_pretrained(model_old, model_name, device_map=device)
-  model = model.merge_and_unload()
-  tokenizer = AutoTokenizer.from_pretrained(config.base_model_name_or_path)
-  tokenizer.padding_side = "left"
-  print("load end")
-  # else:
-  #     model = VividGPTForCausalLM.from_pretrained(
-  #         model_name, torch_dtype=torch.float16
-  #     )
-  #     tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+    model = VividGPTForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_name)
   init_vision_token(model, tokenizer)
   print("load end")
-  # model = model.to(device)
+  model = model.to(device)
   model.eval()
 
   message = [
@@ -87,7 +85,7 @@ def main(args):
 
   gen_kwargs = dict(
     do_sample=True,
-    temperature=0.0,
+    temperature=0.1,
     max_new_tokens=1024,
   )
   response = model.completion(tokenizer, args.video_file, message, gen_kwargs, device)
