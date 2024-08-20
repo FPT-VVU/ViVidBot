@@ -23,7 +23,6 @@ from vividbot.data.task.vivid_instruct_65k.utils.prompts import (
 load_dotenv()
 BASE_DATA_PATH = f"{Path.home()}/data/images"
 
-
 logger = logging.getLogger(__name__)
 logging.basicConfig(
   filename=f"{BASE_DATA_PATH}/run.log",
