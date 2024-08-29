@@ -51,6 +51,7 @@ sentencepiece = "^0.2.0"
 unsloth = {git = "https://github.com/unslothai/unsloth.git"}
 bitsandbytes = "^0.43.3"
 gguf = "^0.9.1"
+underthesea = "^6.8.4"
 
 
 [tool.poetry.group.dev.dependencies]

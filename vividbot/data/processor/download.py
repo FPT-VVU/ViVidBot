@@ -1,6 +1,7 @@
 import datetime
 import os
 import time
+from typing import Optional
 
 import yt_dlp
 from yt_dlp.utils import download_range_func
@@ -28,7 +29,7 @@ class YoutubeDownloader(BaseProcessor):
   def process(
     self,
     video_id: str | None,
-    video_id_with_chunk_id: str | None,
+    video_id_with_chunk_id: Optional[str] = None,
     start: str | int | None = None,  # if int, it is the start time
     end: str | int | None = None,  # if int, it is the end time
     path: str = "",

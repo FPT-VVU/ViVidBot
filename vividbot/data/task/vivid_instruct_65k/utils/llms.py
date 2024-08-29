@@ -101,8 +101,9 @@ GEMINI_1_5_PRO = ChatGoogleGenerativeAI(
   top_p=0.7,
 )
 
-LLM = GROQ_LLAMA3_1_70B.with_fallbacks(
+LLM = DEEPINFRA_LLAMA3_1_70B.with_fallbacks(
   [
+    GROQ_LLAMA3_1_70B,
     DEEPINFRA_LLAMA3_1_70B,
     FIREWORKS_LLAMA3_1_70B,
     DEEPINFRA_LLAMA3_1_405B,
